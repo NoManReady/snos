@@ -1,0 +1,156 @@
+@import './utils/variable';
+@import './utils/mixins';
+
+.app {
+  @include position-absolute;
+  background: #fff;
+  min-width: 460px;
+}
+
+.app-main {
+  @include position-absolute($app-header-height + 2, 0, 0, 0);
+  overflow: hidden;
+}
+
+.brand {
+  line-height: 1;
+
+  .brand-logo {
+    display: inline-block;
+    background-image: url('./assets/logo.png');
+    background-position: -10px 2px;
+    background-size: 100px 190px;
+    background-repeat: no-repeat;
+    vertical-align: middle;
+    width: 80px;
+    height: 64px;
+  }
+
+  .brand-txt {
+    display: inline-block;
+    color: $theme;
+    font-size: 20px;
+    font-family: PingFang SC;
+    line-height: 28px;
+    padding: 18px 0
+  }
+}
+
+// .el-submenu .el-menu-item {
+//   min-width: auto !important;
+// }
+
+// .el-menu {
+
+//   [class^='eweb-'],
+//   [class^='eweb-'] {
+//     vertical-align: middle;
+//     margin-right: 4px;
+//     width: 20px;
+//     text-align: center;
+//     font-size: 18px;
+//   }
+// }
+
+.app-aside {
+  float: left;
+  height: 100%;
+  width: auto;
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+  // box-shadow: 5px 0 0px $app-bg-color;
+
+  .el-menu {
+    height: 100%;
+  }
+
+  .aside-menu:not(.el-menu--collapse) {
+    width: $app-aside-width;
+  }
+
+  .aside-menu.el-menu--collapse {
+    width: 62px;
+  }
+
+  .el-submenu {
+
+    &.is-opened,
+    &.is-active {
+      background: lighten($theme, 42%) !important;
+
+      .el-submenu__title {
+        background: lighten($theme, 42%) !important;
+        color: $theme !important;
+
+        i {
+          color: $theme;
+        }
+      }
+    }
+  }
+}
+
+.device-aside {
+  @at-root {
+    .el-menu--horizontal {
+      border: none !important;
+
+      &>.el-menu-item,
+      &>.el-submenu .el-submenu__title {
+        padding: 0 12px !important;
+        height: 40px !important;
+        line-height: 40px !important;
+      }
+
+      .el-menu-item:not(.is-disabled) {
+        &:focus,
+        &:hover {
+          color: $theme !important;
+        }
+      }
+
+      &>.el-submenu .el-submenu__icon-arrow {
+        margin-left: 5px !important;
+      }
+    }
+  }
+}
+
+.app-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: $app-aside-width;
+  padding: 15px 10px;
+  transition: left 0.3s ease-in-out;
+  overflow: hidden;
+  overflow: auto;
+  background-color: $app-bg-color;
+  // min-width: 500px;
+}
+
+.app-header,
+.app-footer {
+  width: 100%;
+  color: #fff;
+}
+.app-header,
+.app-footer {
+  width: 100%;
+}
+
+.app-header {
+  height: $app-header-height;
+  background-color: #fff;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2), 0px 2px 1px rgba(0, 0, 0, 0.12), 0px 1px 1px rgba(0, 0, 0, 0.14);
+}
+
+.app-footer {
+  height: $app-footer-height;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}

@@ -1,0 +1,36 @@
+{
+  "name": "eg.build",
+  "version": "1.0.0",
+  "description": "build eg source files",
+  "scripts": {
+    "upload:egw": "gulp -f gulpfile-egw.js",
+    "watch:egw": "gulp -f gulpfile-egw.js watchlua",
+    "upload:est": "gulp -f gulpfile-est.js",
+    "watch:est": "gulp -f gulpfile-est.js watchlua",
+    "upload:eap": "gulp -f gulpfile.js",
+    "watch:eap": "gulp -f gulpfile.js watchlua",
+    "upload": "gulp -f gulpfile-msw.js",
+    "watch": "gulp -f gulpfile-msw.js watchlua"
+  },
+  "dependencies": {
+    "del": "^2.2.2",
+    "gulp": "^4.0.0",
+    "gulp-changed": "^3.1.0",
+    "gulp-debug": "^3.0.0",
+    "gulp-gzip": "^1.4.0",
+    "gulp-if": "^2.0.2",
+    "gulp-replace": "^0.6.1",
+    "gulp-run-sequence": "^0.3.2",
+    "gulp-tar": "^2.0.0",
+    "gulp-watch": "^4.3.11",
+    "net": "^1.0.2",
+    "ssh2": "^0.5.5"
+  },
+  "devDependencies": {
+    "gulp-imagemin": "^4.1.0",
+    "imagemin-pngquant": "^5.1.0",
+    "minimist": "^1.2.0",
+    "pump": "^3.0.0",
+    "yargs": "^14.2.0"
+  }
+}

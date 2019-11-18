@@ -1,0 +1,237 @@
+@import '../utils/_variable.scss';
+
+// 数据box
+.data-box {
+  padding: 12px;
+  background-color: $box-bgc;
+  margin-bottom: 15px;
+  min-height: 90px;
+  border-radius: $--border-radius-base;
+
+  &--tit {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+  }
+
+  &--val {
+    color: darken($theme, 20%);
+    text-align: center;
+    display: block;
+    font-size: 26px;
+  }
+
+  @media screen and (max-width: 980px) {
+    padding: 10px;
+    min-height: 80px;
+
+    &--tit {
+      font-size: 14px;
+    }
+
+    &--val {
+      font-size: 24px;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    padding: 8px;
+    min-height: 70px;
+
+    &--tit {
+      font-size: 13px;
+    }
+
+    &--val {
+      font-size: 20px;
+    }
+  }
+}
+
+.block {
+  padding: 10px;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+// 功能块
+.box {
+  padding: 10px;
+  margin-bottom: 20px;
+
+  &-header {
+    padding: 4px 0 4px 10px;
+    margin-bottom: 15px;
+    border-left: 2px solid $theme;
+
+    &-tit {
+      font-weight: bold;
+      color: $--color-text-regular;
+      font-size: 18px;
+      vertical-align: middle;
+    }
+  }
+
+  @media screen and (max-width: 980px) {
+    padding: 8px;
+    margin-bottom: 16px;
+
+    &-header {
+      padding: 4px 0 4px 8px;
+
+      &-tit {
+        font-size: 16px;
+      }
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    padding: 6px;
+    margin-bottom: 12px;
+
+    &-header {
+      padding: 4px 0 4px 8px;
+
+      &-tit {
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+// 分割线
+.split-v {
+  display: inline-block;
+  vertical-align: middle;
+  width: 1px;
+  height: 14px;
+  color: darken(#efefef, 5%);
+  background-color: currentColor;
+  margin: 0 3px;
+}
+
+// cell
+.celler {
+  border-radius: 3px;
+  overflow: hidden;
+  background-color: #fff;
+
+  &-item {
+    padding: 8px 6px;
+
+    &~& {
+      border-top: 1px solid $--border-color-lighter;
+    }
+  }
+}
+
+
+.card-box {
+  &--bar {
+    margin-bottom: 15px;
+
+    &__checker {
+      margin-right: 10px !important;
+    }
+  }
+
+  &--item {
+    position: relative;
+    text-align: center;
+    padding: 20px 30px;
+    font-size: 14px;
+    display: inline-block;
+    border: 1px dashed $--border-color-base;
+    margin: 0 10px 10px 0;
+    min-width: 90px;
+
+    &:hover,
+    &.active {
+      color: $theme;
+    }
+
+    &.active {
+      border-color: $theme;
+      border-width: 2px;
+    }
+
+    &:hover {
+
+      .card-box--item__close,
+      .card-box--item__edit {
+        display: block;
+      }
+    }
+
+    &__checker,
+    &__close,
+    &__edit {
+      position: absolute !important;
+      cursor: pointer;
+    }
+
+    &__checker {
+      bottom: 3px;
+      right: 6px;
+
+      .el-checkbox__label {
+        display: none;
+      }
+    }
+
+    &__edit,
+    &__close {
+      display: none;
+      top: 3px;
+    }
+
+    &__edit {
+      left: 3px;
+
+      &:hover {
+        color: $theme;
+      }
+    }
+
+    &__close {
+      right: 3px;
+      border-radius: 50%;
+      padding: 1px;
+
+      &:hover {
+        background-color: $theme;
+        color: #fff;
+      }
+    }
+  }
+}
+
+
+.edit-box {
+  border: 1px solid $--border-color-base;
+  padding: 10px;
+
+  &--footer {}
+}
+
+
+
+.form-box {
+  &-item {
+    display: inline-block;
+    vertical-align: middle;
+    margin-bottom: 5px;
+
+    &__label {
+      min-width: 80px;
+      text-align: right;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    &__value {
+      display: inline-block;
+      vertical-align: middle;
+    }
+  }
+}

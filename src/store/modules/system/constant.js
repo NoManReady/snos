@@ -1,0 +1,5 @@
+export const APP_SET_SYSINFO = 'APP_SET_SYSINFO'
+export const APP_SET_HOSTNAME = 'APP_SET_HOSTNAME'
+export const APP_SET_MASTER = 'APP_SET_MASTER'
+export const APP_NET_STATUS = 'APP_NET_STATUS'
+

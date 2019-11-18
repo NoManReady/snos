@@ -1,0 +1,996 @@
+//colors
+@import "../../theme/theme";
+$color_alto_approx: #ddd;
+$white: #fff;
+$color_celeste_approx: #cfcfcf;
+$color_puerto_rico_approx: $--color-primary;
+$color_puerto_rico_10_approx: rgba(51, 198, 186, 0.1);
+$color_alabaster_approx: #f9f9f9;
+$color_silver_approx: #bdbdbd;
+$color_mine_shaft_approx: #333;
+$color_tranquil_approx: lighten($--color-primary,70%);
+$color_wild_sand_approx: #f5f5f5;
+$color_tapa_approx: #757575;
+$mercury: #e5e5e5;
+$color_fuscous_gray_approx: #555;
+$color_gin_approx: #e8f5e9;
+$color_cinnabar_approx: #e53935;
+$color_storm_dust_approx: #616161;
+$concrete: #f2f2f2;
+$black_6: rgba(0, 0, 0, 0.06);
+$black_25: rgba(0, 0, 0, 0.25);
+$color_bon_jour_approx: #e0e0e0;
+$color_black_haze_approx: #f7f7f7;
+$color_pizazz_approx: #fb8c00;
+$color_sail_approx: #b3e5fc;
+//urls
+$url_0: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAgMAAAC5YVYYAAAACVBMVEUAAAD///////9zeKVjAAAAAnRSTlMAuLMp9oYAAAAPSURBVAjXY4CDrJUgBAMAGaECJ9dz3BAAAAAASUVORK5CYII=);
+$url_1: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAADFBMVEUAAAD///////////84wDuoAAAAA3RSTlMAyTzPIdReAAAAGUlEQVQI12PAD+b///+Nof7//79gAsLFCwAx/w4blADeeQAAAABJRU5ErkJggg==);
+$url_2: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYBAMAAAASWSDLAAAAD1BMVEUAAAD///////////////+PQt5oAAAABHRSTlMAy2EFIuWxUgAAACRJREFUGNNjGBBgJOICBY7KDCoucODEAJSAS6FwUJShGjAQAADBPRGrK2/FhgAAAABJRU5ErkJggg==);
+$url_3: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAgMAAAC5YVYYAAAACVBMVEUAAADi4uLh4eHOxeSRAAAAAnRSTlMAuLMp9oYAAAAPSURBVAjXY4CDrJUgBAMAGaECJ9dz3BAAAAAASUVORK5CYII=);
+$url_4: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAADFBMVEUAAADi4uLi4uLh4eE5RQaIAAAAA3RSTlMAyTzPIdReAAAAGUlEQVQI12PAD+b///+Nof7//79gAsLFCwAx/w4blADeeQAAAABJRU5ErkJggg==);
+$url_5: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYBAMAAAASWSDLAAAAD1BMVEUAAADh4eHg4ODNzc3h4eEYfw2wAAAABHRSTlMAy2EFIuWxUgAAACRJREFUGNNjGBBgJOICBY7KDCoucODEAJSAS6FwUJShGjAQAADBPRGrK2/FhgAAAABJRU5ErkJggg==);
+$url_6: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAMAAADz0U65AAAAQlBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////8IX9KGAAAAFXRSTlMA8u24NxILB+Tawb6jiH1zRz0xIQIIP3GUAAAAMklEQVQI1y3FtQEAMQDDQD+EGbz/qkEVOpyEOP6PudKjZNSXn4Jm2CKRdBKzSLsFWl8fMG0Bl6Jk1rMAAAAASUVORK5CYII=);
+$url_7: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAYFBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////98JRy6AAAAH3RSTlMAzu4sDenl38fBvo1OMyIdEQrj1cSihX5hYFpHNycIcQOASAAAAF9JREFUGNN9zEcOgDAMRFHTS0LvNfe/JRmHKAIJ/mqeLJn+k9uDtaeUeFnFziGsBucUTirrprfe81RqZ3Bb6hPWeuZwDFOHyf+ig9CCzQ7INBn7bG5kF+QSt13BHNJnF7AaCT4Y+CW7AAAAAElFTkSuQmCC);
+$url_8: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAWlBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////9ZMre9AAAAHXRSTlMA/PiJhGNI9XlEHJB/b2ldV08+Oibk49vPp6QhAYgGBuwAAACCSURBVCjPrdHdDoIwDAXgTWAqCigo/+f9X5OwnoUwtis4V92XNWladUl+rzQPeQJAN2EHxoOnsPn7/oYk8fxBv08Rr/deOH/aZ2Nm8ZJ+s573QGfWKnNuZGzWm3+lv2V3pcU1XQ385/yjmBoM3Z+dXvlbYLLD3ujhTaOM3KaIXvNkFkuSEvYy1LqOAAAAAElFTkSuQmCC);
+$url_9: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAMAAADz0U65AAAAP1BMVEUAAADj4+Pf39/h4eHh4eHh4eHk5OTh4eHg4ODi4uLh4eHh4eHg4ODh4eHh4eHg4ODh4eHh4eHp6en////h4eFqcyvUAAAAFHRSTlMAOQfy7bgS5NrBvqOIfXNHMSELAgQ/iFsAAAA2SURBVAjXY4AANjYIzcjMAaVFuBkY+RkEWERYmRjYRXjANAOfiIgIFxNIAa8IpxBEi6AwiAQAK2MBd7xY8csAAAAASUVORK5CYII=);
+$url_10: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAXVBMVEUAAADh4eHh4eHh4eHi4uLb29vh4eHh4eHh4eHh4eHh4eHh4eHh4eHi4uLi4uLj4+Pi4uLk5OTo6Ojh4eHh4eHi4uLg4ODg4ODh4eHg4ODh4eHf39/g4OD////h4eEzIk+wAAAAHnRSTlMAzu6/LA3p5eLZx8ONTjYiHRIKooV+YWBaRzEnCANnm5rnAAAAZElEQVQY033P2wqAIAyA4VWaaWrnc/n+j5mbhBjUf7WPoTD47TJb4i5zTr/sRDRHuyFaoWX7uK/RlbctlPEuyI1f4WY9yQINEkf6rzzo8YIzmUFoCs7J1EjeIaa9bXIEmzl8dgOZEAj/+2IvzAAAAABJRU5ErkJggg==);
+$url_11: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAAUVBMVEUAAADh4eHh4eHh4eHh4eHi4uLi4uLh4eHh4eHh4eHf39/j4+Ph4eHh4eHh4eHg4ODi4uLh4eHh4eHi4uLh4eHh4eHh4eHh4eHh4eH////h4eF3FMFTAAAAGnRSTlMA+/eJhGhfSHE9JBzz5KaQf3pXT0Xbz0I5AYDw8F0AAAB+SURBVCjPrdHbDoMgEEVRKAii1dZe9fz/hxplTiKIT7qfYCWTEEZdUvOwbckNAD2WHeh3brHW5f5EzGQ+iN+b1Gt6KPvtv16Dn6JX9M9ya3/A1yfu5dlyduL6Hec7mXY6ddXLPP2lpABGZ8PWXfYLTJxZekVhhl7eTX24zZPNKXoRC7zQLjUAAAAASUVORK5CYII=);
+.vue-treeselect-helper-zoom-effect-off {
+  //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+  transform: none !important;
+}
+
+@-webkit-keyframes vue-treeselect-animation-fade-in {
+  0% {
+    opacity: 0;
+  }
+}
+
+@keyframes vue-treeselect-animation-fade-in {
+  0% {
+    opacity: 0;
+  }
+}
+
+@-webkit-keyframes vue-treeselect-animation-bounce {
+  0% {
+    //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+    transform: scale(0);
+  }
+  100% {
+    //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+    transform: scale(0);
+  }
+  50% {
+    //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+    transform: scale(1);
+  }
+}
+
+@keyframes vue-treeselect-animation-bounce {
+  0% {
+    //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+    transform: scale(0);
+  }
+  100% {
+    //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+    transform: scale(0);
+  }
+  50% {
+    //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+    transform: scale(1);
+  }
+}
+
+@-webkit-keyframes vue-treeselect-animation-rotate {
+  100% {
+    //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes vue-treeselect-animation-rotate {
+  100% {
+    //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+    transform: rotate(360deg);
+  }
+}
+
+.vue-treeselect__multi-value-item--transition-enter-active {
+  //Instead of the line below you could use @include transition-duration($duration-1, $duration-2, $duration-3, $duration-4, $duration-5, $duration-6, $duration-7, $duration-8, $duration-9, $duration-10)
+  transition-duration: 200ms; //Instead of the line below you could use @include transition-property($property-1, $property-2, $property-3, $property-4, $property-5, $property-6, $property-7, $property-8, $property-9, $property-10)
+  transition-property: transform, opacity; //Instead of the line below you could use @include transition-timing-function($function-1, $function-2, $function-3, $function-4, $function-5, $function-6, $function-7, $function-8, $function-9, $function-10)
+  transition-timing-function: cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.vue-treeselect__multi-value-item--transition-leave-active {
+  //Instead of the line below you could use @include transition-duration($duration-1, $duration-2, $duration-3, $duration-4, $duration-5, $duration-6, $duration-7, $duration-8, $duration-9, $duration-10)
+  transition-duration: 200ms; //Instead of the line below you could use @include transition-property($property-1, $property-2, $property-3, $property-4, $property-5, $property-6, $property-7, $property-8, $property-9, $property-10)
+  transition-property: transform, opacity; //Instead of the line below you could use @include transition-timing-function($function-1, $function-2, $function-3, $function-4, $function-5, $function-6, $function-7, $function-8, $function-9, $function-10)
+  transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+  position: absolute;
+}
+
+.vue-treeselect__multi-value-item--transition-enter {
+  //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+  transform: scale(0.7);
+  opacity: 0;
+}
+
+.vue-treeselect__multi-value-item--transition-leave-to {
+  //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+  transform: scale(0.7);
+  opacity: 0;
+}
+
+.vue-treeselect__multi-value-item--transition-move {
+  //Instead of the line below you could use @include transition($transition-1, $transition-2, $transition-3, $transition-4, $transition-5, $transition-6, $transition-7, $transition-8, $transition-9, $transition-10)
+  transition: 200ms transform cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.vue-treeselect__menu--transition-enter-active {}
+
+.vue-treeselect__menu--transition-leave-active {}
+
+.vue-treeselect__menu--transition-enter {}
+
+.vue-treeselect__menu--transition-leave-to {}
+
+.vue-treeselect__list--transition-enter-active {}
+
+.vue-treeselect__list--transition-leave-active {}
+
+.vue-treeselect__list--transition-enter {}
+
+.vue-treeselect__list--transition-leave-to {}
+
+.vue-treeselect {
+  position: relative;
+  text-align: left;
+  line-height: 1;
+  div {
+    //Instead of the line below you could use @include box-sizing($bs)
+    box-sizing: border-box;
+  }
+  span {
+    //Instead of the line below you could use @include box-sizing($bs)
+    box-sizing: border-box;
+  }
+  svg {
+    fill: currentColor;
+  }
+  &:not(.vue-treeselect--disabled) {
+    &:not(.vue-treeselect--focused) .vue-treeselect__control:hover {
+      border-color: $color_celeste_approx;
+    }
+    .vue-treeselect__multi-value-item:not(.vue-treeselect__multi-value-item-disabled):hover .vue-treeselect__multi-value-item:not(.vue-treeselect__multi-value-item-new) .vue-treeselect__multi-value-item:not(.vue-treeselect__multi-value-item-new):hover {
+      cursor: pointer;
+      background: $color_tranquil_approx;
+      color: $color_puerto_rico_approx;
+    }
+    .vue-treeselect__control-arrow-container:hover .vue-treeselect__control-arrow {
+      color: $color_storm_dust_approx;
+    }
+  }
+}
+
+.vue-treeselect__control {
+  padding-left: 5px;
+  padding-right: 5px;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+  height: 36px;
+  border: 1px solid $color_alto_approx; //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
+  border-radius: 5px;
+  background: $white; //Instead of the line below you could use @include transition-duration($duration-1, $duration-2, $duration-3, $duration-4, $duration-5, $duration-6, $duration-7, $duration-8, $duration-9, $duration-10)
+  transition-duration: 200ms; //Instead of the line below you could use @include transition-property($property-1, $property-2, $property-3, $property-4, $property-5, $property-6, $property-7, $property-8, $property-9, $property-10)
+  transition-property: border-color, box-shadow, width, height, background-color, opacity; //Instead of the line below you could use @include transition-timing-function($function-1, $function-2, $function-3, $function-4, $function-5, $function-6, $function-7, $function-8, $function-9, $function-10)
+  transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.vue-treeselect--focused {
+  &:not(.vue-treeselect--open) .vue-treeselect__control {
+    border-color: $color_puerto_rico_approx; //Instead of the line below you could use @include box-shadow($shadow-1, $shadow-2, $shadow-3, $shadow-4, $shadow-5, $shadow-6, $shadow-7, $shadow-8, $shadow-9, $shadow-10)
+    box-shadow: 0 0 0 3px $color_puerto_rico_10_approx;
+  }
+  &.vue-treeselect--searchable .vue-treeselect__single-value {
+    color: $color_silver_approx;
+  }
+}
+
+.vue-treeselect--disabled {
+  .vue-treeselect__control {
+    background-color: $color_alabaster_approx;
+  }
+  .vue-treeselect__multi-value-item {
+    cursor: default;
+    background: $white;
+    border-color: $mercury;
+    color: $color_fuscous_gray_approx;
+  }
+  .vue-treeselect__value-remove {
+    display: none;
+  }
+  .vue-treeselect__input-container {
+    display: none;
+  }
+  .vue-treeselect__control-arrow-container {
+    cursor: default;
+  }
+  .vue-treeselect__control-arrow {
+    opacity: 0.35;
+  }
+}
+
+.vue-treeselect--open {
+  .vue-treeselect__control {
+    border-color: $color_celeste_approx;
+  }
+  &.vue-treeselect--open-below .vue-treeselect__control {
+    //Instead of the line below you could use @include border-bottom-left-radius($radius)
+    border-bottom-left-radius: 0; //Instead of the line below you could use @include border-bottom-right-radius($radius)
+    border-bottom-right-radius: 0;
+  }
+  &.vue-treeselect--open-above .vue-treeselect__control {
+    //Instead of the line below you could use @include border-top-left-radius($radius)
+    border-top-left-radius: 0; //Instead of the line below you could use @include border-top-right-radius($radius)
+    border-top-right-radius: 0;
+  }
+}
+
+.vue-treeselect__value-container {
+  width: 100%;
+  vertical-align: middle;
+  display: table-cell;
+  position: relative;
+}
+
+.vue-treeselect__multi-value {
+  width: 100%;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+.vue-treeselect--searchable {
+  .vue-treeselect__input-container {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  &:not(.vue-treeselect--disabled) .vue-treeselect__value-container {
+    cursor: text;
+  }
+  &.vue-treeselect--multi.vue-treeselect--has-value .vue-treeselect__input-container {
+    padding-top: 5px;
+    padding-left: 0;
+  }
+}
+
+.vue-treeselect--has-value {
+  .vue-treeselect__multi-value {
+    margin-bottom: 5px;
+  }
+  .vue-treeselect__input {
+    line-height: inherit;
+    vertical-align: top;
+  }
+}
+
+.vue-treeselect__placeholder {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-left: 5px;
+  padding-right: 5px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  line-height: 34px; //Instead of the line below you could use @include user-select($select)
+  user-select: none;
+  pointer-events: none;
+  color: $color_silver_approx;
+}
+
+.vue-treeselect__single-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-left: 5px;
+  padding-right: 5px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  line-height: 34px; //Instead of the line below you could use @include user-select($select)
+  user-select: none;
+  pointer-events: none;
+  color: $color_mine_shaft_approx;
+}
+
+.vue-treeselect__multi-value-item-container {
+  display: inline-block;
+  padding-top: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+.vue-treeselect__multi-value-item {
+  cursor: pointer;
+  display: inline-table;
+  background: $color_tranquil_approx;
+  padding: 2px 0;
+  border: 1px solid transparent; //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
+  border-radius: 2px;
+  color: $color_puerto_rico_approx;
+  font-size: 12px;
+  vertical-align: top;
+  &.vue-treeselect__multi-value-item-disabled {
+    cursor: default;
+    background: $color_wild_sand_approx;
+    color: $color_tapa_approx;
+  }
+  &.vue-treeselect__multi-value-item-new {
+    background: $color_gin_approx;
+    &:hover {
+      background: $color_gin_approx;
+    }
+  }
+  &:hover .vue-treeselect__value-remove {
+    color: $color_cinnabar_approx;
+  }
+}
+
+.vue-treeselect__value-remove {
+  display: table-cell;
+  padding: 0 5px;
+  vertical-align: middle;
+  color: $color_puerto_rico_approx;
+  padding-left: 5px;
+  border-left: 1px solid $white;
+  line-height: 0;
+  >svg {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+.vue-treeselect__multi-value-label {
+  display: table-cell;
+  padding: 0 5px;
+  vertical-align: middle;
+  padding-right: 5px;
+  white-space: pre-line; //Instead of the line below you could use @include user-select($select)
+  user-select: none;
+}
+
+.vue-treeselect__limit-tip {
+  display: inline-block;
+  padding-top: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+.vue-treeselect__limit-tip-text {
+  cursor: default;
+  display: block;
+  margin: 2px 0;
+  padding: 1px 0;
+  color: $color_silver_approx;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.vue-treeselect__input-container {
+  display: block;
+  max-width: 100%;
+  outline: none;
+}
+
+.vue-treeselect--single {
+  .vue-treeselect__input-container {
+    font-size: inherit;
+    height: 100%;
+  }
+  .vue-treeselect__input {
+    width: 100%;
+    height: 100%;
+  }
+  .vue-treeselect__option--selected {
+    background: $color_tranquil_approx;
+    font-weight: 600;
+    &:hover {
+      background: $color_tranquil_approx;
+    }
+  }
+  .vue-treeselect__icon-container {
+    padding-left: 5px;
+  }
+}
+
+.vue-treeselect--multi {
+  .vue-treeselect__input-container {
+    display: inline-block;
+    font-size: 12px;
+    vertical-align: top;
+  }
+  .vue-treeselect__input {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+}
+
+.vue-treeselect__input {
+  margin: 0;
+  line-height: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none; //Instead of the line below you could use @include box-sizing($bs)
+  box-sizing: content-box; //Instead of the line below you could use @include box-shadow($shadow-1, $shadow-2, $shadow-3, $shadow-4, $shadow-5, $shadow-6, $shadow-7, $shadow-8, $shadow-9, $shadow-10)
+  box-shadow: none;
+  background: none transparent;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.vue-treeselect__sizer {
+  margin: 0;
+  line-height: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  height: 0;
+  overflow: scroll;
+  white-space: pre;
+}
+
+.vue-treeselect__input::-ms-clear {
+  display: none;
+}
+
+.vue-treeselect__x-container {
+  display: table-cell;
+  vertical-align: middle;
+  width: 20px;
+  text-align: center;
+  line-height: 0;
+  cursor: pointer;
+  color: $color_celeste_approx;
+  animation: 200ms vue-treeselect-animation-fade-in cubic-bezier(0.075, 0.82, 0.165, 1);
+  &:hover {
+    color: $color_cinnabar_approx;
+  }
+}
+
+.vue-treeselect__x {
+  width: 8px;
+  height: 8px;
+}
+
+.vue-treeselect__control-arrow-container {
+  display: table-cell;
+  vertical-align: middle;
+  width: 20px;
+  text-align: center;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.vue-treeselect__control-arrow {
+  width: 9px;
+  height: 9px;
+  color: $color_celeste_approx;
+}
+
+.vue-treeselect__control-arrow--rotated {
+  //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+  transform: rotateZ(180deg);
+}
+
+.vue-treeselect__menu {
+  cursor: default;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  display: block;
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 999;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid $color_celeste_approx;
+  background: $white;
+  line-height: 180%;
+}
+
+.vue-treeselect__indent-level-0 {
+  .vue-treeselect__option {
+    padding-left: 5px;
+  }
+  .vue-treeselect__tip {
+    padding-left: 25px;
+  }
+}
+
+.vue-treeselect__indent-level-1 {
+  .vue-treeselect__option {
+    padding-left: 25px;
+  }
+  .vue-treeselect__tip {
+    padding-left: 45px;
+  }
+}
+
+.vue-treeselect__indent-level-2 {
+  .vue-treeselect__option {
+    padding-left: 45px;
+  }
+  .vue-treeselect__tip {
+    padding-left: 65px;
+  }
+}
+
+.vue-treeselect__indent-level-3 {
+  .vue-treeselect__option {
+    padding-left: 65px;
+  }
+  .vue-treeselect__tip {
+    padding-left: 85px;
+  }
+}
+
+.vue-treeselect__indent-level-4 {
+  .vue-treeselect__option {
+    padding-left: 85px;
+  }
+  .vue-treeselect__tip {
+    padding-left: 105px;
+  }
+}
+
+.vue-treeselect__indent-level-5 {
+  .vue-treeselect__option {
+    padding-left: 105px;
+  }
+  .vue-treeselect__tip {
+    padding-left: 125px;
+  }
+}
+
+.vue-treeselect__indent-level-6 {
+  .vue-treeselect__option {
+    padding-left: 125px;
+  }
+  .vue-treeselect__tip {
+    padding-left: 145px;
+  }
+}
+
+.vue-treeselect__indent-level-7 {
+  .vue-treeselect__option {
+    padding-left: 145px;
+  }
+  .vue-treeselect__tip {
+    padding-left: 165px;
+  }
+}
+
+.vue-treeselect__indent-level-8 {
+  .vue-treeselect__option {
+    padding-left: 165px;
+  }
+  .vue-treeselect__tip {
+    padding-left: 185px;
+  }
+}
+
+.vue-treeselect__option {
+  padding-left: 5px;
+  padding-right: 5px;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.vue-treeselect__option--highlight {
+  background: $color_wild_sand_approx;
+}
+
+.vue-treeselect__option--hide {
+  display: none;
+}
+
+.vue-treeselect__option-arrow-container {
+  display: table-cell;
+  vertical-align: middle;
+  width: 20px;
+  text-align: center;
+  line-height: 0;
+  cursor: pointer;
+  &:hover .vue-treeselect__option-arrow {
+    color: $color_storm_dust_approx;
+  }
+}
+
+.vue-treeselect__option-arrow-placeholder {
+  display: table-cell;
+  vertical-align: middle;
+  width: 20px;
+  text-align: center;
+  line-height: 0;
+}
+
+.vue-treeselect__option-arrow {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  color: $color_celeste_approx;
+  vertical-align: middle; //Instead of the line below you could use @include transition($transition-1, $transition-2, $transition-3, $transition-4, $transition-5, $transition-6, $transition-7, $transition-8, $transition-9, $transition-10)
+  transition: 200ms transform cubic-bezier(0.19, 1, 0.22, 1); //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+  transform: rotateZ(-90deg);
+}
+
+.vue-treeselect__option-arrow--rotated {
+  //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+  transform: rotateZ(0);
+  &.vue-treeselect__option-arrow--prepare-enter {
+    //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+    transform: rotateZ(-90deg) !important;
+  }
+}
+
+.vue-treeselect__label-container {
+  vertical-align: middle;
+  cursor: pointer;
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  color: inherit;
+  &:hover {
+    .vue-treeselect__checkbox--unchecked {
+      border-color: $color_puerto_rico_approx;
+      background: $white;
+    }
+    .vue-treeselect__checkbox--indeterminate {
+      border-color: $color_puerto_rico_approx;
+      background: $color_puerto_rico_approx;
+    }
+    .vue-treeselect__checkbox--checked {
+      border-color: $color_puerto_rico_approx;
+      background: $color_puerto_rico_approx;
+    }
+    .vue-treeselect__checkbox--disabled {
+      border-color: $color_bon_jour_approx;
+      background-color: $color_black_haze_approx;
+    }
+  }
+}
+
+.vue-treeselect__checkbox-container {
+  display: table-cell;
+  width: 20px;
+  min-width: 20px;
+  height: 100%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.vue-treeselect__checkbox {
+  display: block;
+  margin: auto;
+  width: 12px;
+  height: 12px;
+  border-width: 1px;
+  border-style: solid; //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
+  border-radius: 2px;
+  position: relative; //Instead of the line below you could use @include transition($transition-1, $transition-2, $transition-3, $transition-4, $transition-5, $transition-6, $transition-7, $transition-8, $transition-9, $transition-10)
+  transition: 200ms all cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.vue-treeselect__check-mark {
+  display: block;
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  background-repeat: no-repeat;
+  opacity: 0; //Instead of the line below you could use @include transition($transition-1, $transition-2, $transition-3, $transition-4, $transition-5, $transition-6, $transition-7, $transition-8, $transition-9, $transition-10)
+  transition: 200ms all ease;
+  width: 8px;
+  height: 8px;
+  background-image: $url_6;
+  background-size: 8px 8px; //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+  transform: scaleY(0.125);
+}
+
+.vue-treeselect__minus-mark {
+  display: block;
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  background-repeat: no-repeat;
+  opacity: 0; //Instead of the line below you could use @include transition($transition-1, $transition-2, $transition-3, $transition-4, $transition-5, $transition-6, $transition-7, $transition-8, $transition-9, $transition-10)
+  transition: 200ms all ease;
+  width: 8px;
+  height: 8px;
+  background-image: $url_0;
+  background-size: 8px 8px;
+}
+
+@media(-webkit-min-device-pixel-ratio: 1.5),
+(min-resolution: 1.5dppx) {
+  .vue-treeselect__minus-mark {
+    background-image: $url_1;
+  }
+  .vue-treeselect__checkbox--disabled {
+    .vue-treeselect__minus-mark {
+      background-image: $url_4;
+    }
+    .vue-treeselect__check-mark {
+      background-image: $url_10;
+    }
+  }
+  .vue-treeselect__check-mark {
+    background-image: $url_7;
+  }
+}
+
+@media(-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+  .vue-treeselect__minus-mark {
+    background-image: $url_1;
+  }
+  .vue-treeselect__checkbox--disabled {
+    .vue-treeselect__minus-mark {
+      background-image: $url_4;
+    }
+    .vue-treeselect__check-mark {
+      background-image: $url_10;
+    }
+  }
+  .vue-treeselect__check-mark {
+    background-image: $url_7;
+  }
+}
+
+@media(-webkit-min-device-pixel-ratio: 3),
+(min-resolution: 288dpi) {
+  .vue-treeselect__minus-mark {
+    background-image: $url_2;
+  }
+  .vue-treeselect__checkbox--disabled {
+    .vue-treeselect__minus-mark {
+      background-image: $url_5;
+    }
+    .vue-treeselect__check-mark {
+      background-image: $url_11;
+    }
+  }
+  .vue-treeselect__check-mark {
+    background-image: $url_8;
+  }
+}
+
+.vue-treeselect__checkbox--indeterminate {
+  border-color: $color_puerto_rico_approx;
+  background: $color_puerto_rico_approx;
+  >.vue-treeselect__minus-mark {
+    opacity: 1;
+  }
+}
+
+.vue-treeselect__checkbox--disabled {
+  border-color: $color_bon_jour_approx;
+  background-color: $color_black_haze_approx;
+  .vue-treeselect__minus-mark {
+    background-image: $url_3;
+  }
+  .vue-treeselect__check-mark {
+    background-image: $url_9;
+  }
+}
+
+.vue-treeselect__checkbox--checked {
+  border-color: $color_puerto_rico_approx;
+  background: $color_puerto_rico_approx;
+  >.vue-treeselect__check-mark {
+    opacity: 1; //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+    transform: scaleY(1);
+  }
+}
+
+.vue-treeselect__checkbox--unchecked {
+  border-color: $color_bon_jour_approx;
+  background: $white;
+}
+
+.vue-treeselect__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: table-cell;
+  padding-left: 5px;
+  max-width: 100%;
+  vertical-align: middle;
+  cursor: inherit;
+}
+
+.vue-treeselect__count {
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.vue-treeselect__tip {
+  padding-left: 5px;
+  padding-right: 5px;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+  color: $color_tapa_approx;
+}
+
+.vue-treeselect__tip-text {
+  display: table-cell;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  padding-left: 5px;
+  font-size: 12px;
+}
+
+.vue-treeselect__icon-container {
+  display: table-cell;
+  vertical-align: middle;
+  width: 20px;
+  text-align: center;
+  line-height: 0;
+}
+
+.vue-treeselect__icon-warning {
+  display: block;
+  margin: auto; //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
+  border-radius: 50%;
+  position: relative;
+  width: 12px;
+  height: 12px;
+  background: $color_pizazz_approx;
+}
+
+.vue-treeselect__icon-warning::after {
+  display: block;
+  position: absolute;
+  content: "";
+  left: 5px;
+  top: 2.5px;
+  width: 2px;
+  height: 1px;
+  border: 0 solid $white;
+  border-top-width: 5px;
+  border-bottom-width: 1px;
+}
+
+.vue-treeselect__icon-error {
+  display: block;
+  margin: auto; //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
+  border-radius: 50%;
+  position: relative;
+  width: 12px;
+  height: 12px;
+  background: $color_cinnabar_approx;
+}
+
+.vue-treeselect__icon-error::before {
+  display: block;
+  position: absolute;
+  content: "";
+  background: $white; //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+  transform: rotate(45deg);
+  width: 6px;
+  height: 2px;
+  left: 3px;
+  top: 5px;
+}
+
+.vue-treeselect__icon-error::after {
+  display: block;
+  position: absolute;
+  content: "";
+  background: $white; //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+  transform: rotate(45deg);
+  width: 2px;
+  height: 6px;
+  left: 5px;
+  top: 3px;
+}
+
+.vue-treeselect__icon-loader {
+  display: block;
+  margin: auto;
+  position: relative;
+  width: 12px;
+  height: 12px;
+  text-align: center;
+  animation: 1.6s vue-treeselect-animation-rotate linear infinite;
+}
+
+.vue-treeselect__icon-loader::before {
+  //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
+  border-radius: 50%;
+  position: absolute;
+  content: "";
+  left: 0;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0.6;
+  animation: 1.6s vue-treeselect-animation-bounce ease-in-out infinite;
+  background: $color_puerto_rico_approx;
+}
+
+.vue-treeselect__icon-loader::after {
+  //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
+  border-radius: 50%;
+  position: absolute;
+  content: "";
+  left: 0;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0.6;
+  animation: 1.6s vue-treeselect-animation-bounce ease-in-out infinite;
+  background: $color_sail_approx;
+  animation-delay: -0.8s;
+}
+
+.vue-treeselect__multi-value-item-disabled .vue-treeselect__value-remove {
+  display: none;
+}
+
+.vue-treeselect--open-below .vue-treeselect__menu {
+  //Instead of the line below you could use @include border-bottom-left-radius($radius)
+  border-bottom-left-radius: 5px; //Instead of the line below you could use @include border-bottom-right-radius($radius)
+  border-bottom-right-radius: 5px;
+  top: 100%;
+  margin-top: -1px;
+  border-top-color: $concrete; //Instead of the line below you could use @include box-shadow($shadow-1, $shadow-2, $shadow-3, $shadow-4, $shadow-5, $shadow-6, $shadow-7, $shadow-8, $shadow-9, $shadow-10)
+  box-shadow: 0 1px 0 $black_6;
+}
+
+.vue-treeselect--open-above .vue-treeselect__menu {
+  //Instead of the line below you could use @include border-top-left-radius($radius)
+  border-top-left-radius: 5px; //Instead of the line below you could use @include border-top-right-radius($radius)
+  border-top-right-radius: 5px;
+  bottom: 100%;
+  margin-bottom: -1px;
+  border-bottom-color: $concrete;
+}
+
+.vue-treeselect--branch-nodes-disabled .vue-treeselect__option:hover .vue-treeselect__option-arrow {
+  color: $color_storm_dust_approx;
+}
+
+.vue-treeselect__option--disabled .vue-treeselect__label-container {
+  cursor: not-allowed;
+  color: $black_25;
+}
+
+.vue-treeselect__error-tip .vue-treeselect__retry {
+  cursor: pointer;
+  font-style: normal;
+  font-weight: 600;
+  text-decoration: none;
+  color: $color_puerto_rico_approx;
+}

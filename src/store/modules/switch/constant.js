@@ -1,0 +1,5 @@
+export const PORT_INFO_LIST = 'PORT_INFO_LIST'
+export const V_MODE = 'V_MODE'
+export const UPLINK = 'UPLINK'
+export const SET_CUR_ITEM = 'SET_CUR_ITEM'
+export const UPDATE_CUR_ITEM = 'UPDATE_CUR_ITEM'
