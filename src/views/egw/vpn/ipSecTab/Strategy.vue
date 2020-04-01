@@ -1,77 +1,92 @@
 <template>
   <div class="vpn-security-strategy">
-    <help-alert json-key="vpnSecurityJson" title="IPSec安全策略">
+    <help-alert :title="$t('egw.ipsec.ipsec_security_policy')" json-key="vpnSecurityJson">
       <div slot="content">
         <p>
-          <strong>说明：</strong>子网范围格式：IP地址/掩码位数。一般设置24位掩码数，即255.255.255.0。
+          <strong>{{$t('phrase.notice_f')}}</strong>
+          {{$t('egw.ipsec.mask_module_tip')}}
         </p>
         <p>
-          <strong>举例：</strong>如果设置为 192.168.110.x/24，那么此子网范围是 192.168.110.1-192.168.110.254。
+          <strong>{{$t('phrase.tip_f')}}</strong>
+          {{$t('egw.ipsec.mask_example')}}
         </p>
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          策略列表
+          {{$t('egw.ipsec.policy_tab')}}
           <small></small>
         </span>
         <div class="fr">
           <el-button
             :disabled="list.length>=TOTAL_NUM||isLoading"
             icon="el-icon-plus"
-            size="small"
+            plain
+            size="medium"
             type="primary"
             v-auth="{fn:_onEdit,params:-1}"
-          >新增</el-button>
+          >{{$t('action.add')}}</el-button>
         </div>
       </div>
       <div class="box-content">
         <help-alert :show-icon="false" title>
           <div slot="content">
-            支持配置
-            <b class="c-warning mlr5">1</b>条策略。
-            <template v-if="hasByOthers">不可编辑的策略为L2TP生成的策略（不计入支持配置的条数）。</template>
+            <i18n path="egw.limit_num_tip" tag="span">
+              <b class="c-warning mlr5">1</b>
+            </i18n>
+            <template v-if="hasByOthers">{{$t('egw.ipsec.no_edit_l2tp')}}</template>
           </div>
         </help-alert>
-        <el-table :data="list" ref="baseTable" row-ke="name" size="mini" stripe>
-          <el-table-column align="center" label="策略类型" prop="connection_type">
+        <el-table :data="list" ref="baseTable" row-ke="name" size="medium" stripe>
+          <el-table-column :label="$t('egw.ipsec.policy_type')" align="center" prop="connection_type">
             <template slot-scope="{row}">
-              <el-tag color="#409eff1a" v-if="row.connection_type === 'initiator'">客户端</el-tag>
-              <el-tag color="#67c23a1a" v-else>服务端</el-tag>
+              <el-tag color="#409eff1a" v-if="row.connection_type === 'initiator'">{{$t('egw.ipsec.initiator')}}</el-tag>
+              <el-tag color="#67c23a1a" v-else>{{$t('egw.ipsec.master')}}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="策略名称" prop="name"></el-table-column>
-          <el-table-column align="center" label="对端网关" min-width="120" prop="remote_gateway"></el-table-column>
-          <el-table-column align="center" label="本地子网范围" min-width="135" prop="local_network">
+          <el-table-column :label="$t('egw.ipsec.policy_name')" align="center" prop="name"></el-table-column>
+          <el-table-column :label="$t('egw.ipsec.peer_gateway')" align="center" min-width="120" prop="remote_gateway"></el-table-column>
+          <el-table-column :label="$t('egw.ipsec.local_subnet_scope')" align="center" min-width="135" prop="local_network">
             <template slot-scope="{row}">
               <div :key="ip" v-for="ip in row.local_network">{{ip}}</div>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="对端子网范围" min-width="135" prop="remote_network">
+          <el-table-column :label="$t('egw.ipsec.terminal_network_range')" align="center" min-width="135" prop="remote_network">
             <template slot-scope="{row}">
               <div :key="ip" v-for="ip in row.remote_network">{{ip}}</div>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="状态" prop="status">
+          <el-table-column :label="$t('phrase.status')" align="center" prop="status">
             <template slot-scope="{row, $index}">
               <el-button
                 :class="row.status === 'enable' ? 'success' : 'c-warning'"
                 :disabled="row.create_by!=='web'"
                 @click="toggleStatus(row,$index)"
+                size="medium"
                 type="text"
               >
-                {{row.status === 'enable' ? '开启' : '关闭'}}
+                {{row.status === 'enable' ? $t('phrase.enable') : $t('phrase.disable')}}
                 <i
                   :class="row.status === 'enable' ? 'el-icon-circle-check' : 'el-icon-remove'"
                 ></i>
               </el-button>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="操作" min-width="100">
+          <el-table-column :label="$t('action.ope')" align="center" min-width="100">
             <template slot-scope="{row, $index}">
-              <el-button :disabled="isLoading || row.create_by!=='web'" type="text" v-auth="{fn:_onEdit,params:$index}">修改</el-button>
-              <el-button :disabled="isLoading || row.create_by!=='web'" type="text" v-auth="{fn:_onDel,params:row}">删除</el-button>
+              <el-button
+                :disabled="isLoading || row.create_by!=='web'"
+                size="medium"
+                type="text"
+                v-auth="{fn:_onEdit,params:$index}"
+              >{{$t('action.edit')}}</el-button>
+              <el-button
+                :disabled="isLoading || row.create_by!=='web'"
+                size="medium"
+                type="text"
+                v-auth="{fn:_onDel,params:row}"
+              >{{$t('action.delete')}}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -79,31 +94,36 @@
     </div>
     <!-- 用户管理编辑modal -->
     <el-dialog :close-on-click-modal="false" :title="modalTitle" :visible.sync="baseModalShow" width="520px">
-      <el-form :model="baseModel" :rules="baseRules" label-width="120px" ref="baseForm">
-        <el-form-item label="策略类型" prop="connection_type">
+      <el-form :model="baseModel" :rules="baseRules" label-width="120px" ref="baseForm" size="medium">
+        <el-form-item :label="$t('egw.ipsec.policy_type')" prop="connection_type">
           <el-radio-group v-model="baseModel.connection_type">
-            <el-radio label="initiator">客户端</el-radio>
-            <el-radio label="responder">服务端</el-radio>
+            <el-radio label="initiator">{{$t('egw.ipsec.initiator')}}</el-radio>
+            <el-radio label="responder">{{$t('egw.ipsec.master')}}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="策略名称" prop="name">
-          <el-input :disabled="editIndex > -1" class="w300" placeholder="1-28个字符" v-model="baseModel.name"></el-input>
+        <el-form-item :label="$t('egw.ipsec.policy_name')" prop="name">
+          <el-input
+            :disabled="editIndex > -1"
+            :placeholder="$t('egw.rule_name_length_tip')"
+            class="w300"
+            v-model="baseModel.name"
+          ></el-input>
         </el-form-item>
-        <el-form-item label="对端网关" prop="remote_gateway" v-if="isClient">
-          <el-input class="w300" placeholder="域名或IP地址" v-model="baseModel.remote_gateway"></el-input>
+        <el-form-item :label="$t('egw.ipsec.peer_gateway')" prop="remote_gateway" v-if="isClient">
+          <el-input :placeholder="$t('egw.ipsec.mac_or_ip')" class="w300" v-model="baseModel.remote_gateway"></el-input>
           <el-button @click="showOhterGateway=!showOhterGateway" size="medium" type="text" v-show="!showOhterGateway">
             <i :class="showOhterGateway ? 'el-icon-close' : 'el-icon-plus'"></i>
           </el-button>
         </el-form-item>
         <el-form-item prop="remote_gateway1" v-if="isClient && showOhterGateway">
-          <el-input class="w300" placeholder="备选网关" v-model="baseModel.remote_gateway1"></el-input>
-          <el-button @click="showOhterGateway=false" size="medium" type="text">
+          <el-input :placeholder="$t('egw.ipsec.gateway_second')" class="w300" v-model="baseModel.remote_gateway1"></el-input>
+          <el-button @click="showOhterGateway=false" type="text">
             <i class="el-icon-close"></i>
           </el-button>
         </el-form-item>
-        <el-form-item label="绑定接口" prop="intf_binding">
+        <el-form-item :label="$t('egw.ipsec.interface_bind')" prop="intf_binding">
           <el-select class="w300" v-model="baseModel.intf_binding">
-            <el-option key="AUTO" label="自动" value="AUTO"></el-option>
+            <el-option :label="$t('phrase.auto')" key="AUTO" value="AUTO"></el-option>
             <el-option
               :key="`WAN${n-1}`"
               :label="`WAN${n === 1 ? '' : n-1}`"
@@ -111,13 +131,13 @@
               v-for="n in wanNum"
             ></el-option>
           </el-select>
-          <el-tooltip content="多线路情况下，推荐设置为“自动”" effect="light" placement="right">
+          <el-tooltip :content="$t('egw.ipsec.interface_auto_tip')" effect="light" placement="right">
             <el-button type="text">
               <i class="rjucd-help fs22"></i>
             </el-button>
           </el-tooltip>
         </el-form-item>
-        <el-form-item class="is-required" label="本地子网范围" prop="local_network">
+        <el-form-item :label="$t('egw.ipsec.local_subnet_scope')" class="is-required" prop="local_network">
           <!-- <el-input
             class="w300"
             v-model="baseModel.local_network"
@@ -130,16 +150,16 @@
             :rules="ipValidate(item,index, true)"
             v-for="(item,index) in baseModel.local_network"
           >
-            <el-input class="w300" placeholder="格式：192.168.110.0/24" v-model="baseModel.local_network[index]"></el-input>
-            <!-- <el-button type="text" size="medium" @click="onDelAuthIpList(index, true)" v-if="baseModel.local_network.length > 1">
+            <el-input :placeholder="$t('rules.net_example')" class="w300" v-model="baseModel.local_network[index]"></el-input>
+            <!-- <el-button type="text" @click="onDelAuthIpList(index, true)" v-if="baseModel.local_network.length > 1">
               <i class="el-icon-close"></i>
             </el-button>
-            <el-button type="text" size="medium" @click="onAddAuthIpList(true)" v-if="index === baseModel.local_network.length - 1 && baseModel.local_network.length < 2">
+            <el-button type="text" @click="onAddAuthIpList(true)" v-if="index === baseModel.local_network.length - 1 && baseModel.local_network.length < 2">
               <i class="el-icon-plus"></i>
             </el-button>-->
           </el-form-item>
         </el-form-item>
-        <el-form-item class="is-required" label="对端子网范围" prop="remote_network" v-if="isClient">
+        <el-form-item class="is-required" :label="$t('egw.ipsec.terminal_network_range')" prop="remote_network" v-if="isClient">
           <el-form-item
             :class="{mb20:index!==baseModel.remote_network.length-1}"
             :key="index"
@@ -147,13 +167,12 @@
             :rules="ipValidate(item,index)"
             v-for="(item,index) in baseModel.remote_network"
           >
-            <el-input class="w300" placeholder="格式：192.168.110.0/24" v-model="baseModel.remote_network[index]"></el-input>
-            <el-button @click="onDelAuthIpList(index)" size="medium" type="text" v-if="baseModel.remote_network.length > 1">
+            <el-input :placeholder="$t('rules.net_example')" class="w300" v-model="baseModel.remote_network[index]"></el-input>
+            <el-button @click="onDelAuthIpList(index)" type="text" v-if="baseModel.remote_network.length > 1">
               <i class="el-icon-close"></i>
             </el-button>
             <el-button
               @click="onAddAuthIpList(false)"
-              size="medium"
               type="text"
               v-if="index === baseModel.remote_network.length - 1 && baseModel.remote_network.length < 2"
             >
@@ -161,19 +180,19 @@
             </el-button>
           </el-form-item>
         </el-form-item>
-        <el-form-item label="预共享密钥" prop="psk">
-          <el-input @change="_onChangePsk" class="w300" placeholder="1-128个字符" v-model="baseModel.psk"></el-input>
+        <el-form-item :label="$t('egw.ipsec.psk')" prop="psk">
+          <el-input @change="_onChangePsk" class="w300" v-model="baseModel.psk"></el-input>
         </el-form-item>
-        <el-form-item label="状态" prop="status">
+        <el-form-item :label="$t('phrase.status')" prop="status">
           <el-switch active-value="enable" inactive-value="disable" v-model="baseModel.status"></el-switch>
         </el-form-item>
         <p @click="showPartOneConf=!showPartOneConf" class="tc more-conf">
-          <el-button size="mini" type="text">阶段一设置（IKE策略）</el-button>
+          <el-button size="small" type="text">{{$t('egw.ipsec.ike_policy_step')}}</el-button>
         </p>
         <div class="mt20" v-show="showPartOneConf">
           <el-form-item
             :key="i"
-            :label="`IKE策略${i}`"
+            :label="`${$t('egw.ipsec.ike_policy')} ${i}`"
             :prop="`ike_proposal_${i}`"
             :rules="getIkeRules()"
             ref="ike_proposal"
@@ -184,55 +203,56 @@
               <!-- :disabled="_isDisabled('ike_proposal_', item.val)" -->
             </el-select>
           </el-form-item>
-          <el-form-item label="协商模式" prop="exchange_mode">
+          <el-form-item :label="$t('egw.ipsec.negotiation_mode')" prop="exchange_mode">
             <el-radio-group v-model="baseModel.exchange_mode">
-              <el-radio label="main">主模式</el-radio>
-              <el-radio label="aggressive">野蛮模式</el-radio>
+              <el-radio label="main">{{$t('egw.ipsec.main')}}</el-radio>
+              <el-radio label="aggressive">{{$t('egw.ipsec.aggressive')}}</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="本地ID类型" prop="local_id_type">
+          <el-form-item :label="$t('egw.ipsec.local_id_type')" prop="local_id_type">
             <el-radio-group v-model="baseModel.local_id_type">
-              <el-radio label="IP_ADDRESS">IP地址</el-radio>
+              <el-radio label="IP_ADDRESS">{{$t('sysinfo.ip_addr')}}</el-radio>
               <el-radio label="NAME">NAME</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="本地ID" prop="local_id_value" v-if="baseModel.local_id_type === 'NAME'">
+          <el-form-item :label="$t('egw.ipsec.local_id')" prop="local_id_value" v-if="baseModel.local_id_type === 'NAME'">
             <el-input
               :disabled="baseModel.local_id_type === 'IP_ADDRESS'"
+              :placeholder="$t('egw.rule_name_length_tip')"
               class="w300"
-              placeholder="1-28个非空字符"
               v-model="baseModel.local_id_value"
             ></el-input>
           </el-form-item>
-          <el-form-item label="对端ID类型" prop="remote_id_type">
+          <el-form-item :label="$t('egw.ipsec.peer_id_type')" prop="remote_id_type">
             <el-radio-group v-model="baseModel.remote_id_type">
-              <el-radio label="IP_ADDRESS">IP地址</el-radio>
+              <el-radio label="IP_ADDRESS">{{$t('sysinfo.ip_addr')}}</el-radio>
               <el-radio label="NAME">NAME</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="对端ID" prop="remote_id_value" v-if="baseModel.remote_id_type === 'NAME'">
+          <el-form-item :label="$t('egw.ipsec.peer_id')" prop="remote_id_value" v-if="baseModel.remote_id_type === 'NAME'">
             <el-input
               :disabled="baseModel.remote_id_type === 'IP_ADDRESS'"
+              :placeholder="$t('egw.rule_name_length_tip')"
               class="w300"
-              placeholder="1-28个非空字符"
               v-model="baseModel.remote_id_value"
             ></el-input>
           </el-form-item>
-          <el-form-item label="生存时间" prop="ikelifetime">
-            <el-input class="w300" placeholder="秒(60-604800)" v-model="baseModel.ikelifetime"></el-input>
+          <el-form-item :label="$t('egw.ipsec.lifetime')" prop="ikelifetime">
+            <el-input class="w300" placeholder="(60-604800)" v-model="baseModel.ikelifetime"></el-input>
           </el-form-item>
-          <el-form-item label="DPD检测开启" prop="dpd_enable">
+          <el-form-item :label="$t('egw.ipsec.open_dpd_check')" prop="dpd_enable">
             <el-radio-group v-model="baseModel.dpd_enable">
-              <el-radio label="enable">启用</el-radio>
-              <el-radio label="disable">禁用</el-radio>
+              <el-radio label="enable">{{$t('egw.start_using')}}</el-radio>
+              <el-radio label="disable">{{$t('egw.ipsec.forbid')}}</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="DPD检测周期" prop="dpd_interval">
-            <el-input class="w300" placeholder="秒(1-300)" v-model="baseModel.dpd_interval"></el-input>
+          <el-form-item :label="$t('egw.ipsec.range_dpd_check')" prop="dpd_interval">
+            <el-input :placeholder="$t('egw.ipsec.time_dpd_check')" class="w300" v-model="baseModel.dpd_interval"></el-input>
+            <span>{{$t('time.second')}}</span>
           </el-form-item>
         </div>
         <p @click="showPartTwoConf=!showPartTwoConf" class="tc more-conf">
-          <el-button size="mini" type="text">阶段二设置（建立连接策略）</el-button>
+          <el-button size="small" type="text">{{$t('egw.ipsec.ike_policy_step2')}}</el-button>
         </p>
         <div class="mt20" v-show="showPartTwoConf">
           <!-- <el-form-item label="封装模式" prop="mode">
@@ -243,7 +263,7 @@
           </el-form-item>-->
           <el-form-item
             :key="i"
-            :label="`转换集${i}`"
+            :label="$t('egw.ipsec.transform',{n:i})"
             :prop="`ph2_proposal_${i}`"
             :rules="getPh2Rules()"
             ref="ph2_proposal"
@@ -253,19 +273,19 @@
               <el-option :key="item.val" :label="item.name" :value="item.val" v-for="item in proposal2"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="完美向前加密" prop="pfs">
+          <el-form-item :label="$t('egw.ipsec.perfect_forward_encryption')" prop="pfs">
             <el-select class="w300" v-model="baseModel.pfs">
               <el-option :key="item.val" :label="item.name" :value="item.val" v-for="item in pfs"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="生存时间" prop="lifetime">
-            <el-input class="w300" placeholder="秒(120-604800)" v-model="baseModel.lifetime"></el-input>
+          <el-form-item :label="$t('egw.ipsec.lifetime')" prop="lifetime">
+            <el-input class="w300" placeholder="(120-604800)" v-model="baseModel.lifetime"></el-input>
           </el-form-item>
         </div>
       </el-form>
       <span class="dialog-footer" slot="footer">
-        <el-button @click="baseModalShow = false">取 消</el-button>
-        <el-button @click="_onModalConfirm" type="primary">确 定</el-button>
+        <el-button @click="baseModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+        <el-button @click="_onModalConfirm" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -282,7 +302,7 @@ export default {
   data() {
     const _sameNameValidate = (r, v, cb) => {
       if (this.editIndex === -1 && this.nameMap.includes(v))
-        return cb(new Error('策略名称已存在'))
+        return cb(new Error(I18N.t('egw.ipsec.policy_name_is_has')))
       cb()
     }
     return {
@@ -307,33 +327,62 @@ export default {
       commonPsk: '',
       baseRules: {
         name: [
-          { required: true, message: '请输入策略名称' },
-          { range: true, min: 1, max: 28, message: '名称为1-28个字符' },
+          {
+            required: true,
+            message: I18N.t('egw.ipsec.policy_name_is_required')
+          },
+          {
+            range: true,
+            min: 1,
+            max: 28,
+            message: I18N.t('egw.rule_name_length_tip')
+          },
           { validator: _sameNameValidate },
           { validator: quoteValidator }
         ],
         remote_gateway: [
-          { required: true, message: '请输入网关' },
-          { validator: domainValidator, message: '请输入有效的域名或IP地址' }
+          { required: true, message: I18N.t('egw.gateway_is_required') },
+          {
+            validator: domainValidator,
+            message: I18N.t('wan.invalid_ip_addr')
+          }
         ],
         remote_gateway1: [
-          { validator: domainValidator, message: '请输入有效的域名IP地址' }
+          {
+            validator: domainValidator,
+            message: I18N.t('wan.invalid_ip_addr')
+          }
         ],
         psk: [
-          { required: true, message: '请输入预共享密钥' },
-          { range: true, min: 1, max: 128, message: '1-128个字符' }
+          { required: true, message: I18N.t('egw.ipsec.psk_is_required') },
+          {
+            range: true,
+            min: 1,
+            max: 128,
+            message: I18N.t('egw.ipsec.cnt_128_char')
+          }
         ],
         // ike_proposal_1: [{ required: true, message: '请输入' }],
         local_id_value: [
-          { required: true, message: '请输入本地ID' },
-          { range: true, min: 1, max: 28, message: '1-28个字符' }
+          { required: true, message: I18N.t('egw.ipsec.local_id_is_required') },
+          {
+            range: true,
+            min: 1,
+            max: 28,
+            message: I18N.t('egw.rule_name_length_tip')
+          }
         ],
         remote_id_value: [
-          { required: true, message: '请输入对端ID' },
-          { range: true, min: 1, max: 28, message: '1-28个字符' }
+          { required: true, message: I18N.t('egw.ipsec.peer_id_is_required') },
+          {
+            range: true,
+            min: 1,
+            max: 28,
+            message: I18N.t('egw.rule_name_length_tip')
+          }
         ],
         ikelifetime: [
-          { required: true, message: '请输入生存时间' },
+          { required: true, message: I18N.t('egw.ipsec.lifetime_is_required') },
           {
             validator: rangeValidator,
             min: 60,
@@ -341,7 +390,10 @@ export default {
           }
         ],
         dpd_interval: [
-          { required: true, message: '请输入DPD检测周期' },
+          {
+            required: true,
+            message: I18N.t('egw.ipsec.range_dpd_is_required')
+          },
           {
             validator: rangeValidator,
             min: 1,
@@ -350,7 +402,7 @@ export default {
         ],
         // ph2_proposal_1: [{ required: true, message: '请输入' }],
         lifetime: [
-          { required: true, message: '请输入生存时间' },
+          { required: true, message: I18N.t('egw.ipsec.lifetime_is_required') },
           {
             validator: rangeValidator,
             min: 120,
@@ -371,7 +423,9 @@ export default {
       return this.baseModel.connection_type === 'initiator'
     },
     modalTitle() {
-      return this.editIndex !== -1 ? '编辑用户' : '添加用户'
+      return this.editIndex !== -1
+        ? I18N.t('action.edit')
+        : I18N.t('action.add')
     },
     nameMap() {
       return this.list.map(o => o.name) || []
@@ -445,12 +499,12 @@ export default {
         _items = [item]
       }
       if (!_items.length) {
-        this.$alert('请选择要删除的项目', {
+        this.$alert(I18N.t('tip.select_del_item'), {
           type: 'warning'
         })
         return
       }
-      this.$confirm('是否确认删除?', '提示', {
+      this.$confirm(I18N.t('tip.confirm_delete'), I18N.t('phrase.tip'), {
         type: 'warning'
       }).then(() => {
         this.isLoading = true
@@ -462,7 +516,7 @@ export default {
               this.list.splice(_index, 1)
             })
             this.$message({
-              message: '删除成功',
+              message: I18N.t('tip.del_success'),
               type: 'success'
             })
           })
@@ -505,8 +559,10 @@ export default {
     _onChangePsk(psk) {
       if (this.coverPsk) {
         this.$confirm(
-          `检测到对端网关${this.baseModel.remote_gateway}已配置过预共享密钥，与此密钥不一致，是否覆盖旧的密钥?`,
-          '是否覆盖旧密钥',
+          I18N.t('egw.ipsec.psk_is_has_tip', {
+            ip: this.baseModel.remote_gateway
+          }),
+          I18N.t('egw.ipsec.psk_is_has_tip2'),
           {
             type: 'warning'
           }
@@ -557,7 +613,7 @@ export default {
           } else {
             this.list.splice(this.editIndex, 1, _data)
           }
-          this.$message.success('配置成功')
+          this.$message.success(I18N.t('tip.edit1_success'))
         })
         .finally(() => {
           this.baseModalShow = false
@@ -578,19 +634,19 @@ export default {
       _compareArr.splice(index, 1)
       const subnetValidate = (r, v, cb) => {
         if (isIpInNet(v, _compareArr)) {
-          return cb(new Error('子网范围重叠'))
+          return cb(new Error(I18N.t('egw.ipsec.mask_is_has')))
         }
         cb()
       }
       let rules = [
-        { required: true, message: '请输入子网范围' },
+        { required: true, message: I18N.t('egw.ipsec.mask_is_required') },
         { validator: ipNetValidate },
         { validator: subnetValidate }
       ]
       if (!isLocal) {
         const remoteSubValidate = (r, v, cb) => {
           if (isIpInNet(v, [...this.baseModel.local_network])) {
-            return cb(new Error('子网范围冲突，本地子网范围包含了此网段'))
+            return cb(new Error(I18N.t('egw.ipsec.mask_beyond_network')))
           }
           cb()
         }
@@ -627,7 +683,8 @@ export default {
         const _same = _repeatArr.filter(
           idx => this.baseModel[`${preKey}${idx}`] === v
         )
-        if (_same.length > 1) return cb(new Error('算法不能重复'))
+        if (_same.length > 1)
+          return cb(new Error(I18N.t('egw.ipsec.algorithm_no_repeated')))
 
         cb()
       }
@@ -644,13 +701,14 @@ export default {
           .filter(v => !!v)
 
         if (new Set(_proposal).size > 1) {
-          return cb(new Error('ah和esp算法不能混用'))
+          return cb(new Error(I18N.t('egw.ipsec.ah_esp_no_confuse')))
         }
 
         const _same = _repeatArr.filter(
           idx => this.baseModel[`${preKey}${idx}`] === v
         )
-        if (_same.length > 1) return cb(new Error('算法不能重复'))
+        if (_same.length > 1)
+          return cb(new Error(I18N.t('egw.ipsec.algorithm_no_repeated')))
 
         cb()
       }

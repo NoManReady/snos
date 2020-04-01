@@ -28,7 +28,7 @@ module.exports = {
     extensions: ['.js', '.vue'],
     alias: {
       vue$: 'vue/dist/vue.esm.js',
-      '#': resolve('src') + `/views/${(yargs.argv.env.devType === 'egw' ? 'egw' : (yargs.argv.env.devType === 'eap' ? 'eap' : 'msw/home'))}`,
+      '#': resolve('src') + `/views/${yargs.argv.env.devType}`,
       '@': resolve('src')
     },
     modules: [resolve('node_modules')]

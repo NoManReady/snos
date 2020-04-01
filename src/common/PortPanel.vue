@@ -1,99 +1,133 @@
 <template>
   <div class="port-panel">
     <div class="port-panel--header clearfix">
-      <div class="fl">
-        <port-icon :hover="false" :size="24" class="vm" direct="h" icon="upport" type="info">
-          <template #after>
-            <span class="label vm">可选端口</span>
-          </template>
-        </port-icon>
-        <port-icon :hover="false" :size="24" class="vm ml5" direct="h" icon="upport" type="closed">
-          <template #after>
-            <span class="label vm">不可选端口</span>
-          </template>
-        </port-icon>
-        <port-icon :hover="false" :size="24" class="vm ml5" direct="h" icon="upport" type="success">
-          <template #after>
-            <span class="label vm">选中端口</span>
-          </template>
-        </port-icon>
-      </div>
-      <div class="fr port-type--bar">
-        <port-icon :hover="false" :size="22" class="vm" direct="h" icon="upport" text="1" type="info" v-show="showLag">
-          <template #after>
-            <span class="label vm">聚合端口</span>
-          </template>
-        </port-icon>
-        <port-icon :hover="false" :size="22" class="vm ml5" direct="h" icon="upport" type="info">
-          <template #after>
-            <span class="label vm">上联口</span>
-          </template>
-          <template #inner>
-            <i class="rjucd-shanglian fs14 inner-icon"></i>
-          </template>
-        </port-icon>
-        <port-icon :hover="false" :size="22" class="vm ml5" direct="h" icon="upport" type="info">
-          <template #after>
-            <span class="label vm">电口</span>
-          </template>
-        </port-icon>
-        <port-icon :hover="false" :size="22" class="vm ml5" direct="h" icon="guangkou" type="info">
-          <template #after>
-            <span class="label vm">光口</span>
-          </template>
-        </port-icon>
-      </div>
-    </div>
-    <div class="port-panel--body" ref="containerRef">
-      <table class="body-table">
-        <tbody>
-          <tr :class="{'up':index===0,'down':index===1}" :key="index" v-for="(row,index) in renderPorts">
-            <td class="empty"></td>
-            <template v-for="p in row">
-              <td :key="p.lpid" style="width:10px;" v-if="p.empty"></td>
-              <td :key="p.lpid" v-else>
-                <port-icon
-                  :data-index="p.lpid"
-                  :disabled="p.disabled"
-                  :icon="p.media_type===2?'guangkou':'upport'"
-                  :inner-icon="_getPortInnerIcon(p)"
-                  :rotate="index===1"
-                  :text="p.ag"
-                  :type="p.disabled?'closed':(p.selected?'success':'info')"
-                  @click.native="_onToggle(p)"
-                  class="vm"
-                  direct="v"
-                >
-                  <template #before v-if="index===0">
-                    <span class="label" v-show="p.lpid!==undefined">{{p.lpid+1}}</span>
-                  </template>
-                  <template #after v-if="index===1">
-                    <span class="label" v-show="p.lpid!==undefined">{{p.lpid+1}}</span>
-                  </template>
-                </port-icon>
-              </td>
+      <slot name="header">
+        <div class="fl">
+          <port-icon :hover="false" :size="32" class="vm" direct="h" icon="upport" type="info">
+            <template #after>
+              <span class="label vm">{{$t('port_panel.enable_port')}}</span>
             </template>
-          </tr>
-        </tbody>
-      </table>
-      <div :style="rangeStyl" class="select-range--box" ref="rangeRef" v-show="isRangeActive"></div>
+          </port-icon>
+          <port-icon :hover="false" :size="32" class="vm ml5" direct="h" icon="upport" type="closed">
+            <template #after>
+              <span class="label vm">{{$t('port_panel.disable_port')}}</span>
+            </template>
+          </port-icon>
+        </div>
+        <div class="fr port-type--bar">
+          <port-icon :hover="false" :size="32" class="vm" direct="h" icon="upport" text="1" type="closed" v-show="showLag">
+            <template #after>
+              <span class="label vm">{{$t('port_panel.agg_port')}}</span>
+            </template>
+          </port-icon>
+          <port-icon :hover="false" :size="32" class="vm ml5" direct="h" icon="upport" inner-icon="shanglian" type="closed">
+            <template #after>
+              <span class="label vm">{{$t('port_panel.up_port')}}</span>
+            </template>
+          </port-icon>
+          <port-icon :hover="false" :size="32" class="vm ml5" direct="h" icon="upport" type="closed">
+            <template #after>
+              <span class="label vm">{{$t('port_panel.electric')}}</span>
+            </template>
+          </port-icon>
+          <port-icon :hover="false" :size="32" class="vm ml5" direct="h" icon="guangkou" type="closed">
+            <template #after>
+              <span class="label vm">{{$t('port_panel.fiber')}}</span>
+            </template>
+          </port-icon>
+        </div>
+      </slot>
+    </div>
+    <div :class="{'d3-box':show3d}">
+      <div class="viewboard"></div>
+      <div class="viewborder">
+        <div :style="minHeightStyl" class="port-panel--body" ref="containerRef">
+          <table class="body-table">
+            <tbody>
+              <tr :class="[`row_${index}`]" :key="index" v-for="(row,index) in renderPorts">
+                <td class="empty"></td>
+                <template v-for="p in row">
+                  <td :key="`${p.lpid}-${p.phyMediaType}`" v-if="p.empty"></td>
+                  <td
+                    :class="{'selected':p.selected}"
+                    :key="`${p.lpid}-${p.phyMediaType}`"
+                    @click="_onToggle(p,$event)"
+                    class="port-panel--item"
+                    v-else
+                  >
+                    <port-icon
+                      :data-index="p.lpid"
+                      :data-type="p.phyMediaType"
+                      :disabled="p.disabled"
+                      :icon="p.icon"
+                      :inner-icon="_getPortInnerIcon(p)"
+                      :rotate="index===1"
+                      :sub-icon="_getPortSubIcon(p)"
+                      :text="p.ag"
+                      :type="p.disabled?'closed':'info'"
+                      class="vm"
+                      direct="v"
+                    >
+                      <template #before v-if="index===0">
+                        <span class="label" v-show="p.lpid!==undefined">{{p.lpid+1}}</span>
+                      </template>
+                      <template #after v-if="index===1">
+                        <span class="label" v-show="p.lpid!==undefined">{{p.lpid+1}}</span>
+                      </template>
+                    </port-icon>
+                  </td>
+                </template>
+                <td class="empty"></td>
+              </tr>
+            </tbody>
+          </table>
+          <div :style="rangeStyl" class="select-range--box" ref="rangeRef" v-show="mouseDownEffective&&mouseMoveEffective"></div>
+        </div>
+      </div>
+      <div class="viewboard-shadow"></div>
     </div>
     <div class="port-panel--footer clearfix">
-      <div class="fl c-warning" v-if="mutilple">
-        <strong>提示：</strong>
-        <small style="font-style: italic;">可按住左键拖拽选取多个端口</small>
-      </div>
-      <div class="fr">
-        <el-button :disabled="!enable" @click.native="_onSelectAll" size="mini" style="padding:0;" type="text" v-if="mutilple">全选</el-button>
-        <el-button :disabled="!enable" @click.native="_onReverseAll" size="mini" style="padding:0;" type="text" v-if="mutilple">反选</el-button>
-        <el-button :disabled="!enable" @click.native="_onClear" size="mini" style="padding:0;" type="text">取消选择</el-button>
-      </div>
+      <slot name="footer">
+        <div class="clearfix">
+          <div class="fl c-warning" v-if="mutilple">
+            <i18n path="port_panel.notice_desc" tag="span">
+              <strong place="n">{{ $t('phrase.notice_f') }}</strong>
+              <i place="t">{{ $t('port_panel.notice_tip') }}</i>
+            </i18n>
+          </div>
+          <div class="fr">
+            <el-button
+              :disabled="!enable"
+              @click.native="_onSelectAll"
+              style="padding:0;"
+              type="text"
+              v-if="mutilple"
+            >{{$t('port_panel.all')}}</el-button>
+            <el-button
+              :disabled="!enable"
+              @click.native="_onReverseAll"
+              style="padding:0;"
+              type="text"
+              v-if="mutilple"
+            >{{$t('port_panel.reverse')}}</el-button>
+            <el-button
+              :disabled="!enable"
+              @click.native="_onClear"
+              style="padding:0;"
+              type="text"
+            >{{$t('port_panel.cancel_select')}}</el-button>
+          </div>
+        </div>
+      </slot>
+      <slot name="footer-tool"></slot>
     </div>
   </div>
 </template>
 <script>
 import { mapGetters } from 'vuex'
 import PortIcon from './PortIcon'
+import { getLpidByAggid, isPhyPort } from '@/utils/lag'
+import browser from '@/utils/browser'
 export default {
   name: 'port-panel',
   components: {
@@ -134,10 +168,6 @@ export default {
     showLag: {
       type: Boolean,
       default: true
-    },
-    groupCols: {
-      type: Number,
-      default: 4
     }
   },
   data() {
@@ -145,8 +175,10 @@ export default {
       begin: { x: 0, y: 0 },
       end: { x: 0, y: 0 },
       rangeStyl: {},
-      isRangeActive: false,
-      hasMove: false,
+      // 鼠标down是否有效
+      mouseDownEffective: false,
+      // 鼠标move是否有效
+      mouseMoveEffective: false,
       tempSelectes: Object.freeze([]),
       panelPorts: Object.freeze(window.APP_CAPACITY_SW.port.panel_list)
     }
@@ -165,70 +197,123 @@ export default {
       document.removeEventListener('mouseup', this._onMouseup)
     }
   },
+  watch: {
+    mutilple(v) {
+      if (this.enable && this.mutilple) {
+        document.addEventListener('mousedown', this._onMousedown, false)
+        document.addEventListener('mousemove', this._onMousemove, false)
+        document.addEventListener('mouseup', this._onMouseup, false)
+      } else {
+        document.removeEventListener('mousedown', this._onMousedown)
+        document.removeEventListener('mousemove', this._onMousemove)
+        document.removeEventListener('mouseup', this._onMouseup)
+      }
+    }
+  },
   computed: {
-    ...mapGetters('switcher', ['logicPort', 'lagPortsMap', 'piMap', 'uplink']),
-    // 真正选中的值
+    ...mapGetters('switcher', ['logicPort', 'lagPortsMap', 'uplink']),
+    // 选中的物理端口号
     realSelectes() {
       let _selectes = this.selecteds
       if (!this.mutilple) {
         _selectes = [this.selecteds]
       }
-      return this._getRealIds(_selectes)
+      return Object.freeze(this._getRealIds(_selectes))
     },
+    // 禁用的物理端口号
     realDisableds() {
       return Object.freeze(this._getRealIds(this.disableds))
     },
+    // 渲染端口数据格式（符合面板格式的数据，用于生成面板）
     renderPorts() {
       let _panelPort = this.panelPorts.map(row => {
         return row.map((port, index) => {
           if (port) {
-            let _realPort =
-              this.logicPort.find(p => p.interface === port.ifname) || {}
+            let _portItem =
+              this.logicPort.find(
+                p => p.ifname.toUpperCase() === port.ifname.toUpperCase()
+              ) || {}
+            // 光电复用口禁用(设备当前实际模式跟口模式不一样，说明当前口模式不启用)
+            let _hybridDisabled =
+              _portItem.media_flag === 1 &&
+              _portItem.media_type !== port.media_type
             // 判断是否选中
             let _selected =
-              this.realSelectes.includes(_realPort.lpid) ||
-              this.tempSelectes.includes(_realPort.lpid)
-            let _disabled = this.realDisableds.includes(_realPort.lpid)
+              (this.realSelectes.includes(_portItem.lpid) ||
+                this.tempSelectes.includes(_portItem.lpid)) &&
+              !_hybridDisabled
+            let _disabled =
+              this.realDisableds.includes(_portItem.lpid) || _hybridDisabled
             let _ag =
-              this.showLag && _realPort.aggregate_port > 0
-                ? _realPort.aggregate_port
+              this.showLag && _portItem.aggregate_port > 0 && !_hybridDisabled
+                ? _portItem.aggregate_port
                 : null
+            let _icon = port.media_type === 1 ? 'upport' : 'guangkou'
             return {
-              ..._realPort,
+              ..._portItem,
               selected: _selected,
               disabled: _disabled,
-              ag: _ag
+              hybridDisabled: _hybridDisabled,
+              ag: _ag,
+              icon: _icon,
+              phyMediaType: port.media_type
             }
           }
+          // 占位符
           return { empty: true, span: 1, lpid: -index }
         })
       })
       return Object.freeze(_panelPort)
     },
+    // 扁平化所有端口（包含占位符端口，用于查找数据）
     allPorts() {
-      return Object.freeze(
-        this.renderPorts.reduce((ports, next) => {
-          return [...ports, ...next]
-        }, [])
-      )
+      return Object.freeze(Array.prototype.concat.apply([], this.renderPorts))
+    },
+    minHeightStyl() {
+      return {
+        'min-height': `${this.panelPorts.length * 50 + 16}px`
+      }
+    },
+    // 是否显示面板图
+    show3d() {
+      if (browser.versions.isIe) {
+        return browser.versions.ieVersion > 9
+      }
+      return true
     }
   },
   methods: {
+    // 获取端口内部icon名称
     _getPortInnerIcon(port) {
-      let _innerIcon = null
-      if (this.uplink.lpid.includes(port.lpid)) {
-        _innerIcon = 'shanglian'
-      }
-      if (port.poe) {
-        _innerIcon = 'gongdian'
-      }
-      if (port.poeError) {
-        _innerIcon = 'bugongdian'
-      }
-      if (port.block) {
-        _innerIcon = 'zusai'
+      let _innerIcon = []
+      if (!port.disabled) {
+        if (this.uplink.lpid.includes(port.lpid)) {
+          _innerIcon.push('shanglian')
+        }
+        if (port.exception) {
+          if (port.exception === 3) {
+            _innerIcon.push('refresh')
+          } else {
+            _innerIcon.push('notcertified')
+          }
+        }
       }
       return _innerIcon
+    },
+    _getPortSubIcon(port) {
+      let _subIcon = []
+      if (!port.disabled) {
+        if (port.poeUp) {
+          _subIcon.push('gongdian')
+        }
+        if (port.poeError) {
+          _subIcon.push('bugongdian')
+        }
+        if (port.block) {
+          _subIcon.push('zusai')
+        }
+      }
+      return _subIcon
     },
     // 获取真实选中值
     _getRealIds(selectes) {
@@ -248,12 +333,16 @@ export default {
       }
       let _allSelects = select.reduce((all, pid) => {
         // 为聚合口直接加入
-        if (pid > this.logicPort.length - 1) {
+        if (!isPhyPort(pid)) {
           all.push(pid)
         } else {
           // 获取端口id对应的聚合口id，无聚合口则加入端口id
           let _port = this.logicPort.find(logic => logic.lpid === pid)
-          all.push(this.piMap[`lag${_port.aggregate_port}`] || pid)
+          if (_port.aggregate_port > 0) {
+            all.push(getLpidByAggid(_port.aggregate_port))
+          } else {
+            all.push(pid)
+          }
         }
         return all
       }, [])
@@ -288,29 +377,37 @@ export default {
       this._hookSelecteds([])
     },
     /**
+     * 判断是否为同一个点
+     */
+    _isSamePoint() {
+      return this.begin.x === this.end.x && this.begin.y === this.end.y
+    },
+    /**
      * 选中格切换
      */
-    _onToggle(item) {
-      if (this.enable && !this.realDisableds.includes(item.lpid)) {
-        // 获取点击值（有agg则获取ag）
-        let _select = item.lpid
-        // 开启lag联动并且具有聚合口则获取聚合口id
-        if (this.hasAgg && item.aggregate_port > 0) {
-          _select = this.piMap[`lag${item.aggregate_port}`]
-        }
-        if (this.mutilple) {
-          let _selecteds = [...this.selecteds]
-          let _index = this.selecteds.findIndex(s => {
-            return s === _select
-          })
-          if (_index > -1) {
-            _selecteds.splice(_index, 1)
-          } else {
-            _selecteds.push(_select)
+    _onToggle(item, e) {
+      if (!item.disabled && this._isSamePoint()) {
+        if (!this.realDisableds.includes(item.lpid)) {
+          // 获取点击值（有agg则获取ag）
+          let _select = item.lpid
+          // 开启lag联动并且具有聚合口则获取聚合口id
+          if (this.hasAgg && item.aggregate_port > 0) {
+            _select = getLpidByAggid(item.aggregate_port)
           }
-          this._hookSelecteds(_selecteds)
-        } else {
-          this._hookSelecteds(_select)
+          if (this.mutilple) {
+            let _selecteds = [...this.selecteds]
+            let _index = this.selecteds.findIndex(s => {
+              return s === _select
+            })
+            if (_index > -1) {
+              _selecteds.splice(_index, 1)
+            } else {
+              _selecteds.push(_select)
+            }
+            this._hookSelecteds(_selecteds)
+          } else {
+            this._hookSelecteds(_select)
+          }
         }
       }
     },
@@ -366,10 +463,10 @@ export default {
      * 重置选框及mouse状态
      */
     _resetRangeState() {
-      this.isRangeActive = false
-      this.begin = this.end = { x: 0, y: 0 }
+      this.mouseDownEffective = false
+      this.mouseMoveEffective = false
+      // this.begin = this.end = { x: 0, y: 0 }
       this.tempSelectes = []
-      this.hasMove = false
     },
     /**
      * 判断鼠标是否位于判断范围内
@@ -383,30 +480,23 @@ export default {
      * 鼠标点击mousedown
      */
     _onMousedown(e) {
-      if (!this.enable) {
-        return
-      }
-      //e.preventDefault()
       if (this._hasInWrap(e)) {
+        this.mouseDownEffective = true
+        this.mouseMoveEffective = false
         this.begin = this.end = this._getScrollDistance(e)
         this._setRangePosition(e)
-        this.isRangeActive = true
       }
     },
     /**
      * 鼠标移动
      */
     _onMousemove(e) {
-      if (!this.enable) {
-        return
-      }
-      if (!this.isRangeActive) {
-        return
-      }
-      this.hasMove = true
-      if (this._hasInWrap(e)) {
-        e.preventDefault()
+      if (this.mouseDownEffective && this._hasInWrap(e)) {
         this.end = this._getScrollDistance(e)
+        if (!this._isSamePoint()) {
+          this.mouseMoveEffective = true
+        }
+        e.preventDefault()
         this._setRangePosition(e)
       } else {
         this._resetRangeState()
@@ -416,14 +506,11 @@ export default {
      * 鼠标结束
      */
     _onMouseup(e) {
-      if (!this.enable) {
-        return
-      }
-      e.preventDefault()
-      if (this._hasInWrap(e)) {
-        //do something
-      }
-      if (this.hasMove) {
+      if (
+        this._hasInWrap(e) &&
+        this.mouseDownEffective &&
+        this.mouseMoveEffective
+      ) {
         this._hookSelecteds(
           [...new Set([...this.tempSelectes, ...this.selecteds])].sort()
         )
@@ -441,14 +528,15 @@ export default {
       let _left = 0
       let _top = 0
       if (this.end.x < this.begin.x) {
-        _left = this.end.x - _opt.left - _scrollLeft
+        _left = this.end.x - _opt.left - _scrollLeft + _containerRef.scrollLeft
       } else {
-        _left = this.begin.x - _opt.left - _scrollLeft
+        _left =
+          this.begin.x - _opt.left - _scrollLeft + _containerRef.scrollLeft
       }
       if (this.end.y < this.begin.y) {
-        _top = this.end.y - _opt.top - _scrollTop
+        _top = this.end.y - _opt.top - _scrollTop + _containerRef.scrollTop
       } else {
-        _top = this.begin.y - _opt.top - _scrollTop
+        _top = this.begin.y - _opt.top - _scrollTop + _containerRef.scrollTop
       }
       let _width = Math.abs(this.end.x - this.begin.x)
       let _height = Math.abs(this.end.y - this.begin.y)
@@ -495,9 +583,13 @@ export default {
       let _selecteds = []
       _filterItems.forEach(ite => {
         let _lpid = ite.getAttribute('data-index')
+        let _type = ite.getAttribute('data-type')
         if (_lpid) {
           _lpid = +_lpid
-          let _item = this.allPorts.find(p => p.lpid === _lpid)
+          _type = +_type
+          let _item = this.allPorts.find(
+            p => p.lpid === _lpid && p.phyMediaType === _type
+          )
           if (_item && !_item.disabled) {
             _selecteds.push(_item.lpid)
           }
@@ -508,53 +600,3 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-@import '~@/style/utils/variable';
-@import '~@/style/utils/mixins';
-.port-panel {
-  color: $--color-info;
-  font: 10px/18px normal;
-  &--item {
-    margin: auto;
-    text-align: center;
-    vertical-align: middle;
-    display: inline-block;
-    white-space: nowrap;
-  }
-  &--header {
-    margin-bottom: 5px;
-  }
-  &--footer {
-    margin-top: 5px;
-    .link {
-      color: $theme;
-      text-decoration: none;
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-    .link ~ .link {
-      margin-left: 5px;
-    }
-  }
-  &--body {
-    border: 1px solid $--border-color-base;
-    border-radius: $--border-radius-base;
-    padding: 8px;
-    // margin-top: 8px;
-    position: relative;
-    user-select: none;
-    .select-range--box {
-      position: absolute;
-      border: 1px dashed $--color-info;
-    }
-    .body-table {
-      td {
-        &.empty {
-          width: 20px;
-        }
-      }
-    }
-  }
-}
-</style>

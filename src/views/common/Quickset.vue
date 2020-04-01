@@ -47,8 +47,7 @@
 <script>
 import QuicksetStep from './quickset/Index'
 import QrcodeVue from 'qrcode.vue'
-import { mapActions } from 'vuex'
-import { isAuth } from '@/directives/auth'
+import { isAuthOld } from '@/directives/auth'
 export default {
   name: 'Quickset',
   data() {
@@ -117,16 +116,11 @@ export default {
   mounted() {
     window.addEventListener('resize', this._onResize, false)
     this._onResize()
-    // 出厂设置需要设置下系统时间
-    if (this.$store.state.authority.isDefaultPass) {
-      this.$api.setSysTime({ time: (new Date().getTime() / 1000).toFixed(0) })
-    }
   },
   beforeDestroy() {
     window.removeEventListener('resize', this._onResize)
   },
   methods: {
-    ...mapActions(['setQuickStatus']),
     // 加载数据
     async _loadData() {
       let _data = await this.$api.getQuickInfo()
@@ -244,9 +238,6 @@ export default {
     // 提交数据
     onSubmit() {
       return this.$api.setQuickInfo(this.stepData).then(() => {
-        if (this.stepData.wireless) {
-          this.$store.dispatch('setFactoryStatus', false)
-        }
         this.$message({ type: 'success', message: '配置成功' })
       })
     },
@@ -254,7 +245,7 @@ export default {
     onComplete() {
       this.onValidate().then(() => {
         if (this._dataIsChange()) {
-          isAuth(this.onSubmit).then(() => {
+          isAuthOld(this.onSubmit).then(() => {
             this.goSystem()
           })
         } else {
@@ -264,12 +255,12 @@ export default {
     },
     // 进入系统
     goSystem() {
-      this.$router.replace({ name: 'admin' })
+      this.$router.replace({ name: 'admin/alone' })
     }
   }
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 @import '../../style/utils/mixins.scss';
 @import '../../style/utils/variable.scss';
 .quickset {
@@ -305,7 +296,7 @@ export default {
     .el-button {
       width: 45%;
     }
-    height: 60px;
+    height: 80px;
   }
   @media screen and (max-width: 768px) {
     .quickset-box {

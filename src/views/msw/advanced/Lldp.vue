@@ -16,7 +16,7 @@ export default {
     return {
       tabs: [
         {
-          label: 'LLDP配置',
+          label: I18N.t('msw.lldp.lldp_cfg'),
           value: '0',
           comp: lldp.Base
         }
@@ -30,12 +30,12 @@ export default {
           1,
           2,
           {
-            label: '应用LLDP',
+            label: I18N.t('msw.lldp.apply_lldp'),
             value: '2',
             comp: lldp.Port
           },
           {
-            label: 'LLDP信息',
+            label: I18N.t('msw.lldp.lldp_info'),
             value: '3',
             comp: lldp.Info
           }

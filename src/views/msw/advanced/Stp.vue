@@ -16,7 +16,7 @@ export default {
     return {
       tabs: [
         {
-          label: 'STP配置',
+          label: I18N.t('msw.stp.stp_cfg'),
           value: '0',
           comp: stp.Base
         }
@@ -27,7 +27,7 @@ export default {
     bus.$on('stp-status-change', ({ value }) => {
       if (value) {
         this.tabs.splice(1, 1, {
-          label: '应用STP',
+          label: I18N.t('msw.stp.apply_stp'),
           value: '1',
           comp: stp.Port
         })

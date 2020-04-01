@@ -10,10 +10,10 @@ export const getArpTable = () => {
 /**
  * 获取静态ARP列表信息
  */
-export const getStaticArpTable = () => {
+export const getStaticArpTable = (config = { noParse: false }) => {
   return api.cmd('devConfig.get', {
     module: 'arp_static'
-  })
+  }, config)
 }
 
 /**
@@ -92,5 +92,22 @@ export const updateMacFilter = (data) => {
   return api.cmd('devConfig.update', {
     module: 'mac_filter',
     data
+  })
+}
+/**
+ * 获取 防攻击
+ */
+export const getAttack = () => {
+  return api.cmd('devConfig.get', {
+    module: 'nfpp_local'
+  })
+}
+/**
+ * 设置  防攻击
+ */
+export const setAttack = (params) => {
+  return api.cmd('devConfig.set', {
+    module: 'nfpp_local',
+    data: params
   })
 }

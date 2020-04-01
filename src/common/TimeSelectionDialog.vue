@@ -1,14 +1,30 @@
 <template>
-  <el-dialog class="hide-dialog-header small-dialog" :visible.sync="visible" center width="550px">
+  <el-dialog :visible.sync="visible" center class="hide-dialog-header small-dialog" width="550px">
     <time-selection ref="timeSelectionRef" v-bind="$data" />
-    <span slot="footer" class="dialog-footer">
+    <span class="dialog-footer" slot="footer">
       <template v-if="enable">
-        <el-button @click="onModalCancel">取 消</el-button>
-        <el-button type="primary" @click="onModalClear">清 除</el-button>
-        <el-button type="primary" @click="onModalConfirm">确 定</el-button>
+        <el-button @click="onModalCancel" size="medium">
+          {{
+          $t("action.cancel")
+          }}
+        </el-button>
+        <el-button @click="onModalClear" size="medium" type="primary">
+          {{
+          $t("action.clear")
+          }}
+        </el-button>
+        <el-button @click="onModalConfirm" size="medium" type="primary">
+          {{
+          $t("action.confirm")
+          }}
+        </el-button>
       </template>
       <template v-else>
-        <el-button type="primary" @click="visible=false">关 闭</el-button>
+        <el-button @click="visible = false" type="primary">
+          {{
+          $t("phrase.close_btn")
+          }}
+        </el-button>
       </template>
     </span>
   </el-dialog>

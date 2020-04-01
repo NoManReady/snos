@@ -97,11 +97,17 @@ export const vpnL2tpSerFn = () => {
     localip: "",
     ippool_name: "",
     DNS: "",
-    netmode: "lan2lan",
-    remotesubnet: "",
+    // netmode: "lan2lan",
+    // remotesubnet: "",
     ipsecenc: "no",
     presharekey: "",
-    l2tphellointerval: "",
+    l2tphellointerval: "60",
+    lcpechointerval: "60",
+    exchange_mode: "aggressive",
+    local_id_type: "IP_ADDRESS",
+    local_id_value: "",
+    ike_proposal: "sha1-3des-dh1",
+    ph2_proposal: "esp-sha1-aes128",
     enable: "1"
   }
 }
@@ -109,14 +115,21 @@ export const vpnL2tpSerFn = () => {
 // L2TP客户端
 export const vpnL2tpCliFn = () => {
   return {
-    tunnelname: 'tttt',
-    username: 'ruijie',
-    password: '123',
+    tunnelname: 'l2tp',
+    username: '',
+    password: '',
     lns: '',
-    ipsecenc: 'yes',
+    ipsecenc: 'no',
     presharekey: '',
     remotesubnet: '',
+    l2tphellointerval: "60",
+    lcpechointerval: "60",
     workmode: 'nat',
+    exchange_mode: "aggressive",
+    remote_id_type: "IP_ADDRESS",
+    remote_id_value: "",
+    ike_proposal: "sha1-3des-dh1",
+    ph2_proposal: "esp-sha1-aes128",
     enable: 'on'
   }
 }
@@ -129,5 +142,52 @@ export const vpnPoolFn = () => {
     end_addr: "",
     netmask: "255.255.128.0",
     ipRange: ""
+  }
+}
+
+// 用户管理
+export const vpnUserFn = () => {
+  return {
+    "provider": "l2tpserver",
+    "password": "",
+    "username": "",
+    "netmode": "client2lan",
+    "remotesubnet": "",
+    "enable": "on"
+  }
+}
+
+// PPTP服务器
+export const vpnPptpSerFn = () => {
+  return {
+    localip: "",
+    ippool_name: "PPTP",
+    DNS: "",
+    // netmode: "lan2lan",
+    // remotesubnet: "",
+    // ipsecenc: "no",
+    // presharekey: "",
+    lcpechointerval: "60",
+    // ike_proposal: "sha1-3des-dh1",
+    // ph2_proposal: "esp-sha1-aes128",
+    enable: "1"
+  }
+}
+
+// PPTP客户端
+export const vpnPptpCliFn = () => {
+  return {
+    tunnelname: 'pptp',
+    username: '',
+    password: '',
+    lns: '',
+    // ipsecenc: 'yes',
+    // presharekey: '',
+    remotesubnet: '',
+    workmode: 'nat',
+    lcpechointerval: "60",
+    // ike_proposal: "sha1-3des-dh1",
+    // ph2_proposal: "esp-sha1-aes128",
+    enable: 'off'
   }
 }

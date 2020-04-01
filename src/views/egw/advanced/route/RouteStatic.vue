@@ -1,49 +1,44 @@
 <template>
   <div class="advanced-nat">
-    <help-alert json-key="routeStaticJson" title="静态路由">
-      <template slot="content">当数据包与静态路由匹配成功时，将按照指定的转发方式进行转发。</template>
+    <help-alert json-key="routeStaticJson" :title="$t('egw.route.route_static')">
+      <template slot="content">{{$t('egw.route.route_static_tip')}}</template>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          静态路由列表
+          {{$t('egw.route.route_static_tab')}}
           <small></small>
         </span>
         <div class="fr">
-          <el-button @click.native="onEdit(-1)" size="small" type="primary">
-            <i class="el-icon-plus"></i>
-            <span>新增</span>
-          </el-button>
-          <el-button @click.native="onDel(-1)" size="small" type="primary">
-            <i class="el-icon-delete"></i>
-            <span>批量删除</span>
-          </el-button>
+          <el-button icon="el-icon-plus" plain size="medium" type="primary" v-auth="{fn: onEdit, params:-1}">{{$t('action.add')}}</el-button>
+          <el-button icon="el-icon-delete" plain size="medium" type="primary" v-auth="{fn: onDel, params:-1}">{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{MAX_NUM}}</b>条路由。
+          <i18n path="egw.limit_num_tip">
+              <b class="c-warning mlr5">{{MAX_NUM}}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="pageList" ref="multipleTable" row-key="ruleName" size="small" stripe>
+      <el-table :data="pageList" ref="multipleTable" row-key="ruleName" size="medium" stripe>
         <el-table-column align="center" type="selection" width="50"></el-table-column>
-        <el-table-column align="center" label="目的地址" prop="target"></el-table-column>
-        <el-table-column align="center" label="子网掩码" prop="netmask"></el-table-column>
-        <el-table-column align="center" label="出接口" prop="interface">
+        <el-table-column align="center" :label="$t('egw.destination_addr')" prop="target"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.mask')" prop="netmask"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.interface')" prop="interface">
           <template slot-scope="scope">{{scope.row.interface.toLocaleUpperCase()}}</template>
         </el-table-column>
-        <el-table-column align="center" label="下一跳" prop="gateway">
-          <template slot-scope="{row}">{{pppoeIntfs.includes(row.interface) ? 'PPPoE拨号' : row.gateway}}</template>
+        <el-table-column align="center" :label="$t('egw.next_hop')" prop="gateway">
+          <template slot-scope="{row}">{{pppoeIntfs.includes(row.interface) ? $t('egw.route.pppoe_dial_up') : row.gateway}}</template>
         </el-table-column>
-        <el-table-column align="center" label="是否可达">
+        <el-table-column align="center" :label="$t('egw.whether_reachable')">
           <template slot-scope="scope">
             <i class="el-icon-loading fs18" v-if="getEffective(scope.row) === null"></i>
-            <span class="c-success" type="text" v-else-if="getEffective(scope.row) === '1'">可达</span>
+            <span class="c-success" type="text" v-else-if="getEffective(scope.row) === '1'">{{$t('egw.reachable')}}</span>
             <span class="c-warning" type="text" v-else>
-              不可达
+              {{$t('egw.no_reachable')}}
               <el-tooltip class="item" effect="dark" placement="top-start">
-                <div slot="content">当前路由不可达，请检查出接口是否能ping通下一跳</div>
+                <div slot="content">{{$t('egw.route.check_ping_next_hop')}}</div>
                 <span>
                   <i class="el-icon-question"></i>
                 </span>
@@ -51,10 +46,10 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column align="center" :label="$t('action.ope')">
           <template slot-scope="scope">
-            <el-button @click.native="onEdit(scope.$index,scope.row)" type="text">编辑</el-button>
-            <el-button @click.native="onDel(scope.$index)" type="text">删除</el-button>
+            <el-button @click.native="onEdit(scope.$index,scope.row)" size="medium" type="text">{{$t('action.edit')}}</el-button>
+            <el-button @click.native="onDel(scope.$index)" size="medium" type="text">{{$t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -72,25 +67,25 @@
 
       <!-- 编辑对话框 -->
       <el-dialog :title="modalTitle" :visible.sync="isModalShow" @open="_clearValidate" width="500px">
-        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" status-icon>
-          <el-form-item label="目的地址" prop="target">
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('egw.destination_addr')" prop="target">
             <el-input @input="_onValidateField('netmask')" class="w200" v-model="baseModel.target"></el-input>
           </el-form-item>
-          <el-form-item label="子网掩码" prop="netmask">
+          <el-form-item :label="$t('egw.mask')" prop="netmask">
             <netmask-input @input="_onValidateField('target')" class="w200" v-model="baseModel.netmask"></netmask-input>
           </el-form-item>
-          <el-form-item label="出接口" prop="interface">
+          <el-form-item :label="$t('egw.interface')" prop="interface">
             <el-select class="w200" v-model="baseModel.interface">
               <el-option :key="intf.v" :label="intf.l" :value="intf.v" v-for="intf in intfs"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="下一跳" prop="gateway" v-if="!pppoeIntfs.includes(baseModel.interface)">
+          <el-form-item :label="$t('egw.next_hop')" prop="gateway" v-if="!pppoeIntfs.includes(baseModel.interface)">
             <el-input class="w200" v-model="baseModel.gateway"></el-input>
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click="isModalShow = false">取 消</el-button>
-          <el-button @click="onSubmitForm()" type="primary">确 定</el-button>
+          <el-button @click="isModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button @click="onSubmitForm()" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -112,7 +107,7 @@ export default {
         ipToLong(this.baseModel.target) & ipToLong(this.baseModel.netmask)
       )
       if (this.baseModel.target !== ip)
-        return cb(new Error('IP地址和子网掩码不在同一个网段'))
+        return cb(new Error(this.$t('rules.ip_mask_diffrent_network')))
       return cb()
     }
     const targetLimitValidate = (rule, value, cb) => {
@@ -120,7 +115,7 @@ export default {
         return cb()
       }
       if (value === '0.0.0.0') {
-        return cb(new Error('0.0.0.0不可配置'))
+        return cb(new Error(this.$t('egw.route.ip_invalid_0_0_0_0')))
       }
       return cb()
     }
@@ -133,21 +128,21 @@ export default {
       pppoeIntfs: [],
       baseRules: {
         target: [
-          { required: true, message: '请输入ip地址' },
-          { validator: ipValidator, message: '请输入有效的ip地址' },
+          { required: true, message: this.$t('wan.ip_no_empty') },
+          { validator: ipValidator, message: this.$t('wan.invalid_ip_addr') },
           { validator: targetLimitValidate },
           { validator: sameNet }
         ],
         netmask: [
-          { required: true, message: '请输入子网掩码' },
-          { validator: maskValidator, message: '请输入有效的子网掩码' },
+          { required: true, message: this.$t('wan.mask_no_empty') },
+          { validator: maskValidator, message: this.$t('wan.invalid_mask_addr') },
           { validator: sameNet }
         ],
         gateway: [
-          { required: true, message: '请输入下一跳地址' },
-          { validator: ipValidator, message: '请输入有效的下一跳地址' }
+          { required: true, message: this.$t('egw.next_hop_is_required') },
+          { validator: ipValidator, message: this.$t('egw.invalid_next_hop') }
         ],
-        interface: [{ required: true, message: '请选择出接口' }]
+        interface: [{ required: true, message: this.$t('egw.select_interface') }]
       }
     }
   },
@@ -157,7 +152,7 @@ export default {
   },
   computed: {
     modalTitle() {
-      return this.editIndex === -1 ? '新增' : '编辑'
+      return this.editIndex === -1 ? this.$t('action.add') : this.$t('action.edit1')
     },
     routListMap() {
       return this.pageModel.allItem.slice(0).map(item => {
@@ -228,7 +223,7 @@ export default {
       if (idx === -1) {
         let selection = this.$refs.multipleTable.selection
         if (!selection.length) {
-          return this.$message.warning('请选择要删除的列表项')
+          return this.$message.warning( this.$t('tip.select_del_item'))
         }
         itemArr = selection
       } else {
@@ -238,7 +233,7 @@ export default {
       this._onDel(itemArr)
     },
     _onDel(itemArr) {
-      this.$confirm('是否确认删除？').then(() => {
+      this.$confirm( this.$t('tip.confirm_delete')).then(() => {
         this.$api.delRoutes(itemArr).then(() => {
           itemArr.forEach(item => {
             let _index = this.pageList.findIndex(
@@ -247,7 +242,7 @@ export default {
             this.removeList(_index)
           })
           this.$message({
-            message: '删除成功',
+            message:  this.$t('tip.del_success'),
             type: 'success'
           })
         })
@@ -261,7 +256,7 @@ export default {
         this.pageModel.allItem.length >= this.MAX_NUM
       ) {
         return this.$message.warning(
-          `静态路由最多只能添加 ${this.MAX_NUM} 条数据`
+          this.$t('egw.route.static_route_limit_num',{num: this.MAX_NUM})
         )
       }
       this.onShowModal(row)
@@ -278,8 +273,8 @@ export default {
           if (this._isExistData(this.baseModel)) {
             this.$message({
               type: 'warning',
-              title: '提示',
-              message: '已存在此路由'
+              title: this.$t('phrase.tip'),
+              message: this.$t('egw.route.static_route_is_has')
             })
             return
           }
@@ -302,7 +297,7 @@ export default {
           _promise
             .then(d => {
               this.$message({
-                message: '设置成功',
+                message: this.$t('tip.edit1_success'),
                 type: 'success'
               })
               this.time && clearTimeout(this.time)

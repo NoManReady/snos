@@ -8,29 +8,28 @@
   <meta charset="utf-8">
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <!-- <meta name="viewport" content="width=device-width,initial-scale=1.0"> -->
-  <title>EWEB管理系统</title>
+  <title>Ruijie</title>
   <script type="text/javascript">
     // 如果if条件注释不生效，再次通过js判断浏览器类型
     (function () { // isLowerIEVersion
       var userAgent = navigator.userAgent;
-      var isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1 && !(userAgent.indexOf("Opera") > -1);
+      var isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1 && !(userAgent.indexOf(
+        "Opera") > -1);
       if (isIE && parseFloat(userAgent.match(/MSIE\s+(\d+\.\d+)/)[1] || 0) < 9) {
         window.location.href = '/error.html?fromhome' + Math.random()
       }
     })(window);
-    // 资源使用相对路径记载，所以要设置初始pathname
-    // var _pathArr = location.pathname.split(";stok=")
-    // if (_pathArr.length > 1) {
-    //   console.log('production', window.location.href)
-    //   location.pathname = _pathArr[0]
-    // }
+
   </script>
   <%
-    local json=require "luci.json"
-    local sid=require "luci.dispatcher".context.authsession ;
-    local sn=require "luci.dispatcher".context.sn ;
-    local stok=require "luci.dispatcher".context.urltoken.stok;
+    local ctx = require "luci.dispatcher".context
+    local sid= ctx.authsession ;
+    local sn= ctx.sn ;
+    local stok= ctx.urltoken.stok;
+    local tool = require "luci.utils.tool";
+    local lang = tool.getLang();
+    local ua = os.getenv("HTTP_USER_AGENT")
+    local isMobile = string.find(string.lower(ua), "mobile") ~= nil
   -%>
   <link href="<%=media%>/static/loading.css" rel="stylesheet">
   </link>
@@ -38,11 +37,32 @@
     var sid = '<%=sid%>';
     var sn = '<%=sn%>';
     var stok = '<%=stok%>';
-    var LANG = 'zh';
+    var LANG = '<%=lang%>';
+    var ISMOBILE = '<%=isMobile%>' === 'true'
+
   </script>
 </head>
 
 <body class="rj-body">
+  <script>
+    ;
+    (function () {
+      if (ISMOBILE) {
+        var _mobileMeta = document.createElement('meta')
+        _mobileMeta.id = 'mobileMeta'
+        _mobileMeta.name = 'viewport'
+        _mobileMeta.content =
+          'width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';
+        document.head.appendChild(_mobileMeta);
+        document.body.className = 'rj-body app-mobile';
+      } else {
+        var _meta = document.getElementById("mobileMeta")
+        _meta && document.head.removeChild(_meta);
+        document.body.className = 'rj-body';
+      }
+    })()
+
+  </script>
   <div eweb-loader class='loader'>
     <div class='loader_overlay'></div>
     <div class='loader_cogs'>

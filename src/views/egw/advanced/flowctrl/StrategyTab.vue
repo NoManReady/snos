@@ -1,73 +1,74 @@
 <template>
   <div class="advanced-strategy-tab">
-    <help-alert json-key="strategyJson" title="自定义策略">
+    <help-alert :title="$t('egw.flowctrl.coustom_strategy')" json-key="strategyJson">
       <div slot="content">
-        <p class="mb5">为特定的IP地址组分配带宽，策略优先于智能流控，满足特定的用户或服务器的带宽需要。</p>
+        <p class="mb5">{{$t('egw.flowctrl.strategy_over_flow_tip')}}</p>
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          策略列表
+          {{$t('egw.flowctrl.strategy_tab')}}
           <small></small>
         </span>
         <div class="fr">
-          <el-button @click.native="onEdit(-1)" size="small" type="primary">
-            <i class="el-icon-plus"></i>
-            <span>新增</span>
-          </el-button>
-          <el-button @click.native="onDel()" size="small" type="primary">
-            <i class="el-icon-delete"></i>
-            <span>批量删除</span>
-          </el-button>
+          <el-button icon="el-icon-plus" plain size="medium" type="primary" v-auth="{fn:onEdit,params:-1}">{{$t('action.add')}}</el-button>
+          <el-button icon="el-icon-plus" plain size="medium" type="primary" v-auth="onDel">{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{MAX_NUM}}</b>条策略。
+          <i18n path="egw.limit_num_tip">
+            <b class="c-warning mlr5">{{MAX_NUM}}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="strategyList" ref="multipleTable" size="small" stripe>
+      <el-table :data="strategyList" ref="multipleTable" size="medium" stripe>
         <el-table-column align="center" type="selection" width="50"></el-table-column>
-        <el-table-column align="center" label="策略名称" prop="comment"></el-table-column>
-        <el-table-column align="center" label="IP地址/范围" prop="ipRange"></el-table-column>
-        <el-table-column align="center" label="带宽模式">
+        <el-table-column :label="$t('egw.flowctrl.strategy_name')" align="center" prop="comment"></el-table-column>
+        <el-table-column :label="$t('egw.flowctrl.range_by_ip')" align="center" prop="ipRange"></el-table-column>
+        <el-table-column :label="$t('egw.flowctrl.rate_module')" align="center">
           <template slot-scope="scope">{{modeObj[scope.row.mode || 'share']}}</template>
         </el-table-column>
-        <el-table-column align="center" label="上行带宽" min-width="140px">
+        <el-table-column :label="$t('egw.up_rate')" align="center" min-width="140px">
           <template slot-scope="scope">
-            <div>保证 {{scope.row.upRateG}} Kbps</div>
-            <div>最大 {{scope.row.upRate}} Kbps</div>
+            <div>{{$t('egw.flowctrl.ensure')}} {{scope.row.upRateG}} Kbps</div>
+            <div>{{$t('egw.flowctrl.bigest')}} {{scope.row.upRate}} Kbps</div>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="下行带宽" min-width="140px">
+        <el-table-column :label="$t('egw.down_rate')" align="center" min-width="140px">
           <template slot-scope="scope">
-            <div>保证 {{scope.row.downRateG}} Kbps</div>
-            <div>最大 {{scope.row.downRate}} Kbps</div>
+            <div>{{$t('egw.flowctrl.ensure')}} {{scope.row.downRateG}} Kbps</div>
+            <div>{{$t('egw.flowctrl.bigest')}} {{scope.row.downRate}} Kbps</div>
           </template>
         </el-table-column>
-        <el-table-column :formatter="getIntfName" align="center" label="应用接口"></el-table-column>
-        <el-table-column align="center" label="状态" prop="enable">
+        <el-table-column :formatter="getIntfName" :label="$t('egw.flowctrl.application_interface')" align="center"></el-table-column>
+        <el-table-column :label="$t('phrase.status')" align="center" prop="enable">
           <template slot-scope="scope">
-            <el-button @click="toggleStatus(scope.row,scope.$index)" class="c-success" type="text" v-if="scope.row.enable==='on'">
-              启用
+            <el-button
+              @click="toggleStatus(scope.row,scope.$index)"
+              class="c-success"
+              size="medium"
+              type="text"
+              v-if="scope.row.enable==='on'"
+            >
+              {{$t('phrase.enable')}}
               <i class="el-icon-circle-check"></i>
             </el-button>
-            <el-button @click="toggleStatus(scope.row,scope.$index)" class="c-danger" type="text" v-else>
-              关闭
+            <el-button @click="toggleStatus(scope.row,scope.$index)" class="c-danger" size="medium" type="text" v-else>
+              {{$t('phrase.disable')}}
               <i class="el-icon-remove"></i>
             </el-button>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="生效状态">
+        <el-table-column :label="$t('egw.flowctrl.effective_status')" align="center">
           <template slot-scope="scope">
-            <span class="c-success" type="text" v-if="scope.row.effective === '1'">已生效</span>
+            <span class="c-success" type="text" v-if="scope.row.effective === '1'">{{$t('egw.effective')}}</span>
             <span class="c-warning" type="text" v-else-if="scope.row.effective === '0'">
-              未生效
+              {{$t('egw.ineffective')}}
               <el-tooltip class="item" effect="dark" placement="top-start">
-                <div slot="content" v-if="scope.row.enable === 'on'">IP地址/范围不在已有LAN的网段中</div>
-                <div slot="content" v-else>当前是关闭状态</div>
+                <div slot="content" v-if="scope.row.enable === 'on'">{{$t('egw.flowctrl.network_has_no_ip_tip')}}</div>
+                <div slot="content" v-else>{{$t('egw.flowctrl.close_status_now')}}</div>
                 <span>
                   <i class="el-icon-question"></i>
                 </span>
@@ -76,13 +77,19 @@
             <i class="el-icon-loading fs18" v-else></i>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="匹配顺序" v-if="strategyList.length > 1">
+        <el-table-column :label="$t('egw.matching_order')" align="center" v-if="strategyList.length > 1">
           <template slot-scope="scope">
-            <el-button @click="onSetSort(scope.$index, scope.row.comment, 'up')" type="text" v-if="scope.$index > 0">
+            <el-button
+              @click="onSetSort(scope.$index, scope.row.comment, 'up')"
+              size="medium"
+              type="text"
+              v-if="scope.$index > 0"
+            >
               <i class="el-icon-sort-up"></i>
             </el-button>
             <el-button
               @click="onSetSort(scope.$index, scope.row.comment, 'down')"
+              size="medium"
               type="text"
               v-if="scope.$index < strategyList.length-1"
             >
@@ -90,55 +97,55 @@
             </el-button>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作" min-width="100px">
+        <el-table-column :label="$t('action.ope')" align="center" min-width="100px">
           <template slot-scope="scope">
-            <el-button @click.native="onEdit(scope.$index, scope.row)" type="text">修改</el-button>
-            <el-button @click.native="onDel(scope.row)" type="text">删除</el-button>
+            <el-button @click.native="onEdit(scope.$index, scope.row)" size="medium" type="text">{{$t('action.edit')}}</el-button>
+            <el-button @click.native="onDel(scope.row)" size="medium" type="text">{{$t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
       <!-- strategy编辑 -->
       <el-dialog :model="baseModel" :title="modalTitle" :visible.sync="strategyModalShow" width="600px">
-        <el-form :inline="true" :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm">
-          <el-form-item label="策略名称" prop="comment">
+        <el-form :inline="true" :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('egw.flowctrl.strategy_name')" prop="comment">
             <el-input :disabled="editIndex > -1" class="w320" v-model="baseModel.comment"></el-input>
           </el-form-item>
-          <el-form-item :rules="ipValidate()" label="IP地址/范围" prop="ipRange">
-            <el-input class="w320" placeholder="范围格式：1.1.1.1-1.1.1.100" v-model="baseModel.ipRange"></el-input>
+          <el-form-item :label="$t('egw.flowctrl.range_by_ip')" :rules="ipValidate()" prop="ipRange">
+            <el-input :placeholder="$t('wan.ip_range_example')" class="w320" v-model="baseModel.ipRange"></el-input>
           </el-form-item>
-          <el-form-item label="带宽模式">
-            <el-select class="w320" placeholder="请选择" v-model="baseModel.mode">
+          <el-form-item :label="$t('egw.flowctrl.rate_module')">
+            <el-select :placeholder="$t('action.select')" class="w320" v-model="baseModel.mode">
               <el-option :key="value" :label="key" :value="value" v-for="(key, value) in modeObj"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="上行带宽">
-            <el-form-item label="保证" label-width="54px" prop="upRateG">
+          <el-form-item :label="$t('egw.up_rate')">
+            <el-form-item :label="$t('egw.flowctrl.ensure')" label-width="54px" prop="upRateG">
               <el-input @change="onValidateField('upRate')" class="w100" v-model="baseModel.upRateG"></el-input>
             </el-form-item>
-            <el-form-item label="最大" label-width="54px" prop="upRate">
+            <el-form-item :label="$t('egw.flowctrl.bigest')" label-width="54px" prop="upRate">
               <el-input @change="onValidateField('upRateG')" class="w100" v-model="baseModel.upRate"></el-input>Kbps
             </el-form-item>
           </el-form-item>
-          <el-form-item label="下行带宽">
-            <el-form-item label="保证" label-width="54px" prop="downRateG">
+          <el-form-item :label="$t('egw.down_rate')">
+            <el-form-item :label="$t('egw.flowctrl.ensure')" label-width="54px" prop="downRateG">
               <el-input @change="onValidateField('downRate')" class="w100" v-model="baseModel.downRateG"></el-input>
             </el-form-item>
-            <el-form-item label="最大" label-width="54px" prop="downRate">
+            <el-form-item :label="$t('egw.flowctrl.bigest')" label-width="54px" prop="downRate">
               <el-input @change="onValidateField('downRateG')" class="w100" v-model="baseModel.downRate"></el-input>Kbps
             </el-form-item>
           </el-form-item>
-          <el-form-item label="应用接口">
-            <el-select class="w320" placeholder="请选择" v-model="baseModel.intf">
+          <el-form-item :label="$t('egw.flowctrl.application_interface')" v-if="supportWanNum > 1">
+            <el-select :placeholder="$t('action.select')" class="w320" v-model="baseModel.intf">
               <el-option :key="value" :label="key" :value="value" v-for="(key, value) in intfObj"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="状态" prop="enable">
+          <el-form-item :label="$t('phrase.status')" prop="enable">
             <el-switch active-value="on" inactive-value="off" v-model="baseModel.enable"></el-switch>
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click="strategyModalShow = false">取 消</el-button>
-          <el-button @click="onSubmitForm" type="primary">确 定</el-button>
+          <el-button @click="strategyModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button @click="onSubmitForm" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -149,7 +156,7 @@ import model from '@/model'
 import formMixins from '@/mixins/formMixins'
 import { intValidator, quoteValidator } from '@/utils/rules'
 import { isBetween, isIp, isIpRange } from '@/utils/rulesUtils'
-import { isIpInNet } from '@/utils/commonValidates'
+import { isIpInNet, isExistIpRange } from '@/utils/commonValidates'
 export default {
   name: 'AdvancedStrategyTab',
   data() {
@@ -158,7 +165,7 @@ export default {
         cb()
       }
       if (!isBetween(val, 1, 10000000)) {
-        cb(new Error('范围1~10000000'))
+        cb(new Error(this.$t('egw.flowctrl.band_range')))
       }
       cb()
     }
@@ -170,23 +177,33 @@ export default {
       let m = this.baseModel
       if (isUp) {
         if (m.upRate && m.upRateG && m.upRate - m.upRateG < 0) {
-          cb(new Error(rule.message || '数据错误'))
+          cb(new Error(rule.message || this.$t('egw.error_data')))
         }
       } else {
         if (m.downRate && m.downRateG && m.downRate - m.downRateG < 0) {
-          cb(new Error(rule.message || '数据错误'))
+          cb(new Error(rule.message || this.$t('egw.error_data')))
         }
       }
       cb()
     }
     const _getRules = isG => {
       return [
-        { required: true, message: isG ? '请输入保证带宽' : '请输入最大带宽' },
-        { validator: intValidator, message: '请输入正整数' },
+        {
+          required: true,
+          message: isG
+            ? this.$t('egw.flowctrl.enter_ensure_rate')
+            : this.$t('egw.flowctrl.enter_bigest_rate')
+        },
+        {
+          validator: intValidator,
+          message: this.$t('egw.enter_positive_integer')
+        },
         { validator: _flowValidator },
         {
           validator: _bandCompare,
-          message: isG ? '请小于最大带宽' : '请大于保证带宽'
+          message: isG
+            ? this.$t('egw.flowctrl.less_then_bigest_rate')
+            : this.$t('egw.flowctrl.more_then_ensure_rate')
         }
       ]
     }
@@ -194,10 +211,11 @@ export default {
       let _editName =
         this.editIndex > -1 ? this.strategyList[this.editIndex].comment : ''
       if (v != _editName && this.nameMap[v])
-        return cb(new Error('规则名称已存在'))
+        return cb(new Error(this.$t('egw.rule_name_is_duplication')))
       cb()
     }
     return {
+      poolList: [],
       MAX_NUM: 30,
       modalTitle: '',
       editIndex: -1,
@@ -205,8 +223,8 @@ export default {
       ipRange: [],
       intfObj: {},
       modeObj: {
-        share: '共享',
-        per_ip: '独立'
+        share: this.$t('egw.share'),
+        per_ip: this.$t('egw.flowctrl.independence')
       },
       strategyModalShow: false,
       baseModel: model.strategyFn(),
@@ -216,8 +234,13 @@ export default {
         downRate: _getRules(false),
         downRateG: _getRules(true),
         comment: [
-          { required: true, message: '请输入规则名称' },
-          { range: true, min: 1, max: 28, message: '规则名称为1-28个字符' },
+          { required: true, message: this.$t('egw.enter_rule_name') },
+          {
+            range: true,
+            min: 1,
+            max: 28,
+            message: this.$t('egw.rule_name_length_tip')
+          },
           { validator: _sameNameValidate },
           { validator: quoteValidator }
         ]
@@ -233,12 +256,19 @@ export default {
     },
     existIpRange() {
       return this.strategyList.map(o => o.ipRange)
+    },
+    ipRangeList() {
+      return this.poolList.map(o => o.first_addr + '-' + o.end_addr)
+    },
+    supportWanNum() {
+      return +(this.$store.getters.capacity.eth_port.wan_number || 1)
     }
   },
   async created() {
     await this.loadIfaceTypes()
     await this.loadNetwork()
     await this.loadData()
+    await this.loadIpPool()
   },
   destroyed() {
     this.time && clearTimeout(this.time)
@@ -256,9 +286,11 @@ export default {
     onEdit(index, item) {
       let isAdd = index < 0
       if (isAdd && this.strategyList.length >= this.MAX_NUM)
-        return this.$message.warning(`最多支持添加 ${this.MAX_NUM} 条策略`)
+        return this.$message.warning(
+          this.$t('egw.limit_num_tip3', { num: this.MAX_NUM })
+        )
       this.editIndex = index
-      this.modalTitle = isAdd ? '添加' : '编辑'
+      this.modalTitle = isAdd ? this.$t('action.add') : this.$t('action.edit1')
       this.strategyModalShow = true
       this.baseModel = Object.assign(
         {},
@@ -275,10 +307,17 @@ export default {
         this.intfObj[`br-${item}`] = item.toLocaleUpperCase()
       })
       // if (result.length > 1)
-      this.intfObj['br-allwan'] = '所有WAN口'
+      this.intfObj['br-allwan'] = this.$t('egw.flowctrl.all_wan')
     },
     getIntfName(row) {
       return this.intfObj[row.intf] || '-'
+    },
+    // 获取地址池
+    async loadIpPool() {
+      let _res = await this.$api.getIpPool()
+      this.poolList = (_res.list || []).map(o =>
+        Object.assign(o, { ipRange: `${o.first_addr}-${o.end_addr}` })
+      )
     },
     async loadNetwork() {
       let _res = await this.$api.getNetwork()
@@ -287,17 +326,20 @@ export default {
     ipValidate() {
       const isLegalIp = (r, v, cb) => {
         if (!isIp(v) && !isIpRange(v)) {
-          return cb(new Error('请输入正确的IP地址或范围'))
+          return cb(new Error(this.$t('egw.ip_or_range')))
         }
         cb()
       }
       const isBelongRange = (r, v, cb) => {
-        if (!isIpInNet(v, this.networkLan))
-          return cb(new Error('IP范围不在已有LAN的网段中'))
+        if (
+          !isIpInNet(v, this.networkLan) &&
+          !isExistIpRange(v, -1, this.ipRangeList)
+        )
+          return cb(new Error(this.$t('egw.flowctrl.network_has_no_ip_tip')))
         cb()
       }
       return [
-        { required: true, message: '请输入IP地址或范围' },
+        { required: true, message: this.$t('egw.ip_or_range_is_required') },
         { validator: isLegalIp },
         { validator: isBelongRange }
       ]
@@ -310,17 +352,21 @@ export default {
       } else {
         let selection = this.$refs.multipleTable.selection
         if (!selection.length) {
-          return this.$message.warning('请选择要删除的列表项')
+          return this.$message.warning(this.$t('tip.select_del_item'))
         }
         _nameArr = selection.map(item => item.comment)
       }
-      await this.$confirm('是否确认删除？')
+      await this.$confirm(this.$t('tip.confirm_delete'))
 
       this.$api.setPolicyFlow({ rulename: _nameArr }, 'del').then(() => {
         let _data = this.strategyList.filter(item => {
           return _nameArr.indexOf(item.comment) < 0
         })
         this.strategyList = _data
+        this.$message({
+          type: 'success',
+          message: this.$t('tip.del_success')
+        })
       })
     },
     onSort(idx, type) {
@@ -331,7 +377,11 @@ export default {
     onSetSort(idx, name, type) {
       this.$api.setStrategySort(name, type).then(d => {
         this.onSort(idx, type)
-        this.$message.success(type === 'up' ? '上移成功' : '下移成功')
+        this.$message.success(
+          type === 'up'
+            ? this.$t('egw.flowctrl.move_up_success')
+            : this.$t('egw.flowctrl.move_down_success')
+        )
       })
     },
     // 编辑策略确认
@@ -346,7 +396,7 @@ export default {
             .then(() => {
               this.$message({
                 type: 'success',
-                message: '设置成功'
+                message: this.$t('tip.edit1_success')
               })
               this.updateEffective(_model)
               if (_isAdd) {
@@ -375,7 +425,7 @@ export default {
       this.$api.setPolicyFlow({ list: [_item] }, 'update').then(() => {
         this.$message({
           type: 'success',
-          message: '设置成功'
+          message: this.$t('tip.edit1_success')
         })
         this.strategyList.splice(index, 1, _item)
       })

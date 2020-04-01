@@ -562,3 +562,125 @@ export const setNatDmz = (params, opt = 'set', async = false) => {
     { module: 'nat_dmz', async, data: params }
   )
 }
+/**
+ * 获取PPPoE全局配置
+ */
+export const getPppoeGlobal = () => {
+  return api.cmd(
+    'devConfig.get',
+    { module: 'pppoeserver_global'}
+  )
+}
+
+/**
+ * 设置PPPoE全局配置
+ */
+export const setPppoeGlobal = (params) => {
+  return api.cmd(
+    'devConfig.update',
+    { module: 'pppoeserver_global', data: params, async: true, },
+    { timeout: 0 }
+  )
+}
+/**
+ * 获取 IP地址池 配置
+ */
+export const getPppoePool = () => {
+  return api.cmd('devConfig.get', {
+    module: 'ippool'
+  })
+}
+/**
+ * 增加 IP地址池
+ */
+export const setPppoePool = (data, isAdd = true) => {
+  return api.cmd(`devConfig.${isAdd ? 'add' : 'update'}`, {
+    module: 'ippool',
+    async: true,
+    data
+  })
+}
+/**
+ * 删除 IP地址池
+ */
+export const delPppoePool = (data) => {
+  return api.cmd('devConfig.del', {
+    module: 'ippool',
+    async: true,
+    data
+  })
+}
+/**
+ * 获取 账户管理 配置
+ */
+export const getPppoeManage = () => {
+  return api.cmd('devConfig.get', {
+    module: 'pppoeserver_user'
+  })
+}
+/**
+ * 增加 账户管理
+ */
+export const setPppoeManage = (data, isAdd = true) => {
+  return api.cmd(`devConfig.${isAdd ? 'add' : 'update'}`, {
+    module: 'pppoeserver_user',
+    async: true,
+    data
+  })
+}
+/**
+ * 删除 账户管理
+ */
+export const delPppoeManage = (data) => {
+  return api.cmd('devConfig.del', {
+    module: 'pppoeserver_user',
+    async: true,
+    data
+  })
+}
+/**
+ * 获取 例外ip管理 配置
+ */
+export const getPppoeExceptip = () => {
+  return api.cmd('devConfig.get', {
+    module: 'pppoeserver_exceptip'
+  })
+}
+/**
+ * 增加 例外ip管理
+ */
+export const setPppoeExceptip = (data, isAdd = true) => {
+  return api.cmd(`devConfig.${isAdd ? 'add' : 'update'}`, {
+    module: 'pppoeserver_exceptip',
+    async: true,
+    data
+  })
+}
+/**
+ * 删除 例外ip管理
+ */
+export const delPppoeExceptip = (data) => {
+  return api.cmd('devConfig.del', {
+    module: 'pppoeserver_exceptip',
+    async: true,
+    data
+  })
+}
+/**
+ * 获取 账号信息列表 配置
+ */
+export const getPppoeUserInfo = () => {
+  return api.cmd('devSta.get', {
+    module: 'pppoeserver_userinfo'
+  })
+}
+/**
+ * 断开 账号信息列表
+ */
+export const delPppoeUserInfo = (data, isAdd = true) => {
+  return api.cmd(`devSta.del`, {
+    module: 'pppoeserver_userinfo',
+    async: true,
+    data
+  })
+}

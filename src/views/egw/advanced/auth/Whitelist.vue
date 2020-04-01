@@ -1,11 +1,11 @@
 <template>
   <div class="whitelist">
-    <help-alert title="配置为免认证的用户IP或者MAC，可以直接上网不需要认证。" json-key="exampleJson"></help-alert>
-    <white-table @delete="onDel" @edit="onEdit" :whitelist="whitelist.srcip" title="免认证用户" type="srcip"></white-table>
-    <white-table @delete="onDel" @edit="onEdit" :whitelist="whitelist.dstip" title="免认证外网IP" type="dstip"></white-table>
-    <white-table @delete="onDel" @edit="onEdit" :whitelist="whitelist.url" title="URL白名单" type="url"></white-table>
-    <white-table @delete="onDel" @edit="onEdit" :whitelist="whitelist.mac" :opposite-mac="whitelist.deny_mac" title="用户MAC白名单" type="mac"></white-table>
-    <white-table @delete="onDel" @edit="onEdit" :whitelist="whitelist.deny_mac" :opposite-mac="whitelist.mac" title="用户MAC黑名单" type="deny_mac"></white-table>
+    <help-alert :title="$t('egw.auth.access_anything_auth')" json-key="exampleJson"></help-alert>
+    <white-table @delete="onDel" @edit="onEdit" :whitelist="whitelist.srcip" :title="$t('egw.auth.access_user')" type="srcip"></white-table>
+    <white-table @delete="onDel" @edit="onEdit" :whitelist="whitelist.dstip" :title="$t('egw.auth.access_internet_ip')" type="dstip"></white-table>
+    <white-table @delete="onDel" @edit="onEdit" :whitelist="whitelist.url" :title="$t('egw.auth.white_with_url')" type="url"></white-table>
+    <white-table @delete="onDel" @edit="onEdit" :whitelist="whitelist.mac" :opposite-mac="whitelist.deny_mac" :title="$t('egw.auth.white_with_mac')" type="mac"></white-table>
+    <white-table @delete="onDel" @edit="onEdit" :whitelist="whitelist.deny_mac" :opposite-mac="whitelist.mac" :title="$t('egw.auth.black_with_url')" type="deny_mac"></white-table>
   </div>
 </template>
 <script>
@@ -69,7 +69,7 @@ export default {
       this.$api[api](data, true).then(d => {
         this.whitelist[type] = data.data
         this.$message({
-          message: '配置成功',
+          message:this.$t('tip.edit1_success'),
           type: 'success'
         })
       })

@@ -43,7 +43,7 @@ export const wan = () => {
     username: '',
     mtu: '1500',
     macaddr: '',
-    vlanid: '1',
+    vlanid: '',
     metric: '0'
   }
 }

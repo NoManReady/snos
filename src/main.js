@@ -1,6 +1,8 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
+// 国际化配置
+import { i18n } from '@/plugins/i18n'
 import App from './App'
 import router from './router'
 import store from './store'
@@ -27,29 +29,14 @@ NProgress.configure({
 
 // UI框架
 // import ElementUI from 'element-ui'
-import ElementLocale from 'element-ui/lib/locale'
 import '@/utils/elementUiImport'
 // 配置皮肤（打开编译比较慢）
 import '@/style/iconfont.css'
 // import '../dev/css/index.css'
-// 国际化配置
-import VueI18n from 'vue-i18n'
-import lang from '@/lang'
 
 // webpack加载动态js加载使用__webpack_public_path__
 window.__pulicPath = __webpack_public_path__ = `${window.BASE_URI.split(/\/cgi-bin/)[0]}${process.env.STATIC_PATH}/`
 log("__webpack_public_path__", __webpack_public_path__)
-
-Vue.use(VueI18n)
-let i18n = null
-window.I18N = i18n = new VueI18n({
-  locale: 'zh',//store.state.app.lang || 'zh',
-  messages: lang
-})
-ElementLocale.i18n((key, value) => i18n.t(key, value))
-// Vue.use(ElementUI, {
-//   i18n: (key, value) => i18n.t(key, value)
-// })
 
 // 工具配置
 import {
@@ -74,7 +61,7 @@ Object.defineProperties(Vue.prototype, {
   $dev: {
     value() {
       // ewr 也返回egw，兼容旧的路由设置等
-      return store.getters.capacity.dev_type === "ewr" ? "egw" : store.getters.capacity.dev_type
+      return ["ewr", "ehr"].includes(store.getters.capacity.dev_type) ? "egw" : store.getters.capacity.dev_type
     }
   },
   $roles: {
@@ -112,8 +99,14 @@ function loadRoutes(next, to) {
     if (!store.getters.dynamicRoutes.length) {
       try {
         await getCommonInfo()
-        // store.dispatch('getSysinfo')
-        // store.dispatch('getHostname')
+        setTimeout(() => {
+          store.dispatch('getIsDefaultPass').then(isDefpass => {
+            if (isDefpass) {
+              // 出厂设置需要设置下系统时间
+              apis.setSysTime({ time: (new Date().getTime() / 1000).toFixed(0) })
+            }
+          })
+        }, 2000)
       } catch (error) {
         log(error)
       }
@@ -127,16 +120,6 @@ function loadRoutes(next, to) {
     resolve()
   })
 }
-(new Vue({
-  beforeDestroy() {
-    this.$bus.$off('set-is-default-pass')
-  }
-})).$bus.$on('set-is-default-pass', ({
-  value
-}) => {
-  store.dispatch('setIsDefaultPass', value)
-})
-
 
 router.beforeEach((to, from, next) => {
   // 设置title，开启加载条
@@ -175,6 +158,7 @@ router.beforeEach((to, from, next) => {
 
 const loadingTrans = () => {
   if (!PAGE_INIT) {
+    document.title = I18N.t('main_header.web_manage')
     checkBackupFile()
     let _loadEle = document.querySelector('[eweb-loader]')
     PAGE_INIT = true

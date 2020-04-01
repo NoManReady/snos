@@ -4,7 +4,6 @@ import Alone from '@/views/common/Alone'
 import { mapActions } from 'vuex'
 import store from '@/store'
 import switcherModule from '@/store/modules/switcher'
-import { sleep } from '@/utils'
 export default {
   name: 'Alone',
   extends: Alone,
@@ -14,7 +13,7 @@ export default {
     }
   },
   async beforeRouteEnter(to, from, next) {
-    store.registerModule('switcher', switcherModule)
+    store.registerModule('switcher', switcherModule())
     await store.dispatch('switcher/fetchPortinfo')
     try {
       await store.dispatch('switcher/fetchUplink')
@@ -44,3 +43,8 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+.device-setting {
+  min-width: 650px;
+}
+</style>

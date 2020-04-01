@@ -2,60 +2,62 @@
   <div class="advanced-stp-base">
     <help-alert :title="''" type="info">
       <div class="c-danger" slot="content">
-        <b>注意：</b>开启生成树功能及改变生成树模式，浏览器将会重新连接，配置过程中请勿刷新页面。
+        <i18n path="msw.stp.cfg_tip" tag="span">
+          <b>{{$t('phrase.notice_f')}}</b>
+        </i18n>
       </div>
     </help-alert>
     <div class="box">
       <!-- <div class="box-header">
         <span class="box-header-tit">全局配置</span>
       </div>-->
-      <el-form :model="baseModel" :rules="baseRules" label-width="120px" ref="baseForm" size="mini">
+      <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
         <el-row>
           <el-col :span="24">
-            <el-form-item label="STP开关：" prop="enable">
+            <el-form-item :label="$t('msw.stp.stp_switch_f')" prop="enable">
               <el-switch :active-value="1" :inactive-value="0" @change="_onEnableChange" v-model="baseModel.enable"></el-switch>
             </el-form-item>
           </el-col>
         </el-row>
         <template v-if="baseModel.enable===1">
           <el-row>
-            <el-col :span="12" :xs="24">
-              <el-form-item label="优先级：" prop="priority">
-                <el-select class="w160" placeholder="请选择" v-model="baseModel.priority">
+            <el-col :md="12" :sm="24" :xs="24">
+              <el-form-item :label="$t('msw.stp.priority_f')" prop="priority">
+                <el-select :placeholder="$t('msw.select')" class="w260" v-model="baseModel.priority">
                   <el-option :key="i" :label="(i-1)*4096" :value="`${(i-1)*4096}`" v-for="i in 16"></el-option>
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="12" :xs="24">
-              <el-form-item label="握手时间：" prop="hello_time">
-                <el-input class="w160" placeholder="范围（1~10）" v-model="baseModel.hello_time"></el-input>
-                <span>秒</span>
+            <el-col :md="12" :sm="24" :xs="24">
+              <el-form-item :label="$t('msw.stp.hand_time_f')" prop="hello_time">
+                <el-input :placeholder="$t('msw.range_digit',{range:'1-10'})" class="w260" v-model="baseModel.hello_time"></el-input>
+                <span>{{$t('time.second')}}</span>
               </el-form-item>
             </el-col>
-            <el-col :span="12" :xs="24">
-              <el-form-item label="老化时间：" prop="age_time">
-                <el-input class="w160" placeholder="范围（6~40）" v-model="baseModel.age_time"></el-input>
-                <span>秒</span>
+            <el-col :md="12" :sm="24" :xs="24">
+              <el-form-item :label="$t('msw.stp.age_time_f')" prop="age_time">
+                <el-input :placeholder="$t('msw.range_digit',{range:'6-40'})" class="w260" v-model="baseModel.age_time"></el-input>
+                <span>{{$t('time.second')}}</span>
               </el-form-item>
             </el-col>
-            <el-col :span="12" :xs="24">
-              <el-form-item label="转发延迟：" prop="forward_time">
-                <el-input class="w160" placeholder="范围（4~30）" v-model="baseModel.forward_time"></el-input>
-                <span>秒</span>
+            <el-col :md="12" :sm="24" :xs="24">
+              <el-form-item :label="$t('msw.stp.forward_delay_f')" prop="forward_time">
+                <el-input :placeholder="$t('msw.range_digit',{range:'4-30'})" class="w260" v-model="baseModel.forward_time"></el-input>
+                <span>{{$t('time.second')}}</span>
               </el-form-item>
             </el-col>
-            <el-col :span="12" :xs="24">
-              <el-form-item label="恢复时间：" prop="recovery_time">
-                <el-input class="w160" placeholder="范围（30~86400）" v-model="baseModel.recovery_time"></el-input>
-                <span>秒</span>
-                <el-tooltip content="Errdisabled端口自动恢复时间">
+            <el-col :md="12" :sm="24" :xs="24">
+              <el-form-item :label="$t('msw.stp.recovery_time_f')" prop="recovery_time">
+                <el-input :placeholder="$t('msw.range_digit',{range:'30-86400'})" class="w260" v-model="baseModel.recovery_time"></el-input>
+                <span>{{$t('time.second')}}</span>
+                <el-tooltip :content="$t('msw.stp.auto_time')">
                   <i class="el-icon-info"></i>
                 </el-tooltip>
               </el-form-item>
             </el-col>
-            <el-col :span="12" :xs="24">
-              <el-form-item label="生成树模式：" prop="mode">
-                <el-select class="w160" placeholder="请选择" v-model="baseModel.mode">
+            <el-col :md="12" :sm="24" :xs="24">
+              <el-form-item :label="$t('msw.stp.spantree_mode_f')" prop="mode">
+                <el-select :placeholder="$t('msw.select')" class="w260" v-model="baseModel.mode">
                   <el-option :value="0" label="STP"></el-option>
                   <el-option :value="1" label="RSTP"></el-option>
                 </el-select>
@@ -65,7 +67,13 @@
           <el-row>
             <el-col :span="24">
               <el-form-item>
-                <el-button :loading="isLoading" v-auth="_onSaveConf" size="small" type="primary">保存配置</el-button>
+                <el-button
+                  :loading="isLoading"
+                  class="w160"
+                  size="medium"
+                  type="primary"
+                  v-auth="_onSaveConf"
+                >{{isLoading?$t('action.editing'):$t('action.save_edit')}}</el-button>
               </el-form-item>
             </el-col>
           </el-row>
@@ -95,7 +103,7 @@ export default {
       let _max = 2 * (+_baseModel.forward_time - 1)
       let _cur = +_baseModel.age_time
       if (!isBetween(_cur, _min, _max)) {
-        return cb(new Error('2×(握手时间+1)<=老化时间<=2×(转发延迟时间-1)'))
+        return cb(new Error(I18N.t('msw.stp.hand_recovery_forward_rule')))
       }
       cb()
     }
@@ -106,30 +114,30 @@ export default {
       isLoading: false,
       baseRules: {
         forward_time: [
-          { required: true, message: '请输入转发延迟' },
+          { required: true, message: I18N.t('msw.stp.forward_no_empty') },
           { validator: intValidator },
           { validator: rangeValidator, min: 4, max: 30 },
           { validator: ruleLimitValidator }
         ],
         hello_time: [
-          { required: true, message: '请输入握手时间' },
+          { required: true, message: I18N.t('msw.stp.hand_no_empty') },
           { validator: intValidator },
           { validator: rangeValidator, min: 1, max: 10 },
           { validator: ruleLimitValidator }
         ],
         age_time: [
-          { required: true, message: '请输入老化时间' },
+          { required: true, message: I18N.t('msw.stp.age_no_empty') },
           { validator: intValidator },
           { validator: rangeValidator, min: 6, max: 40 },
           { validator: ruleLimitValidator }
         ],
         priority: [
-          { required: true, message: '请输入优先级' },
+          { required: true, message: I18N.t('msw.stp.priority_no_empty') },
           { validator: intValidator },
           { validator: rangeValidator, min: 0, max: 61440 }
         ],
         recovery_time: [
-          { required: true, message: '请输入恢复时间' },
+          { required: true, message: I18N.t('msw.stp.recovery_no_empty') },
           { validator: intValidator },
           { validator: rangeValidator, min: 30, max: 86400 }
         ]
@@ -177,10 +185,12 @@ export default {
     async _onEnableChange(v) {
       try {
         await this.$confirm(
-          `是否确认${v === 1 ? '开启' : '关闭'}生成树功能？`,
+          I18N.t('msw.stp.stp_enable_confirm', {
+            status: v === 1 ? I18N.t('phrase.enable') : I18N.t('phrase.disable')
+          }),
           {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+            confirmButtonText: I18N.t('action.confirm'),
+            cancelButtonText: I18N.t('action.cancel'),
             type: 'warning'
           }
         )
@@ -215,7 +225,7 @@ export default {
           )
           awaitOnLine_plus({
             time: _delay,
-            text: _delay ? '配置下发中...' : 0,
+            text: _delay ? I18N.t('msw.cfg_wait') : 0,
             maxTry: 50
           }).then(() => {
             this.originEnable = _model.enable
@@ -225,7 +235,7 @@ export default {
               value: _model.enable
             })
             this.isLoading = false
-            this.$message.success('配置成功')
+            this.$message.success(I18N.t('tip.edit1_success'))
           })
         }
       })

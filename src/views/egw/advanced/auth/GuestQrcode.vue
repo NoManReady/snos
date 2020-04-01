@@ -1,27 +1,28 @@
 <template>
   <div class="auth-guest-qrcode">
-    <help-alert json-key="guestScanJson" title="访客扫描上网">
+    <help-alert json-key="guestScanJson" :title="$t('egw.auth.custom_code_scanning')">
       <template slot="content">
-        <div class="mt10">认证用户扫码指定的二维码即可上网。</div>
+        <div class="mt10">{{$t('egw.auth.auth_user_code_scanning')}}</div>
         <div class="c-warning">
           <div class="mt10">
-            <b>设备能够联通互联网的情况下终端才会弹出认证界面。</b>
+            <b>{{$t('egw.auth.show_auth_by_net')}}</b>
           </div>
           <div class="mt10">
-            <b>
-              如果EAP的IP在认证范围内，请将EAP的MAC添加到
-              <a @click="$parent.tabValue='4'" class="c-success pointer">“免认证”</a>的MAC白名单中。
+           <b>
+              <i18n path="egw.auth.erp_mac_to_white">
+                <a @click="$parent.tabValue='4'" class="c-success pointer">{{$t('egw.auth.certification_free')}}</a>
+              </i18n>
             </b>
           </div>
         </div>
       </template>
     </help-alert>
-    <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm">
-      <el-form-item label="扫描认证">
+    <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+      <el-form-item :label="$t('egw.auth.auth_code_scanning')">
         <el-switch active-value="1" inactive-value="0" v-model="baseModel.en"></el-switch>
       </el-form-item>
       <template v-if="baseModel.en === '1'">
-        <el-form-item class="is-required" label="认证IP/范围" prop="authList">
+        <el-form-item class="is-required" :label="$t('egw.auth.access_range_by_ip')" prop="authList">
           <el-form-item
             :class="{mb20:index!==baseModel.authList.length-1}"
             :key="index"
@@ -29,13 +30,12 @@
             :rules="ipValidate(baseModel.authList.concat(allAuthList),index)"
             v-for="(item,index) in baseModel.authList"
           >
-            <el-input class="w300" placeholder="范围格式：1.1.1.1-1.1.1.100" v-model="baseModel.authList[index]"></el-input>
-            <el-button @click="onDelAuthIpList(index)" size="medium" type="text" v-if="baseModel.authList.length > 1">
+            <el-input class="w300" :placeholder="$t('wan.ip_range_example')" v-model="baseModel.authList[index]"></el-input>
+            <el-button @click="onDelAuthIpList(index)" type="text" v-if="baseModel.authList.length > 1">
               <i class="el-icon-close"></i>
             </el-button>
             <el-button
               @click="onAddAuthIpList"
-              size="medium"
               type="text"
               v-if="index === baseModel.authList.length - 1 && baseModel.authList.length < 5"
             >
@@ -43,43 +43,43 @@
             </el-button>
           </el-form-item>
         </el-form-item>
-        <el-form-item label="允许上网时长" prop="time">
-          <el-input class="w300" placeholder="允许上网时长" v-model="baseModel.time">
-            <label slot="append">分钟</label>
+        <el-form-item :label="$t('egw.auth.access_online_times')" prop="time">
+          <el-input class="w300" :placeholder="$t('egw.auth.access_online_times')" v-model="baseModel.time">
+            <label slot="append">{{$t('time.minute')}}</label>
           </el-input>
         </el-form-item>
-        <el-form-item label="生成二维码">
+        <el-form-item  :label="$t('egw.auth.generate_code')">
           <div class="scan-box w600 pos-r">
-            <el-form-item class="mb20" label="二维码IP" label-width="110px" prop="ip" v-if="false">
+            <el-form-item class="mb20" :label="$t('egw.auth.ip_code')" label-width="110px" prop="ip" v-if="false">
               <!-- <el-input class="w220" v-model="baseModel.ip" placeholder="例：192.168.1.2"></el-input> -->
               <label>{{baseModel.ip}}</label>
             </el-form-item>
-            <el-form-item class="mb20" label="二维码动态码" label-width="110px" prop="qrcodeindex">
-              <el-input class="w220" placeholder="二维码动态码" v-model="baseModel.qrcodeindex"></el-input>
+            <el-form-item class="mb20" :label="$t('egw.auth.dynamic_code')"  label-width="110px" prop="qrcodeindex">
+              <el-input class="w220" :placeholder="$t('egw.auth.dynamic_code')" v-model="baseModel.qrcodeindex"></el-input>
             </el-form-item>
-            <el-form-item class="mb20" label="二维码信息" label-width="110px" prop="displayacttext">
-              <el-input :rows="4" class="w220" placeholder="二维码信息" type="textarea" v-model="baseModel.displayacttext"></el-input>
+            <el-form-item class="mb20" :label="$t('egw.auth.information_code')" label-width="110px" prop="displayacttext">
+              <el-input :rows="4" class="w220" :placeholder="$t('egw.auth.information_code')" type="textarea" v-model="baseModel.displayacttext"></el-input>
             </el-form-item>
-            <div class="c-warning">可将右侧的二维码打印粘贴，访客可扫描此二维码上网</div>
+            <div class="c-warning">{{$t('egw.auth.print_code_to_scanning_tip')}}</div>
             <template v-if="qrcodeUrl">
-              <el-tooltip content="可右键另存为" placement="top">
+              <el-tooltip :content="$t('egw.auth.Right_click_to_save')" placement="top">
                 <qrcode-vue :size="140" :value="qrcodeUrl" class="pos-a scan-box--qr" level="L"></qrcode-vue>
               </el-tooltip>
             </template>
             <div class="pos-a scan-box--qr tc scan-box--bordered" v-else>
               <div class="scan-box--qrinfo">
-                <p>二维码</p>
-                <p>（可右键另存为）</p>
+                <p>{{$t('egw.auth.two_bar_codes')}}</p>
+                <p>{{$t('egw.auth.Right_click_to_save')}}</p>
               </div>
             </div>
             <el-form-item v-if="false">
-              <el-button :disabled="!qrEnable" size="small" type="primary" v-auth="onMakeQrCode">生成二维码</el-button>
+              <el-button :disabled="!qrEnable" type="primary" v-auth="onMakeQrCode">{{$t('egw.auth.ip_code_is_required')}}</el-button>
             </el-form-item>
           </div>
         </el-form-item>
       </template>
       <el-form-item>
-        <el-button :loading="isSaveLoading" class="w200" type="primary" v-auth="onSubmit">保存配置</el-button>
+        <el-button :loading="isSaveLoading" class="w160" type="primary" v-auth="onSubmit">{{$t('action.save')}}</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -93,8 +93,8 @@ export default {
   name: 'GuestQrcode',
   data() {
     const detectTimeValidate = (r, v, cb) => {
-      if (!intValidate(v)) return cb(new Error('请输入整数'))
-      if (!isBetween(v, 1, 65535)) return cb(new Error('范围为1-65535'))
+      if (!intValidate(v)) return cb(new Error(this.$t('egw.auth.enter_integer_required')))
+      if (!isBetween(v, 1, 65535)) return cb(new Error(this.$t('egw.port_limit_tip')))
       return cb()
     }
     const codeValidator = (r, v, cb) => {
@@ -117,19 +117,19 @@ export default {
       },
       baseRules: {
         time: [
-          { required: true, message: '请输入分钟数' },
+          { required: true, message: this.$t('egw.auth.enter_minutes_required') },
           { validator: detectTimeValidate }
         ],
         ip: [
-          { required: true, message: '请输入二维码IP' },
+          { required: true, message: this.$t('egw.auth.ip_code_is_required')},
           { validator: ipValidator }
         ],
         qrcodeindex: [
-          { required: true, message: '请输入二维动态码' },
-          { validator: codeValidator, message: '只允许输入数字、英文、字母' }
+          { required: true, message: this.$t('egw.auth.generate_code_is_required') },
+          { validator: codeValidator, message: this.$t('egw.auth.access_number_letters_english_any') }
         ],
         displayacttext: [
-          { validator: quoteValidator, message: '不允许输入英文单双引号' },
+          { validator: quoteValidator, message: this.$t('egw.auth.marks_no_allow_tip') },
           { validator: nameLengthValidator, size: 108 }
         ]
       }
@@ -191,7 +191,7 @@ export default {
             .setGuestScanAuth(this.baseModel)
             .then(d => {
               this.$message({
-                message: '配置成功',
+                message: this.$t('tip.edit1_success'),
                 type: 'success'
               })
             })

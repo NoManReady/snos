@@ -11,7 +11,8 @@ export const wanFn = (metric = '0') => {
     mtu: '1500',
     macaddr: '',
     vlanid: '',
-    metric: metric || '0'
+    metric: metric || '0',
+    special_line: '0'
   }
 }
 
@@ -57,17 +58,17 @@ export const wanIspFn = () => {
   return {
     func: 'set',
     enable: '1',
-    wan: '其他',
-    wan1: '其他',
+    wan: I18N.t('nei.other'),
+    wan1: I18N.t('nei.other'),
     intf_cnt: '2',
     isp_list: [
       {
         ifname: 'wan',
-        isp: '其他'
+        isp: I18N.t('nei.other')
       },
       {
         ifname: 'wan1',
-        isp: '其他'
+        isp: I18N.t('nei.other')
       }
     ]
   }

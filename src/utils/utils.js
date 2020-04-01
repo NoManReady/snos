@@ -195,25 +195,25 @@ export const getConnectStr = (arr, fn = s => s, split = ',') => {
     .map(fn).join(split)
 }
 
-// 获取vlan字符串
-export const getConnectStrByType = (arr, fn = s => s) => {
+// 合并连续数组
+export const mergeArray = (arr, fn = (...argv) => argv) => {
   let _strArr = []
-  if (!(arr instanceof Array)) {
+  if (!Array.isArray(arr)) {
     return arr
   }
   let _arr = [...arr].sort((a, b) => a - b)
   _arr.reduce((prev, next) => {
     let _last = prev[prev.length - 1]
-    if (_last && Number(_last[_last.length - 1]) + 1 === Number(next)) {
-      _last.push(next)
+    if (_last && Number(_last[1]) + 1 === Number(next)) {
+      _last[1] = next
     } else {
-      prev.push([next])
+      prev.push([next, next])
     }
     return prev
   }, _strArr)
   return _strArr
     .reduce((strArr, next) => {
-      strArr.push(fn(next[0], next[next.length - 1]))
+      strArr.push(fn(...next))
       return strArr
     }, [])
 }
@@ -259,5 +259,66 @@ export const debounce = (fn, wait = 200) => {
       clearTimeout(_timer)
     }
     _timer = setTimeout(fn, wait)
+  }
+}
+
+// 判断对象是否改变
+export const objIsSame = (source, target) => {
+  let _sourceKeys = Object.keys(source)
+  let _targetKeys = Object.keys(target)
+  // key值不一致
+  if (_sourceKeys.length !== _targetKeys.length) {
+    return false
+  }
+  for (let _key of _sourceKeys) {
+    let _ori = source[_key]
+    let _cur = target[_key]
+    let _oriType = getType(_ori)
+    let _curType = getType(_cur)
+    // 值类型不一致
+    if (_oriType !== _curType) {
+      return false
+    }
+    // 值对象不一致
+    if (_oriType === 'array' || _oriType === 'object') {
+      if (!objIsSame(_ori, _cur)) {
+        return false
+      } else {
+        continue
+      }
+    }
+    // 值不一致
+    if (_ori !== _cur) {
+      return false
+    }
+  }
+  return true
+}
+
+// 连续点击次数回调
+export const registerNclick = (n, dom, cb = () => { }, type = 'click', remove = true) => {
+  let _count = 0
+  let _prev = 0
+  let _handle = (e) => {
+    if (!_prev) {
+      _prev = e.timeStamp
+    }
+    if (e.timeStamp - _prev < 300) {
+      _count++
+    } else {
+      _count = 0
+    }
+    _prev = e.timeStamp
+    if (_count === n) {
+      cb()
+      remove && dom.removeEventListener(type, _handle)
+      _count = null
+      _prev = null
+      _handle = null
+    }
+  }
+  dom.addEventListener(type, _handle, false)
+  return () => {
+    dom.removeEventListener(type, _handle)
   }
 }

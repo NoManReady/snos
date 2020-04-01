@@ -9,14 +9,14 @@ body .loader {
   bottom: 0;
   right: 0;
   z-index: 10;
-  background: rgba(51, 198, 186, .3);
+  background:  rgba(43, 106, 253, 0.3) ;
 }
 
 body .loader_overlay {
   width: 150px;
   height: 150px;
   background: transparent;
-  box-shadow: 0px 0px 0px 1000px rgba(255, 255, 255, 0.67), 0px 0px 19px 0px rgba(0, 0, 0, 0.16) inset;
+  box-shadow: 0px 0px 0px 1000px rgba(255, 255, 253, 0.67), 0px 0px 19px 0px rgba(43, 106, 253, 0.16) inset;
   border-radius: 100%;
   z-index: -1;
   position: absolute;
@@ -70,7 +70,7 @@ body .loader_cogs__top div.top_part {
   border-radius: 10px;
   position: absolute;
   height: 100px;
-  background: #f98db9;
+  background: #2b6afd;
 }
 
 body .loader_cogs__top div.top_hole {
@@ -121,7 +121,7 @@ body .loader_cogs__left div.left_part {
   border-radius: 6px;
   position: absolute;
   height: 80px;
-  background: #97ddff;
+  background: #6ed6ed;
 }
 
 body .loader_cogs__left div.left_hole {
@@ -172,7 +172,7 @@ body .loader_cogs__bottom div.bottom_part {
   border-radius: 5px;
   position: absolute;
   height: 60px;
-  background: #ffcd66;
+  background: #f4c24e;
 }
 
 body .loader_cogs__bottom div.bottom_hole {
@@ -196,6 +196,7 @@ body .loader_cogs__bottom div.bottom_hole {
     -webkit-transform: rotate(0deg);
     transform: rotate(0deg);
   }
+
   to {
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
@@ -207,6 +208,7 @@ body .loader_cogs__bottom div.bottom_hole {
     -webkit-transform: rotate(0deg);
     transform: rotate(0deg);
   }
+
   to {
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
@@ -218,6 +220,7 @@ body .loader_cogs__bottom div.bottom_hole {
     -webkit-transform: rotate(16deg);
     transform: rotate(16deg);
   }
+
   to {
     -webkit-transform: rotate(376deg);
     transform: rotate(376deg);
@@ -229,6 +232,7 @@ body .loader_cogs__bottom div.bottom_hole {
     -webkit-transform: rotate(16deg);
     transform: rotate(16deg);
   }
+
   to {
     -webkit-transform: rotate(376deg);
     transform: rotate(376deg);
@@ -240,6 +244,7 @@ body .loader_cogs__bottom div.bottom_hole {
     -webkit-transform: rotate(4deg);
     transform: rotate(4deg);
   }
+
   to {
     -webkit-transform: rotate(364deg);
     transform: rotate(364deg);
@@ -251,6 +256,7 @@ body .loader_cogs__bottom div.bottom_hole {
     -webkit-transform: rotate(4deg);
     transform: rotate(4deg);
   }
+
   to {
     -webkit-transform: rotate(364deg);
     transform: rotate(364deg);

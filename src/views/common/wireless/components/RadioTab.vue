@@ -2,82 +2,132 @@
   <div class="radio-tab">
     <help-alert type="info" v-if="showHelp">
       <template slot="title">
-        <p>信道功率设置，只对当前设备生效。</p>
+        <p>{{$t('wifi_comm.radio_cfg_tip')}}</p>
         <p class="mt5" v-if="isHealthyOn">
-          在
-          <span class="c-warning">健康模式生效的时段</span>里，设备优先以较低功率运行。
-          您可以关闭
-          <a @click="onToHealth" class="pointer c-success mlr5">健康模式</a>让功率以本页面配置为准。
+          <i18n path="wifi_comm.radio_cfg_tip1" tag="p">
+            <span class="c-warning" place="place">{{$t('wifi_comm.radio_cfg_place')}}</span>
+            <a @click="onToHealth" class="pointer c-success mlr5" place="healthy">{{$t('wifi_comm.healthy_mode')}}</a>
+          </i18n>
         </p>
       </template>
+      <template slot="content">漫游灵敏度”指无线终端在移动状态下，选择连接最佳的无线信号的速度。</template>
     </help-alert>
     <div class="box">
       <div class="box-header" v-if="showHelp">
-        <span class="box-header-tit">信道&功率设置</span>
+        <span class="box-header-tit">{{$t('wifi_comm.channel_power_cfg')}}</span>
       </div>
       <div class="radio-tab-content">
         <help-alert :show-icon="false" title v-if="!showHelp && isHealthyOn">
           <template slot="content">
-            在
-            <span class="c-warning">健康模式生效的时段</span>里，设备优先以较低功率运行。
-            您可以关闭
-            <a @click="onToHealth" class="pointer c-success mlr5">健康模式</a>让功率以本页面配置为准。
+            <i18n path="wifi_comm.radio_cfg_tip1" tag="p">
+              <span class="c-warning" place="place">{{$t('wifi_comm.radio_cfg_place')}}</span>
+              <a @click="onToHealth" class="pointer c-success mlr5" place="healthy">{{$t('wifi_comm.healthy_mode')}}</a>
+            </i18n>
           </template>
         </help-alert>
-        <el-form :model="radios" class="web-form w600" label-width="160px" ref="baseForm">
-          <div
-            :key="radio.radioIndex"
-            :style="{width:1/radios.radioList.length*100+'%'}"
-            class="vm"
-            v-for="(radio,index) in radios.radioList"
-          >
-            <el-form-item :prop="`radioList[${index}].channel`">
-              <span slot="label">
-                <b class="f-theme">{{radio.type}}</b>信道
-              </span>
-              <el-select :disabled="isCpe" class="w200" v-model="radio.channel">
-                <el-option label="自动" value="auto"></el-option>
-                <template v-if="radio.type==='2.4G'">
-                  <el-option
-                    :key="channel.v"
-                    :label="channel.v+'（'+channel.k+'）'"
-                    :value="channel.v"
-                    v-for="channel in channel2G.items"
-                  ></el-option>
-                </template>
-                <template v-else>
-                  <el-option
-                    :key="channel.v"
-                    :label="channel.v+'（'+channel.k+'）'"
-                    :value="channel.v"
-                    v-for="channel in channel5G.items"
-                  ></el-option>
-                </template>
-              </el-select>
-            </el-form-item>
-            <slot :name="`estSetting`"></slot>
-            <el-form-item :prop="`radioList[${index}].txpower`" label="功率">
-              <el-select class="w200" v-model="radio.txpower">
-                <el-option label="自动" value="auto"></el-option>
-                <el-option label="低" value="50"></el-option>
-                <el-option label="中" value="75"></el-option>
-                <el-option label="高" value="100"></el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item :prop="`radioList[${index}].distance`" label="距离" v-if="showDistance">
-              <el-select class="w200" v-model="radio.distance">
-                <el-option label="1KM" value="1000"></el-option>
-                <el-option label="2KM" value="2000"></el-option>
-                <el-option label="3KM" value="3000"></el-option>
-                <el-option label="4KM" value="4000"></el-option>
-                <el-option label="5KM" value="5000"></el-option>
-                <el-option label="6KM" value="6000"></el-option>
-              </el-select>
-            </el-form-item>
-          </div>
-          <el-form-item :class="{'tc': showHelp && radios.radioList.length > 1 }" v-if="showBtn && isLoadOk">
-            <el-button class="w200" type="primary" v-auth="onSubmitRadio">保存配置</el-button>
-          </el-form-item>
+        <el-form :model="radios" class="web-form w800" label-width="160px" ref="baseForm" size="medium">
+          <el-row>
+            <el-col :key="radio.radioIndex" :lg="10" :md="12" :span="24" :xl="6" v-for="(radio,index) in radios.radioList">
+              <el-form-item :prop="`radioList[${index}].channel`">
+                <span slot="label">
+                  <b class="f-theme">{{radio.type}}</b>
+                  {{$t('wifi_comm.channel')}}
+                </span>
+                <el-select :disabled="isCpe || (repeaterRadio === radio.type)" v-model="radio.channel">
+                  <el-option :label="$t('phrase.auto')" value="auto"></el-option>
+                  <template v-if="radio.type==='2.4G'">
+                    <el-option
+                      :key="channel.v"
+                      :label="channel.v+'（'+channel.k+'）'"
+                      :value="channel.v"
+                      v-for="channel in channel2G.items"
+                    ></el-option>
+                  </template>
+                  <template v-else>
+                    <el-option
+                      :key="channel.v"
+                      :label="channel.v+'（'+channel.k+'）'"
+                      :value="channel.v"
+                      v-for="channel in channel5G.items"
+                    ></el-option>
+                  </template>
+                </el-select>
+              </el-form-item>
+              <slot :name="`estSetting`"></slot>
+              <el-form-item :label="$t('wifi_comm.power')" :prop="`radioList[${index}].txpower`">
+                <el-select v-model="radio.txpower">
+                  <el-option :label="$t('phrase.auto')" value="auto"></el-option>
+                  <el-option :label="$t('phrase.low')" value="50"></el-option>
+                  <el-option :label="$t('phrase.middle')" value="75"></el-option>
+                  <el-option :label="$t('phrase.high')" value="100"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item :label="$t('wifi_comm.distance')" :prop="`radioList[${index}].distance`" v-if="showDistance">
+                <el-select v-model="radio.distance">
+                  <el-option label="1KM" value="1000"></el-option>
+                  <el-option label="2KM" value="2000"></el-option>
+                  <el-option label="3KM" value="3000"></el-option>
+                  <el-option label="4KM" value="4000"></el-option>
+                  <el-option label="5KM" value="5000"></el-option>
+                  <el-option label="6KM" value="6000"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item :prop="`radioList[${index}].beacon_txpow_p`">
+                <label slot="label">
+                  <p>
+                    <span class="vm">漫游灵敏度</span>
+                    <el-tooltip effect="light" placement="top">
+                      <template slot="content">
+                        <ol class="ml15 ol-num">
+                          <li>漫游灵敏度”指无线终端在移动状态下，选择连接最佳的无线信号的速度。</li>
+                          <li>要注意的是漫游灵敏度越高，无线信号覆盖范围越小。</li>
+                          <li>在固定状态下连接，不需要很高的灵敏度。</li>
+                          <li>在移动状态下连接，存在多个wifi信号的前提下，可以通过提高“漫游灵敏度”来解决无线信号质量。</li>
+                        </ol>
+                      </template>
+                      <i class="rjucd-help fs18 vm"></i>
+                    </el-tooltip>
+                  </p>
+                </label>
+                <el-row align="middle" class="form-input-pc" justify="center" type="flex">
+                  <el-col :span="2" class="tl">
+                    <el-tooltip effect="light" placement="top">
+                      <template slot="content">
+                        <p>灵敏度低，信号覆盖越广，减少终端漫游（减少终端切换Wi-Fi频率）</p>
+                        <p>优点：保证无线连接不中断；缺点：保持连接的无线信号可能较差。</p>
+                      </template>
+                      <el-button @click="decrease(radio)" class="el-icon-remove-outline" size="mini" type="text"></el-button>
+                    </el-tooltip>
+                  </el-col>
+                  <el-col :span="21">
+                    <el-progress
+                      :color="customColors"
+                      :format="formatText"
+                      :percentage="+radio.beacon_txpow_p"
+                      :stroke-width="16"
+                      :text-inside="true"
+                    ></el-progress>
+                  </el-col>
+                  <el-col :span="1" class="tr">
+                    <el-tooltip effect="light" placement="top">
+                      <template slot="content">
+                        <p>灵敏度高，减少信号覆盖，增加终端漫游（会增加终端切换Wi-Fi频率）</p>
+                        <p>优点：保持连接较强的无线；缺点：但切换无线时终端网络会短暂断开。</p>
+                      </template>
+                      <el-button @click="increase(radio)" class="el-icon-circle-plus-outline" size="mini" type="text"></el-button>
+                    </el-tooltip>
+                  </el-col>
+                </el-row>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :lg="18" :md="22" :span="2" :xl="12">
+              <el-form-item :class="{'tc': showHelp && radios.radioList.length > 1 }" v-if="showBtn && isLoadOk">
+                <el-button class="w160" type="primary" v-auth="onSubmitRadio">{{$t('action.save_edit')}}</el-button>
+              </el-form-item>
+            </el-col>
+          </el-row>
         </el-form>
       </div>
       <template v-if="radios.radioList.length && !showBtn">
@@ -87,6 +137,7 @@
   </div>
 </template>
 <script>
+import radioMixins from './radioMixins'
 export default {
   name: 'RadioTab',
   props: {
@@ -111,6 +162,7 @@ export default {
       type: Boolean
     }
   },
+  mixins: [radioMixins],
   data() {
     return {
       radios: {
@@ -125,7 +177,12 @@ export default {
         cur: ''
       },
       isHealthyOn: false,
-      isLoadOk: false
+      isLoadOk: false,
+      customColors: [
+        { color: '#018903', percentage: 41 },
+        { color: '#2B6AFD', percentage: 80 },
+        { color: '#F06F03', percentage: 100 }
+      ]
     }
   },
   async created() {
@@ -134,9 +191,42 @@ export default {
     this._loadHealthy()
   },
   methods: {
+    formatText(per) {
+      let _txt = per
+      switch (true) {
+        case per >= 80:
+          _txt = `信号弱 ${per}%`
+          break
+        case per <= 40:
+          _txt = `信号强 ${per}%`
+          break
+        default:
+          _txt = `${per}%`
+          break
+      }
+
+      return _txt
+    },
+    increase(radio) {
+      radio.beacon_txpow_p = +radio.beacon_txpow_p + 10
+      if (radio.beacon_txpow_p > 100) {
+        radio.beacon_txpow_p = 100
+      }
+    },
+    decrease(radio) {
+      radio.beacon_txpow_p = +radio.beacon_txpow_p - 10
+      if (radio.beacon_txpow_p < 0) {
+        radio.beacon_txpow_p = 0
+      }
+    },
     // 加载射频（设备）
     async _loadRadio() {
       let _radios = await this.$api.getRadio({ remoteIp: this.remoteIp })
+      // 漫游灵敏度默认100
+      _radios.radioList.map(radio => {
+        radio.beacon_txpow_p = radio.beacon_txpow_p || '50'
+        return radio
+      })
       let [_isSingleRadio, _radioType] = [false, '2.4G']
 
       if (this.remoteIp) {
@@ -205,6 +295,9 @@ export default {
       return new Promise((resolve, reject) => {
         this.$refs.baseForm.validate(valid => {
           if (valid) {
+            this.radios.radioList.map(
+              radio => (radio.beacon_txpow_p = '' + radio.beacon_txpow_p)
+            ) // 转成字符串
             resolve(this.radios)
           } else {
             reject('Form validate error!')
@@ -228,6 +321,9 @@ export default {
       this.$emit('change', { res: 1, msg: 'start loading' })
       this.$refs.baseForm.validate(valid => {
         if (valid) {
+          this.radios.radioList.map(
+            radio => (radio.beacon_txpow_p = '' + radio.beacon_txpow_p)
+          ) // 转成字符串
           this.$api
             .setRadio(this.radios, { remoteIp: this.remoteIp })
             .then(d => {
@@ -256,4 +352,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.radio-tab {
+  .form-input-pc {
+    max-width: 200px;
+  }
+}
 </style>

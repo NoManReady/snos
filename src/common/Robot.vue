@@ -1,34 +1,30 @@
 <template>
-  <div class="common-robot" :style="styl" @click="_onClickTo" @mouseenter="_onMouseEnter" @mouseleave="_onMouseLeave">
-    <img ref="robot" :src="require('@/assets/eg/rob.png')" v-popover:popover alt="点击问小睿问题" :width="width" :height="height" />
-    <el-popover ref="popover" placement="left" v-model="showPop" title="" :offset="14" trigger="hover" :open-delay="150" content="智能小睿哥，有问必答~">
-    </el-popover>
+  <div :style="styl" @click="_onClickTo" @mouseenter="_onMouseEnter" @mouseleave="_onMouseLeave" class="common-robot">
+    <img :alt="$t('comp.help_tip')" :src="icon" :style="imgStyl" ref="robot" v-popover:popover />
+    <el-popover
+      :content="$t('comp.help_tip1')"
+      :offset="14"
+      :open-delay="150"
+      placement="left"
+      ref="popover"
+      title
+      trigger="hover"
+      v-model="showPop"
+    ></el-popover>
   </div>
 </template>
 <script>
-let timer = null;
+let timer = null
+import { mapGetters } from 'vuex'
 export default {
-  name: "CommonRobot",
+  name: 'CommonRobot',
   props: {
-    url: {
-      type: String,
-      default:
-        "http://www.sobot.com/chat/pc/index.html?sysNum=d297baf2631144148167cb1446c9317d"
-    },
-    width: {
-      type: Number,
-      default: 80
-    },
-    height: {
-      type: Number,
-      default: 63
-    },
     pos: {
       type: String,
       validator(v) {
-        return ["tl", "tr", "bl", "br"].indexOf(v) > -1;
+        return ['tl', 'tr', 'bl', 'br'].indexOf(v) > -1
       },
-      default: "br"
+      default: 'br'
     },
     topD: {
       type: Number,
@@ -40,71 +36,91 @@ export default {
     },
     spacing: {
       type: Number,
-      default: 10
+      default: 8
     }
   },
   data() {
     return {
       showPop: false,
       isActive: false
-    };
+    }
   },
   computed: {
+    ...mapGetters(['lang']),
+    url() {
+      return this.lang === 'en'
+        ? 'http://www.ruijienetworks.com/rita'
+        : 'https://ocs.ruijie.com.cn/?p=smb'
+    },
+    icon() {
+      return this.lang === 'en'
+        ? require('@/assets/eg/rob_en.png')
+        : require('@/assets/eg/rob.png')
+    },
+    imgStyl() {
+      return this.lang === 'en'
+        ? {
+            transform: 'scale(1.5)'
+          }
+        : { 'margin-right': '-20px' }
+    },
     styl() {
-      let _styl = {};
-      // _styl.width = _styl.height = `${this.width}px`
-      let _diff = this.isActive ? this.spacing : -(this.width / 2);
+      let _styl = {}
+      let _diff = this.isActive ? this.spacing : -(this.lang === 'en' ? 10 : 25)
       if (!this.isActive) {
-        _styl.opacity = 0.7;
+        _styl.opacity = 0.7
       }
-      if (this.pos === "tl") {
-        _styl.left = `${_diff}px`;
-        _styl.top = `${this.topD + this.spacing}px`;
+      if (this.pos === 'tl') {
+        _styl.left = `${_diff}px`
+        _styl.top = `${this.topD + this.spacing}px`
       }
-      if (this.pos === "tr") {
-        _styl.right = `${_diff}px`;
-        _styl.top = `${this.topD + this.spacing}px`;
+      if (this.pos === 'tr') {
+        _styl.right = `${_diff}px`
+        _styl.top = `${this.topD + this.spacing}px`
       }
-      if (this.pos === "bl") {
-        _styl.left = `${_diff}px`;
-        _styl.bottom = `${this.bottomD + this.spacing}px`;
+      if (this.pos === 'bl') {
+        _styl.left = `${_diff}px`
+        _styl.bottom = `${this.bottomD + this.spacing}px`
       }
-      if (this.pos === "br") {
-        _styl.right = `${_diff}px`;
-        _styl.bottom = `${this.bottomD + this.spacing}px`;
+      if (this.pos === 'br') {
+        _styl.right = `${_diff}px`
+        _styl.bottom = `${this.bottomD + this.spacing}px`
       }
-      return _styl;
+      return _styl
     }
   },
   mounted() {
-    this.showPop = true;
-    this.isActive = true;
+    this.isActive = true
+    setTimeout(() => {
+      this.showPop = true
+    }, 300)
     timer = setTimeout(() => {
-      this.isActive = false;
-      this.showPop = false;
-    }, 10000);
+      this.isActive = false
+      this.showPop = false
+    }, 10000)
   },
   methods: {
     _onMouseEnter() {
-      timer && clearTimeout(timer);
-      this.isActive = true;
+      timer && clearTimeout(timer)
+      this.isActive = true
     },
     _onMouseLeave() {
       timer = setTimeout(() => {
-        this.isActive = false;
-        this.$refs.robot.blur();
-      }, 800);
+        this.isActive = false
+        this.$refs.robot.blur()
+      }, 800)
     },
     _onClickTo() {
       if (this.url) {
-        window.open(this.url, "_blank");
+        window.open(this.url, '_blank')
       }
     }
   }
-};
+}
 </script>
 <style lang="scss" scoped>
 .common-robot {
+  cursor: pointer;
   position: fixed;
   text-align: center;
   display: flex;

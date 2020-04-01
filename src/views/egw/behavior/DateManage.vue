@@ -1,58 +1,81 @@
 <template>
   <div class="behavior-date-manage">
-    <help-alert json-key="behaviorDateManageJson" title="时间列表">
+    <help-alert :title="$t('egw.DataManage.times_tab')" json-key="behaviorDateManageJson">
       <div slot="collapseFoot">
-        <h3 class="tit">注意</h3>
-        <p class="desc">时间一旦在其他地方被引用则无法在本页面被删除，除非解除引用。</p>
+        <h3 class="tit">{{$t('phrase.notice')}}</h3>
+        <p class="desc">{{$t('egw.DataManage.times_tab_tip')}}</p>
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          时间列表
+          {{$t('egw.DataManage.times_tab')}}
           <small></small>
         </span>
         <div class="fr">
           <el-button
             :disabled="dateList.length>=maxLimit||isLoading"
             icon="el-icon-plus"
-            size="small"
+            plain
+            size="medium"
             type="primary"
             v-auth="onAdd"
-          >新增</el-button>
-          <el-button :disabled="isLoading" icon="el-icon-delete" size="small" type="primary" v-auth="onDel">批量删除</el-button>
+          >{{$t('action.add')}}</el-button>
+          <el-button
+            :disabled="isLoading"
+            icon="el-icon-delete"
+            plain
+            size="medium"
+            type="primary"
+            v-auth="onDel"
+          >{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{maxLimit}}</b>条。
+          <i18n path="egw.limit_num_tip">
+            <b class="c-warning mlr5">{{maxLimit}}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="dateList" ref="baseTable" size="mini" stripe>
+      <el-table :data="dateList" ref="baseTable" size="medium" stripe>
         <el-table-column :selectable="_isSelectable" type="selection" width="55"></el-table-column>
-        <el-table-column align="center" label="时间名称" prop="tmngtName"></el-table-column>
-        <el-table-column align="center" label="工作时间" prop="time">
+        <el-table-column :label="$t('egw.DataManage.times_name')" align="center" prop="name">
+          <template slot-scope="scope">
+            {{scope.row.name || scope.row.tmngtName}}
+          </template>
+        </el-table-column>
+        <el-table-column :label="$t('egw.DataManage.times_job')" align="center" prop="time">
           <template slot-scope="scope">
             <i @click="onOpenTimeSelection(scope.row.time,false)" class="el-icon-date f-theme pointer"></i>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column :label="$t('action.ope')" align="center">
           <template slot-scope="scope">
-            <el-button :disabled="scope.row.type==='system'" type="text" v-auth="{fn:onEdit,params:scope.$index}">修改</el-button>
-            <el-button :disabled="!_isSelectable(scope.row)" type="text" v-auth="{fn:onDel,params:scope.row}">删除</el-button>
+            <el-button
+              :disabled="scope.row.type==='system'"
+              size="medium"
+              type="text"
+              v-auth="{fn:onEdit,params:scope.$index}"
+            >{{$t('action.edit')}}</el-button>
+            <el-button
+              :disabled="!_isSelectable(scope.row)"
+              size="medium"
+              type="text"
+              v-auth="{fn:onDel,params:scope.row}"
+            >{{$t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
       <!-- 时间对象modal -->
       <el-dialog :title="modalTitle" :visible.sync="baseModalShow" width="550px">
-        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm">
-          <el-form-item label="时间名称" prop="tmngtName">
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('egw.DataManage.times_name')" prop="tmngtName">
             <el-input
               :disabled="editIndex!==-1"
+              :placeholder="$t('egw.DataManage.enter_time_name')"
               :title="baseModel.tmngtName"
               class="w250"
-              placeholder="请输入时间名称"
               v-model="baseModel.tmngtName"
             ></el-input>
           </el-form-item>
@@ -62,16 +85,16 @@
               <el-radio label="input">手动设置</el-radio>
             </el-radio-group>
           </el-form-item>-->
-          <el-form-item class="is-required" label="日历" prop="time" v-show="baseModel.type==='user'">
+          <el-form-item :label="$t('egw.calendar')" class="is-required" prop="time" v-show="baseModel.type==='user'">
             <span @click="onOpenTimeSelection(baseModel.time,true)" class="f-theme pointer">
               <i class="el-icon-date"></i>
-              选择时间
+              {{$t('egw.accessCtrl.select_time')}}
             </span>
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click="baseModalShow = false">取 消</el-button>
-          <el-button :disabled="isLoading" @click="onModalConfirm" type="primary">确 定</el-button>
+          <el-button @click="baseModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button :disabled="isLoading" @click="onModalConfirm" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -92,7 +115,7 @@ export default {
           (date, index) => date.tmngtName === value && index !== this.editIndex
         )
       ) {
-        cb(new Error(`时间名称已被使用`))
+        cb(new Error(this.$t('egw.DataManage.times_name_is_has')))
       }
       cb()
     }
@@ -110,17 +133,26 @@ export default {
       baseModel: model.behaviorDateManageFn(),
       baseRules: {
         tmngtName: [
-          { required: true, message: '请输入时间名称', whitespace: true },
+          {
+            required: true,
+            message: this.$t('egw.DataManage.enter_time_name'),
+            whitespace: true
+          },
           {
             validator: nameLengthValidator,
             size: 64,
-            message: '时间名称不能超过64个字符，中文占3字符'
+            message: this.$t('egw.DataManage.invalid_times_name')
           },
           {
             validator: uniqueValidator
           }
         ],
-        time: [{ validator: timeValidator, message: '请选择时间范围' }]
+        time: [
+          {
+            validator: timeValidator,
+            message: this.$t('egw.select_time_range')
+          }
+        ]
       },
       dateList: [],
       selections: {}
@@ -129,7 +161,9 @@ export default {
   mixins: [formMixins],
   computed: {
     modalTitle() {
-      return this.editIndex === -1 ? '添加时间' : '编辑时间'
+      return this.editIndex === -1
+        ? this.$t('egw.DataManage.times_add')
+        : this.$t('egw.DataManage.times_edit')
     }
   },
   created() {
@@ -169,9 +203,9 @@ export default {
         _items = [item]
       }
       if (!_items.length) {
-        return this.$message.warning('请选择要删除的列表项')
+        return this.$message.warning(this.$t('tip.select_del_item'))
       }
-      this.$confirm('是否确认删除？').then(() => {
+      this.$confirm(this.$t('tip.confirm_delete')).then(() => {
         this.isLoading = true
         this.$api
           .setDateManage({ tmngtName: _items.map(ite => ite.tmngtName) }, 'del')
@@ -181,7 +215,7 @@ export default {
               this.dateList.splice(_index, 1)
             })
             this.$message({
-              message: '删除成功',
+              message: this.$t('tip.del_success'),
               type: 'success'
             })
           })
@@ -240,6 +274,6 @@ export default {
     }
   }
 }
-</script>
+</script>s
 <style lang="scss" scoped>
 </style>

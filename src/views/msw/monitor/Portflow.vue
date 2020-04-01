@@ -1,70 +1,89 @@
 <template>
   <div class="monitor-portflow">
-    <help-alert title="端口流量" v-if="showHelp"></help-alert>
+    <!-- <help-alert title="端口流量" v-if="showHelp"></help-alert> -->
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">端口信息</span>
-        <div class="vm">
-          <el-tooltip content="流量数据5分钟更新一次" placement="top">
-            <i class="el-icon-question fs16 c-info"></i>
-          </el-tooltip>
-          <el-tooltip content="刷新列表" placement="top">
-            <a @click="_refresh" class="c-success ml5" href="javascript:;">
-              <i class="el-icon-refresh fs14"></i>
-            </a>
-          </el-tooltip>
+        <div class="box-header-tit">
+          <span class="vm">{{$t('msw.flow.port_info')}}</span>
+          <port-panel--graphic class="vm" v-if="!showHelp" />
         </div>
         <div class="fr" v-if="showHelp&&!isFirst">
-          <el-button @click.native="_onClearData(false)" icon="el-icon-delete" size="small" type="danger">清除</el-button>
-          <el-button @click.native="_onClearData(true)" icon="el-icon-delete" size="small" type="danger">全部清除</el-button>
+          <el-button
+            @click.native="_onClearData(false)"
+            icon="el-icon-delete"
+            plain
+            size="medium"
+            type="primary"
+          >{{$t('action.patch_clear')}}</el-button>
+          <el-button
+            @click.native="_onClearData(true)"
+            icon="el-icon-delete"
+            plain
+            size="medium"
+            type="primary"
+          >{{$t('action.clear_all')}}</el-button>
         </div>
       </div>
-      <slot :loading="isLoading||isFirst" :portinfo="viewPorts"></slot>
-      <el-table :data="pageList" ref="baseTable" size="small" stripe v-loading="isLoading||isFirst">
+      <help-alert :show-icon="false" title>
+        <div slot="content">
+          <span class="vm">{{$t('msw.flow.data_fresh_tip')}}</span>
+          <el-button
+            :disabled="isLoading"
+            @click.native="_refresh"
+            class="vm"
+            icon="el-icon-refresh"
+            size="mini"
+            style="padding:0;"
+            type="text"
+          >{{$t('action.refresh')}}</el-button>
+        </div>
+      </help-alert>
+      <slot :loading="isLoading||isFirst" :portinfo="viewPorts" :refresh="_refresh"></slot>
+      <el-table :data="pageList" ref="baseTable" size="medium" stripe tooltip-effect="light" v-loading="isLoading||isFirst">
         <el-table-column type="selection" v-if="showHelp" width="55"></el-table-column>
-        <el-table-column align="center" label="端口" width="100px">
+        <el-table-column :label="$t('msw.port')" align="center" width="100px">
           <template slot-scope="{row}">
-            <span>{{row.interface}}</span>
+            <span>{{row.ifname}}</span>
             <i class="rjucd-shanglian uplink" v-if="uplink.lpid.includes(row.lpid)"></i>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="端口速率">
+        <el-table-column :label="$t('msw.base.port_speed')" align="center">
           <template slot-scope="{row}">
             <span class="c-warning" v-if="row.r_speed===0">10M</span>
             <span class="c-warning" v-else-if="row.r_speed===1">100M</span>
             <span class="c-ok" v-else-if="row.r_speed===2">1000M</span>
             <span class="c-ok" v-else-if="row.r_speed===3">10G</span>
-            <span class="c-info" v-else>未连接</span>
+            <span class="c-info break-word" v-else>{{$t('msw.flow.unconnection')}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="输入/输出速率(kbps)">
+        <el-table-column :label="$t('msw.flow.inout_speed')" align="center">
           <template slot-scope="{row}">
-            <span>{{row.inrate_10s}}/{{row.outtrate_10s}}</span>
+            <span class="break-word">{{row.inrate_10s}}/{{row.outtrate_10s}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="接收/发送字节">
+        <el-table-column :label="$t('msw.flow.inout_byte')" align="center">
           <template slot-scope="{row}">
-            <span>{{row.input_total|rateTrans}}/{{row.output_total|rateTrans}}</span>
+            <span class="break-word">{{row.input_total|rateTrans}}/{{row.output_total|rateTrans}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="接收/发送报文数">
+        <el-table-column :label="$t('msw.flow.inout_pack')" align="center">
           <template slot-scope="{row}">
-            <span>{{row.inpacket_total}}/{{row.outpacket_total}}</span>
+            <span class="break-word">{{row.inpacket_total}}/{{row.outpacket_total}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="CRC/FCS错误包">
+        <el-table-column :label="$t('msw.flow.err_pack')" align="center">
           <template slot-scope="{row}">
-            <span>{{row.crc_err}}/{{row.fcs_err}}</span>
+            <span class="break-word">{{row.crc_err}}/{{row.fcs_err}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="不完整/过大数据包">
+        <el-table-column :label="$t('msw.flow.over_pack')" align="center" width="180">
           <template slot-scope="{row}">
-            <span>{{row.undersize}}/{{row.ovbersize}}</span>
+            <span class="break-word">{{row.undersize}}/{{row.ovbersize}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="冲突次数" width="100">
+        <el-table-column :label="$t('msw.flow.conflict_cnt')" align="center" width="100">
           <template slot-scope="{row}">
-            <span>{{row.conflicts_num}}</span>
+            <span class="break-word">{{row.conflicts_num}}</span>
           </template>
         </el-table-column>
       </el-table>
@@ -86,8 +105,18 @@
 import pageMixins from '@/mixins/msw/pageMixins'
 import { rateTrans } from '@/utils/utils'
 import { mapGetters } from 'vuex'
+import {
+  getLpidByAggid,
+  isPhyPort,
+  isSupportPoE,
+  hasLagmemberByLpid
+} from '@/utils/lag'
+import PortPanelGraphic from '@/common/PortPanelGraphic'
 export default {
   name: 'monitor-portflow',
+  components: {
+    [PortPanelGraphic.name]: PortPanelGraphic
+  },
   mixins: [pageMixins],
   filters: { rateTrans },
   props: {
@@ -105,7 +134,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('switcher', ['portinfo', 'lagPort', 'uplink', 'logicPort']),
+    ...mapGetters('switcher', ['portinfo', 'uplink']),
     viewPorts() {
       return Object.freeze(this.pageModel.allItem.slice(0, this.totalPort))
     }
@@ -119,7 +148,10 @@ export default {
           { method: 'devSta.get', params: { module: 'flow_status' } },
           { method: 'devSta.get', params: { module: 'port_base' } }
         ]
-        let [flow, base] = await this.$api.cmd(
+        if (APP_ROLES.includes('sw_poe')) {
+          params.push({ method: 'devSta.get', params: { module: 'poe' } })
+        }
+        let [flow, base, poe] = await this.$api.cmd(
           'cmdArr',
           { params },
           { isSilence: true }
@@ -127,22 +159,23 @@ export default {
         _list = flow.data
           .map((f, i) => {
             let _basedata = base.data.find(p => p.lpid === f.lpid)
-            let _portinfo = this.portinfo.find(p => p.lpid === f.lpid)
-            let _icon = _portinfo.media_type === 2 ? 'guangkou' : 'upport'
-            let _realPort =
-              this.logicPort.find(p => p.interface === f.interface) || {}
+            let _poeInfo = { power_on: 0, off_reason: 0 }
+            if (poe && poe.data && isSupportPoE(f.lpid)) {
+              _poeInfo = poe.data.find(p => p.lpid === f.lpid)
+            }
+            let _portItem = this.portinfo.find(p => p.lpid === f.lpid)
+            // let _icon = _portItem.media_type === 2 ? 'guangkou' : 'upport'
             let _ag =
-              _realPort.aggregate_port > 0 ? _realPort.aggregate_port : null
+              _portItem.aggregate_port > 0 ? _portItem.aggregate_port : null
             // 当前口为聚合口，提取聚合信息
             if (_ag) {
-              let _agPort = this.lagPort.find(p => p.interface === `lag${_ag}`)
-              if (_agPort) {
-                let _baseAg = base.data.find(p => p.lpid === _agPort.lpid)
-                _basedata.exception = _baseAg && _baseAg.exception
-              }
+              let _lpid = getLpidByAggid(_ag)
+              let _baseAg = base.data.find(p => p.lpid === _lpid)
+              _basedata.exception = _baseAg && _baseAg.exception
             }
             // 判断端口的实时状态
             let _status = 'closed'
+            let _enable = _basedata.enable
             if (_basedata.enable === 1) {
               if (_basedata.link === 0) {
                 _status = 'info'
@@ -153,28 +186,32 @@ export default {
                   _status = 'warning'
                 }
               }
-            } else {
-              if (![0, 2].includes(_basedata.exception)) {
-                _status = 'error'
-              }
+            }
+            if (_basedata.exception === 2) {
+              _basedata.exception = 0
+            }
+            // 端口异常情况下，设置状态为错误且enable为0
+            if (_basedata.exception) {
+              _status = 'error'
+              _enable = 0
             }
             return {
-              ..._portinfo,
+              ..._portItem,
               ..._basedata,
               ...f,
-              icon: _icon,
+              // icon: _icon,
+              enable: _enable,
               portType: _status,
-              text: _ag
+              text: _ag,
+              poeUp: _poeInfo.power_on === 1,
+              poeError: _poeInfo.off_reason !== 0
             }
           })
           .filter(port => {
-            return (
-              port.aggregate_port !== undefined ||
-              this.lagPort.find(p => p.lpid === port.lpid)
-            )
+            return isPhyPort(port.lpid) || hasLagmemberByLpid(port.lpid)
           })
       } catch (e) {
-        console.log(e)
+        this.$log(e)
       }
       this.isFirst = false
       return _list
@@ -183,7 +220,7 @@ export default {
     async _onClearData(isAll) {
       let _lpids = isAll ? [] : this.$refs.baseTable.selection.map(s => s.lpid)
       if (!isAll && !_lpids.length) {
-        return this.$message.warning('请选择要清除的端口')
+        return this.$message.warning(I18N.t('msw.flow.clear_port'))
       }
       try {
         await this.$api.cmd(
@@ -192,8 +229,9 @@ export default {
             module: 'flow_status',
             data: { lpid: _lpids }
           },
-          { text: '清除中' }
+          { text: I18N.t('msw.flow.clearing') }
         )
+        this.$message.success(I18N.t('tip.remove_success'))
         this._refresh()
       } catch (error) {}
     },
@@ -211,8 +249,4 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.monitor-portflow {
-}
-</style>
 

@@ -1,37 +1,34 @@
 <template>
   <el-form :model="form" label-width="120px" ref="form" size="small">
-    <help-alert json-key="exampleJson" title="在线升级">
-      <div slot="content">在线升级会保留当前配置，升级过程中会重启设备，请不要刷新或关闭浏览器，升级成功会自动跳转到登录页。</div>
+    <help-alert :title="$t('systool.online_upgrade')" json-key="exampleJson">
+      <div slot="content">{{ $t("systool.online_upgrade_tip") }}</div>
     </help-alert>
-    <el-form-item label="当前版本号">
+    <el-form-item :label="$t('systool.cur_version')">
       <div :key="form.curVersion" v-html="form.curVersion" v-if="form.curVersion"></div>
       <div v-else>
-        <i class="el-icon-loading f-theme"></i> 正在获取版本信息
+        <i class="el-icon-loading f-theme"></i>
+        {{ $t("systool.on_fetch_version") }}
       </div>
     </el-form-item>
-    <div v-if="form.hasNewVersion">
-      <el-form-item class="c-warning" label="新版本号">
+    <template v-if="form.hasNewVersion">
+      <el-form-item :label="$t('systool.new_version')" class="c-warning">
         <div v-html="form.newVersion"></div>
       </el-form-item>
-      <el-form-item label="新版本说明">
+      <el-form-item :label="$t('systool.new_version_explain')">
         <pre style="font-family: inherit;" v-html="form.versionDesc"></pre>
       </el-form-item>
-      <el-form-item label="提示">
-        <div>
-          1、若您的设备无法访问外网，请点击
-          <span @click="onDownload" class="pointer c-success">“下载升级包”</span>
-          保存到本地电脑。
-        </div>
-        <div>
-          2、接着通过
-          <span @click="onToLocalUpgrade" class="pointer c-success">“本地升级”</span>
-          页面，选取升级包文件上传到设备进行升级。
-        </div>
+      <el-form-item :label="$t('phrase.tip')">
+        <i18n path="systool.oup_tip1" tag="div">
+          <span @click="onDownload" class="pointer c-success">{{ $t("systool.oup_tip_bin") }}</span>
+        </i18n>
+        <i18n path="systool.oup_tip2" tag="div">
+          <span @click="onToLocalUpgrade" class="pointer c-success">{{ $t("systool.oup_tip_local") }}</span>
+        </i18n>
       </el-form-item>
       <el-form-item>
-        <el-button @click.native="onUpgrade()" size="small" type="primary">马上升级（推荐）</el-button>
+        <el-button @click.native="onUpgrade" class="w160" size="medium" type="primary">{{ $t("systool.upgrade_quick") }}</el-button>
       </el-form-item>
-    </div>
+    </template>
   </el-form>
 </template>
 <script>
@@ -58,11 +55,10 @@ export default {
       window.open(this.form.downloadPath, '_blank')
     },
     onToLocalUpgrade() {
-      if (this.$roles().includes('alone')) {
-        this.$parent.tabValue = '1'
-      } else {
-        this.$router.push({ name: 'admin/alone/systoll/local' })
-      }
+      this.$router.push({
+        name: 'admin/alone/systool/systool_upgrade',
+        query: { tab: '1' }
+      })
     },
     onUpgrade() {
       upgradeOnlineVers(this.form)
@@ -70,5 +66,4 @@ export default {
   }
 }
 </script>
-<style lang="scss">
-</style>
+<style lang="scss"></style>

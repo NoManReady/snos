@@ -1,40 +1,42 @@
 <template>
   <div class="component_sitegroup-tab">
-    <help-alert json-key="behaviorSiteGroupJson" title="网站分组">
-      <div class="fs14" slot="content">可以添加完整网址(www.baidu.com)或一类网址(如*.56.com) 关键字。必须按照上述格式输入才能正确生效</div>
+    <help-alert json-key="behaviorSiteGroupJson" :title="$t('egw.SiteManage.web_group')">
+      <div class="fs14" slot="content">{{$t('egw.SiteManage.web_group_tip')}}</div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          网站分组
+          {{$t('egw.SiteManage.web_group')}}
           <small></small>
         </span>
         <div class="fr">
           <el-button
             :disabled="groupList.length>=maxLimit||isLoading"
             icon="el-icon-plus"
-            size="small"
+            plain
+            size="medium"
             type="primary"
             v-auth="onAdd"
-          >新增</el-button>
-          <el-button :disabled="isLoading" icon="el-icon-delete" size="small" type="primary" v-auth="onDel">批量删除</el-button>
+          >{{$t('action.add')}}</el-button>
+          <el-button :disabled="isLoading" icon="el-icon-delete" plain size="medium" type="primary" v-auth="onDel">{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{maxLimit}}</b>条。
+          <i18n path="egw.limit_num_tip">
+              <b class="c-warning mlr5">{{maxLimit}}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="groupList" ref="baseTable" size="mini" stripe>
+      <el-table :data="groupList" ref="baseTable" size="medium" stripe>
         <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column align="center" label="组名称" prop="alias_name"></el-table-column>
-        <el-table-column align="center" label="组成员" prop="url_list">
+        <el-table-column align="center" :label="$t('egw.SiteManage.group_name')" prop="alias_name"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.SiteManage.group_member')" prop="url_list">
           <template slot-scope="scope">
             <span v-if="scope.row.url_list.length<=1">{{scope.row.url_list[0]}}</span>
             <div v-else>
               <span>{{scope.row.url_list[0]}}...</span>
-              <el-popover :title="`组成员（${scope.row.url_list.length}）`" placement="right" trigger="click">
+              <el-popover :title="$t('egw.SiteManage.group_member') + `（${scope.row.url_list.length}）`" placement="right" trigger="click">
                 <div class="max-w300 popover-container">
                   <el-tag
                     :key="scope.row.entry_name+index+'-'+app"
@@ -43,45 +45,45 @@
                     v-for="(app,index) in scope.row.url_list"
                   >{{app}}</el-tag>
                 </div>
-                <a class="pointer f-theme" href="javascript:;" slot="reference">更多</a>
+                <a class="pointer f-theme" href="javascript:;" slot="reference">{{$t('egw.more')}}</a>
               </el-popover>
             </div>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column align="center" :label="$t('action.ope')">
           <template slot-scope="scope">
-            <el-button :disabled="isLoading" type="text" v-auth="{fn:onEdit,params:scope.$index}">修改</el-button>
-            <el-button :disabled="isLoading" type="text" v-auth="{fn:onDel,params:scope.row}">删除</el-button>
+            <el-button :disabled="isLoading" size="medium" type="text" v-auth="{fn:onEdit,params:scope.$index}">{{$t('action.edit')}}</el-button>
+            <el-button :disabled="isLoading" size="medium" type="text" v-auth="{fn:onDel,params:scope.row}">{{$t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
       <!-- 分组编辑modal -->
       <el-dialog :title="modalTitle" :visible.sync="baseModalShow" width="500px">
-        <el-form :model="baseModel" :rules="baseRules" label-width="120px" ref="baseForm">
-          <el-form-item label="组名称" prop="alias_name">
+        <el-form :model="baseModel" :rules="baseRules" label-width="120px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('egw.SiteManage.group_name')" prop="alias_name">
             <input name="behaviorSiteGroupName" type="text" v-show="false" />
             <el-input
               :disabled="editIndex!==-1"
               :title="baseModel.alias_name"
               class="w300"
               name="behaviorSiteGroupName"
-              placeholder="组名称（1-64个字符）"
+              :placeholder="$t('egw.SiteManage.group_name_tip')"
               v-model="baseModel.alias_name"
             ></el-input>
           </el-form-item>
-          <el-form-item label="组成员" prop="url_list">
+          <el-form-item :label="$t('egw.SiteManage.group_member')" prop="url_list">
             <el-input
               :rows="6"
               class="w300"
-              placeholder="可以添加完整网址(www.baidu.com)或一类网址(如*.56.com) 关键字"
+              :placeholder="$t('egw.SiteManage.group_member_tip')"
               type="textarea"
               v-model="urlTranslate"
             ></el-input>
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click="baseModalShow = false">取 消</el-button>
-          <el-button @click="onModalConfirm" type="primary">确 定</el-button>
+          <el-button @click="baseModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button @click="onModalConfirm" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -98,14 +100,14 @@ export default {
   data() {
     const urlValidator = (rule, value, cb) => {
       if (!this.urlTranslate) {
-        cb(new Error(`组成员不能为空`))
+        cb(new Error(this.$t('egw.SiteManage.group_member_is_required')))
         return
       }
       let _invalid = value.filter(acc => {
-        return !(urlRegexp.test(acc) || /^\*\.([\w+\.])+/.test(acc))
+        return !!acc && !(urlRegexp.test(acc) || /^\*\.([\w+\.])+/.test(acc))
       })
       if (_invalid && _invalid.length) {
-        cb(new Error(`组成员:${_invalid.join(',')}无效`))
+        cb(new Error(this.$t('egw.SiteManage.invalid_group_member',{str: _invalid.join(',')})))
         return
       }
       // https校验
@@ -122,11 +124,11 @@ export default {
       baseModel: model.behaviorSiteGroupManageFn(),
       baseRules: {
         alias_name: [
-          { required: true, message: '组名称不能为空' },
+          { required: true, message: this.$t('egw.SiteManage.group_name_is_required') },
           { validator: nameLengthValidator, size: 64 }
         ],
         url_list: [
-          { required: true, message: '组成员不能为空' },
+          { required: true, message: this.$t('egw.SiteManage.group_member_is_required') },
           { validator: urlValidator }
         ]
       },
@@ -146,16 +148,16 @@ export default {
   },
   computed: {
     modalTitle() {
-      return this.editIndex !== -1 ? '编辑分组' : '添加分组'
+      return this.editIndex !== -1 ? this.$t('egw.SiteManage.group_edit')  : this.$t('egw.SiteManage.group_add')
     },
     urlTranslate: {
       get() {
         return (this.baseModel.url_list || []).join('\n')
       },
       set(v) {
-        v = v.replace(/(^\s*)|(\s*$)|(\n*$)|(^\n*)/g, '')
-        this.baseModel.url_list = [...new Set(v.split(/\s+|\n+/) || [])].filter(
-          v => !!v
+        v = v.replace(/^\n+/g, '')
+        this.baseModel.url_list = [...new Set(v.split(/\n+/) || [])].map(v =>
+          v.trim()
         )
       }
     }
@@ -192,9 +194,9 @@ export default {
         _items = [item]
       }
       if (!_items.length) {
-        return this.$message.warning('请选择要删除的列表项')
+        return this.$message.warning(this.$t('tip.select_del_item'))
       }
-      this.$confirm('是否确认删除？').then(() => {
+      this.$confirm(this.$t('tip.confirm_delete')).then(() => {
         this.isLoading = true
         this.$api
           .delSiteGroup({ names: _items.map(ite => ite.entry_name) })
@@ -204,7 +206,7 @@ export default {
               this.groupList.splice(_index, 1)
             })
             this.$message({
-              message: '删除成功',
+              message: this.$t('tip.del_success'),
               type: 'success'
             })
           })
@@ -223,6 +225,7 @@ export default {
     },
     // 提交数据
     _onSubmit() {
+      this.baseModel.url_list = this.baseModel.url_list.filter(v => !!v)
       if (
         JSON.stringify(this.baseModel) ===
         JSON.stringify(this.groupList[this.editIndex])
@@ -244,7 +247,7 @@ export default {
             this.groupList.splice(this.editIndex, 1, { ...this.baseModel })
           }
           this.$message({
-            message: '配置成功',
+            message: this.$t('tip.edit1_success'),
             type: 'success'
           })
         })

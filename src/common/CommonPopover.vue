@@ -1,7 +1,7 @@
 <template>
   <div :class="{'vm':isInline}" class="common-popover">
     <el-popover :width="pwidth" placement="top" ref="commonPopoverRef" trigger="click" v-model="commonPopoverShow">
-      <el-form :model="baseModel" :rules="baseRules" @submit.native.prevent ref="baseForm" size="mini">
+      <el-form :model="baseModel" :rules="baseRules" @submit.native.prevent ref="baseForm" size="small">
         <el-form-item prop="cValue">
           <p class="tc fs15">{{title}}</p>
           <template v-if="type==='input'">
@@ -14,9 +14,9 @@
           </template>
         </el-form-item>
       </el-form>
-      <div class="tc">
-        <el-button @click="commonPopoverShow = false" size="mini" type="text">取消</el-button>
-        <el-button @click="onSubmit" size="mini" type="primary">确定</el-button>
+      <div :style="styl" class="tc">
+        <el-button @click="commonPopoverShow = false" plain size="small">{{$t('action.cancel')}}</el-button>
+        <el-button @click="onSubmit" size="small" type="primary">{{$t('action.confirm')}}</el-button>
       </div>
     </el-popover>
     <label
@@ -69,6 +69,11 @@ export default {
       baseRules: {
         cValue: this.rules
       }
+    }
+  },
+  computed: {
+    styl() {
+      return this.$store.getters.lang === 'en' ? { 'margin-top': '28px' } : {}
     }
   },
   watch: {

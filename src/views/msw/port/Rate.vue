@@ -1,38 +1,49 @@
 <template>
   <div class="port-rate">
-    <help-alert title="端口限速"></help-alert>
+    <!-- <help-alert title="端口限速"></help-alert> -->
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">端口列表</span>
+        <span class="box-header-tit">{{$t('msw.port_list')}}</span>
         <div class="fr">
-          <el-button icon="el-icon-edit" size="small" type="primary" v-auth="_onPatchEdit">批量编辑</el-button>
-          <el-button icon="el-icon-delete" size="small" type="danger" v-auth="_onPatchRemove">批量删除</el-button>
+          <el-button icon="el-icon-edit" plain size="medium" type="primary" v-auth="_onPatchEdit">{{$t('action.patch_edit')}}</el-button>
+          <el-button
+            icon="el-icon-delete"
+            plain
+            size="medium"
+            type="primary"
+            v-auth="_onPatchRemove"
+          >{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
-      <el-table :data="pageList" ref="baseTable" size="small" stripe>
+      <el-table :data="pageList" ref="baseTable" size="medium" stripe>
         <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column align="center" label="端口">
+        <el-table-column :label="$t('msw.port')" align="center">
           <template slot-scope="{row}">
-            <span>{{row.interface}}</span>
+            <span>{{row.ifname}}</span>
             <i class="rjucd-shanglian uplink" v-if="uplink.lpid.includes(row.lpid)"></i>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="入口速率 (kbps)" prop="irate">
+        <el-table-column :label="$t('msw.rate.in_rate')" align="center" prop="irate">
           <template slot-scope="{row}">
             <span v-if="row.irate">{{row.irate}}</span>
-            <span v-else>不限制</span>
+            <span v-else>{{$t('msw.rate.no_limit')}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="出口速率 (kbps)" prop="orate">
+        <el-table-column :label="$t('msw.rate.out_rate')" align="center" prop="orate">
           <template slot-scope="{row}">
             <span v-if="row.orate">{{row.orate}}</span>
-            <span v-else>不限制</span>
+            <span v-else>{{$t('msw.rate.no_limit')}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column :label="$t('action.ope')" align="center">
           <template slot-scope="{row,$index}">
-            <el-button size="mini" type="text" v-auth="{fn:_onEdit,params:$index}">修改</el-button>
-            <el-button class="c-danger" size="mini" type="text" v-auth="{fn:_onPatchRemove,params:row.lpid}">删除</el-button>
+            <el-button size="medium" type="text" v-auth="{fn:_onEdit,params:$index}">{{$t('action.edit')}}</el-button>
+            <el-button
+              class="c-danger"
+              size="medium"
+              type="text"
+              v-auth="{fn:_onPatchRemove,params:row.lpid}"
+            >{{$t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -54,31 +65,31 @@
         :visible.sync="baseModalShow"
         @open="_clearValidate"
         append-to-body
-        width="650px"
+        width="700px"
       >
-        <el-form :model="baseModel" :rules="baseRules" label-width="150px" ref="baseForm" size="small">
-          <el-form-item label="入口速率：" prop="irate">
-            <el-input :placeholder="`${rateRange[0]}-${rateRange[1]}`" class="w160" clearable v-model.number="baseModel.irate"></el-input>
-            <label class="c-info">
-              ({{rateRange[0]}}-{{rateRange[1]}}kbps,
-              <span class="c-warning">不输入表示关闭限速功能</span> )
-            </label>
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('msw.rate.in_rate_f')" prop="irate">
+            <el-input :placeholder="$t('msw.rate.empty_rate_tip')" class="w300" clearable v-model.number="baseModel.irate"></el-input>
+            <label class="c-info">({{rateRange[0]}}-{{rateRange[1]}}kbps )</label>
           </el-form-item>
-          <el-form-item label="出口速率：" prop="orate">
-            <el-input :placeholder="`${rateRange[0]}-${rateRange[1]}`" class="w160" clearable v-model.number="baseModel.orate"></el-input>
-            <label class="c-info">
-              ({{rateRange[0]}}-{{rateRange[1]}}kbps,
-              <span class="c-warning">不输入表示关闭限速功能</span> )
-            </label>
+          <el-form-item :label="$t('msw.rate.out_rate_f')" prop="orate">
+            <el-input :placeholder="$t('msw.rate.empty_rate_tip')" class="w300" clearable v-model.number="baseModel.orate"></el-input>
+            <label class="c-info">({{rateRange[0]}}-{{rateRange[1]}}kbps )</label>
           </el-form-item>
           <template v-if="editIndex===-1">
-            <el-form-item class="inline-message" inline-message label="选择端口：" prop="portid"></el-form-item>
+            <el-form-item :label="$t('msw.port_select_f')" class="inline-message" inline-message prop="portid"></el-form-item>
             <port-panel :selecteds.sync="baseModel.portid" has-agg mutilple />
           </template>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click.native="baseModalShow = false" size="small">取 消</el-button>
-          <el-button :loading="isLoading" @click.native="_onModalConfirm" size="small" type="primary">确定</el-button>
+          <el-button @click.native="baseModalShow = false" class="w120" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button
+            :loading="isLoading"
+            @click.native="_onModalConfirm"
+            class="w120"
+            size="medium"
+            type="primary"
+          >{{isLoading?$t('action.editing'):$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -108,7 +119,11 @@ export default {
       }
       if (!isBetween(v, ...this.rateRange)) {
         return cb(
-          new Error(`速率配置范围为${this.rateRange[0]}~${this.rateRange[1]}`)
+          new Error(
+            I18N.t('msw.rate.rate_range', {
+              range: `${this.rateRange[0]}~${this.rateRange[1]}`
+            })
+          )
         )
       }
       cb()
@@ -117,7 +132,7 @@ export default {
       isLoading: false,
       baseModel: rate(),
       baseRules: {
-        portid: [{ required: true, message: '请选择需要配置的端口' }],
+        portid: [{ required: true, message: I18N.t('msw.port_is_required') }],
         irate: [
           // { required: true, message: '请输入入口速率' },
           { validator: rateValidator }
@@ -132,13 +147,16 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('switcher', ['piMap', 'uplink', 'lagPortsMap']),
+    ...mapGetters('switcher', ['piMap', 'uplink']),
     modalTitle() {
       let _item = this.getItem(this.editIndex)
-      return _item ? `端口：${_item.interface}` : '批量配置'
+      return _item
+        ? `${I18N.t('msw.port_f')}${_item.ifname}`
+        : I18N.t('action.patch_edit')
     },
     // 端口限速范围
     rateRange() {
+      // 1、10、100分别万、千、百
       let _ds = 1
       let _portid = this.baseModel.portid
       if (_portid.length) {
@@ -168,14 +186,14 @@ export default {
           module: 'rate_limit'
         })
         let _list = _result.data
+          .sort((a, b) => a.lpid - b.lpid)
           .map(port => {
             return {
               ...port,
-              interface: this.piMap[port.lpid]
+              ifname: this.piMap[port.lpid]
             }
           })
-          .sort((a, b) => a.lpid - b.lpid)
-        return Object.freeze(_list)
+        return _list
       } catch (error) {}
       return []
     },
@@ -186,11 +204,11 @@ export default {
           ? [lpid]
           : this.$refs.baseTable.selection.map(s => s.lpid)
       if (!_lpids.length) {
-        return this.$message.warning('请选择要删除的列表项')
+        return this.$message.warning(I18N.t('tip.select_del_item'))
       }
-      await this.$confirm(`是否确认删除？`, {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      await this.$confirm(I18N.t('tip.confirm_delete'), {
+        confirmButtonText: I18N.t('action.confirm'),
+        cancelButtonText: I18N.t('action.cancel'),
         type: 'warning'
       })
       try {
@@ -198,8 +216,11 @@ export default {
           module: 'rate_limit',
           data: { lpid_list: _lpids }
         })
-        this.refresh()
-        this.$message.success('删除成功')
+        this.pageModel.allItem = this.pageModel.allItem.filter(
+          item => !_lpids.includes(item.lpid)
+        )
+        // this.refresh()
+        this.$message.success(I18N.t('tip.del_success'))
       } catch (error) {}
     },
     // 批量编辑
@@ -236,8 +257,27 @@ export default {
               module: 'rate_limit',
               data: { data: _confirmData }
             })
-            this.$message.success('配置成功')
-            this.refresh()
+            this.$message.success(I18N.t('tip.edit_success'))
+            // this.refresh()
+            for (let _port of _confirmData) {
+              let _index = this.pageModel.allItem.findIndex(
+                item => item.lpid === _port.lpid
+              )
+              if (_index > -1) {
+                let { irate, orate, ...oldItem } = this.pageModel.allItem[
+                  _index
+                ]
+                this.pageModel.allItem.splice(_index, 1, {
+                  ...oldItem,
+                  ..._port
+                })
+              } else {
+                this.pageModel.allItem.push({
+                  ifname: this.piMap[_port.lpid],
+                  ..._port
+                })
+              }
+            }
           } catch (error) {}
           this.baseModalShow = false
           this.isLoading = false
@@ -247,8 +287,4 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.port-rate {
-}
-</style>
 

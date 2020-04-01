@@ -1,19 +1,19 @@
 <template>
   <div class="ssidname-popover">
-    <el-popover ref="ssidNamepopoverRef" placement="top" trigger="click" width="200" v-model="ssidNamePopoverShow">
-      <el-form ref="baseForm" :model="baseModel" :rules="baseRules" size="mini" @submit.native.prevent>
+    <el-popover placement="top" ref="ssidNamepopoverRef" trigger="click" v-model="ssidNamePopoverShow" width="200">
+      <el-form :model="baseModel" :rules="baseRules" @submit.native.prevent ref="baseForm" size="small">
         <el-form-item prop="ssidName">
-          <p class="tc fs15">修改Wi-Fi名称</p>
-          <el-input v-model="baseModel.ssidName" :title="baseModel.ssidName" @keydown.enter.native="onSsidNameSubmit"></el-input>
+          <p class="tc fs15">{{$t('wifi_comm.edit_wifi_name')}}</p>
+          <el-input :title="baseModel.ssidName" @keydown.enter.native="onSsidNameSubmit" v-model="baseModel.ssidName"></el-input>
         </el-form-item>
       </el-form>
       <div class="tc">
-        <el-button size="mini" type="text" @click="ssidNamePopoverShow = false">取消</el-button>
-        <el-button type="primary" size="mini" @click="onSsidNameSubmit">确定</el-button>
+        <el-button @click="ssidNamePopoverShow = false" plain size="small">{{$t('action.cancel')}}</el-button>
+        <el-button @click="onSsidNameSubmit" size="small" type="primary">{{$t('action.confirm')}}</el-button>
       </div>
     </el-popover>
-    <label v-popover:ssidNamepopoverRef class="eweb-static-form--label pointer ssidname">
-      <a href="javascript:;" class="c-success">{{ssid}}</a>
+    <label class="eweb-static-form--label pointer ssidname" v-popover:ssidNamepopoverRef>
+      <a class="c-success" href="javascript:;">{{ssid}}</a>
       <i class="el-icon-edit fs16 c-success ml5"></i>
     </label>
   </div>
@@ -24,22 +24,17 @@ import {
   ssidNameValidator,
   wifiNameValidator
 } from '@/utils/rules'
+import { existValidate } from '@/utils/rulesUtils'
 export default {
   name: 'ComponentSsidNamePopover',
   props: {
     ssid: String,
-    ssidNames: Array,
-    indexs: Number
+    ssidNames: Array
   },
   data() {
     const ssidNameUniValidator = (rule, value, cb) => {
-      if (this.includeChinese) {
-        return cb()
-      }
-      if (
-        this.ssidNames.filter((name, i) => i !== this.indexs).includes(value)
-      ) {
-        cb(new Error(`已存在该名称：${value}`))
+      if (existValidate(this.ssidNames, value, this.ssid)) {
+        return cb(new Error(I18N.t('overview.wifi_is_exist', { name: value })))
       }
       cb()
     }
@@ -50,17 +45,16 @@ export default {
       },
       baseRules: {
         ssidName: [
-          { required: true, message: '请输入Wi-Fi名称', whitespace: true },
+          {
+            required: true,
+            message: I18N.t('overview.wifi_no_empty'),
+            whitespace: true
+          },
           { validator: wifiNameValidator },
           { validator: ssidNameValidator, size: 32 },
           { validator: ssidNameUniValidator }
         ]
       }
-    }
-  },
-  computed: {
-    includeChinese() {
-      return /[\u4e00-\u9fa5]/.test(this.baseModel.ssidName)
     }
   },
   watch: {

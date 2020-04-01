@@ -1,18 +1,11 @@
 <template>
   <div class="diagnose-network">
-    <help-alert json-key="networkCheckJson" title="网络自检"></help-alert>
-    <el-button :disabled="isChecking" @click="onConfirmCheck()" class="w200 mb20" type="primary" v-html="checkBtn"></el-button>
+    <help-alert :title="$t('diagnose.net_check')" json-key="networkCheckJson"></help-alert>
+    <el-button :disabled="isChecking" @click="onConfirmCheck()" class="w160 mb20" type="primary" v-html="checkBtn"></el-button>
     <el-row>
       <el-col :lg="16" class="check-result-list">
-        <el-progress
-          :percentage="oldProcess"
-          :stroke-width="18"
-          :text-inside="true"
-          class="mb20"
-          status="success"
-          v-show="showProgress"
-        ></el-progress>
-        <li :key="idx" class="mb5" v-for="(checkItem,idx) in checkItems">
+        <el-progress :percentage="oldProcess" :stroke-width="18" :text-inside="true" class="mb20" v-show="showProgress"></el-progress>
+        <li :key="idx" class="mb5" v-for="(checkItem, idx) in checkItems">
           <help-alert :closable="false" :description="checkItem.state" :title="checkItem.name" :type="checkItem.type" show-icon></help-alert>
           <el-row
             :key="questionItem.check_type"
@@ -20,19 +13,31 @@
             v-bind:style="[getCheckStyle(checkItem.type)]"
             v-for="questionItem in checkItem.qusetions"
           >
-            <el-col :span="10" class="ver-middle-item">{{questionItem.fail_reason}}</el-col>
-            <el-col :span="7" class="ver-middle-item">{{questionItem.result_tip}}</el-col>
+            <el-col :span="10" class="ver-middle-item">
+              {{
+              questionItem.fail_reason
+              }}
+            </el-col>
+            <el-col :span="7" class="ver-middle-item">
+              {{
+              questionItem.result_tip
+              }}
+            </el-col>
             <el-col :span="4" class="ver-middle-item">
               <el-tooltip class="item" effect="dark" placement="top-start">
                 <div slot="content" v-html="questionItem.advise"></div>
                 <span>
-                  修复建议
+                  {{ $t("diagnose.repair_suggest") }}
                   <i class="el-icon-question"></i>
                 </span>
               </el-tooltip>
             </el-col>
             <el-col :span="3" class="tr ver-middle-item">
-              <el-button @click="onRepair(questionItem)" type="primary">去修复</el-button>
+              <el-button @click="onRepair(questionItem)" type="primary">
+                {{
+                $t("diagnose.go_repair")
+                }}
+              </el-button>
             </el-col>
           </el-row>
         </li>
@@ -43,7 +48,6 @@
 <script>
 import { isNetEnable } from '@/utils'
 import { sleep } from '@/utils'
-import { Row, Col, Progress } from 'element-ui'
 export default {
   name: 'DiagnoseNetwork',
   data() {
@@ -52,15 +56,15 @@ export default {
       isWanPing: false,
       oldProcess: 0,
       checkTimes: 1,
-      checkBtn: '开始检测',
+      checkBtn: I18N.t('diagnose.begin_test'),
       checkItems: [],
       loading: '',
       isChecking: false,
       showProgress: false,
       checkState: {
-        ok: ['正常', 'success'],
-        fail: ['异常', 'warning'],
-        checking: ['检测中', 'success']
+        ok: [I18N.t('diagnose.check_normal'), 'success'],
+        fail: [I18N.t('diagnose.check_err'), 'warning'],
+        checking: [I18N.t('diagnose.check_doing'), 'success']
       },
       checkStyle: {
         success: 'ebf9f8',
@@ -73,11 +77,6 @@ export default {
     if (this.start) {
       this.onConfirmCheck()
     }
-  },
-  components: {
-    [Progress.name]: Progress,
-    [Col.name]: Col,
-    [Row.name]: Row
   },
   methods: {
     getCheckStyle(type) {
@@ -93,7 +92,7 @@ export default {
     },
     onRepair(item) {
       if (item.link_page_id) {
-        this.$confirm('确认跳转修复页面？')
+        this.$confirm(I18N.t('diagnose.repair_confirm'))
           .then(() => {
             this.$router.push({
               path: item.link_page_id
@@ -101,15 +100,19 @@ export default {
           })
           .catch(() => {})
       } else {
-        this.$alert(item.advise || item.fail_reason, '修复建议', {
-          dangerouslyUseHTMLString: true,
-          confirmButtonText: '知道了',
-          showClose: false
-        })
+        this.$alert(
+          item.advise || item.fail_reason,
+          I18N.t('diagnose.repair_suggest'),
+          {
+            dangerouslyUseHTMLString: true,
+            confirmButtonText: I18N.t('diagnose.check_know'),
+            showClose: false
+          }
+        )
       }
     },
     onConfirmCheck() {
-      this.$confirm('确认开始设备自检？')
+      this.$confirm(I18N.t('diagnose.begin_check_confirm'))
         .then(() => {
           this.onCheckSelf()
         })
@@ -165,9 +168,7 @@ export default {
     onCheckWan() {
       if (!this.isLanPing) {
         this.loading.close()
-        this.$confirm(
-          '您当前未连接到设备内网，可能影响检测结果，建议连接到设备内网后再重新检测，继续自检请点击确定'
-        )
+        this.$confirm(I18N.t('diagnose.check_confirm_tip'))
           .then(() => {
             this.isWanPing = false
             this.onStartCheck()
@@ -183,7 +184,7 @@ export default {
     },
     onStartCheck() {
       this.isChecking = true
-      this.onShowLoading('开始自检...')
+      this.onShowLoading(`${I18N.t('diagnose.begin_test')}...`)
       this.$api
         .startCheck({
           isLanPing: this.isLanPing.toString(),
@@ -218,7 +219,7 @@ export default {
             this.showCheckResult(data.data)
             // 进度百分百退出结果获取，重置按钮状态
             if (checkProcess == 100) {
-              this.checkBtn = '重新检测'
+              this.checkBtn = I18N.t('diagnose.re_check')
               this.isChecking = false
             } else {
               setTimeout(() => {
@@ -233,16 +234,16 @@ export default {
           this.onCheckErr()
         })
     },
-    onCheckErr(err = '服务器异常，请重新自检') {
+    onCheckErr(err = I18N.t('diagnose.server_err_check')) {
       this.checkTimes = 1
-      this.checkBtn = '重新检测'
+      this.checkBtn = I18N.t('diagnose.re_check')
       this.isChecking = false
       this.showProgress = false
       this.checkItems = [
         {
           name: err,
           type: 'warning',
-          state: '异常',
+          state: I18N.t('diagnose.check_err'),
           qusetions: []
         }
       ]

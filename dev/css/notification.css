@@ -301,13 +301,13 @@
     .el-notification__closeBtn:hover {
       color: #595959; }
   .el-notification .el-icon-success {
-    color: #219653; }
+    color: #018903; }
   .el-notification .el-icon-error {
-    color: #F5222D; }
+    color: #DE321F; }
   .el-notification .el-icon-info {
     color: #909399; }
   .el-notification .el-icon-warning {
-    color: #F2994A; }
+    color: #F06F03; }
 
 .el-notification-fade-enter.right {
   right: 0;

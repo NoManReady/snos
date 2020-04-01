@@ -1,38 +1,37 @@
 <template>
   <div class="box home-overview-sysinfo">
     <div class="box-header">
-      <span class="box-header-tit">基本信息</span>
-      <dev-mode class="vm ml10">
-        <el-button plain round size="mini">
-          <a class="c-success" href="javascript:;">{{devMode.autoJoin==='true'?'组网模式':'独立模式'}}</a>
-          <i class="el-icon-edit ml5 c-success"></i>
-        </el-button>
-      </dev-mode>
+      <span class="box-header-tit">{{$t('msw.base_info')}}</span>
     </div>
-    <el-form class="view-form" label-width="96px" size="mini" v-show="sysinfo">
+    <el-form class="view-form" label-width="130px" size="medium" v-show="sysinfo">
       <el-row>
         <el-col :md="7" :sm="12" :xs="24">
-          <el-form-item label="设备名称：">
-            <common-popover :rules="hostnameRules" :value="hostname" @submit="_onHostnameSubmit($event)" title="修改设备名称">
-              <el-tooltip content="修改设备名称" placement="top">
+          <el-form-item :label="$t('sysinfo.dev_name_f')">
+            <common-popover
+              :rules="hostnameRules"
+              :title="$t('sysinfo.dev_name_modify')"
+              :value="hostname"
+              @submit="_onHostnameSubmit"
+            >
+              <el-tooltip :content="$t('sysinfo.dev_name_modify')" placement="top">
                 <div>
                   <i class="el-icon-loading" v-if="!hostname||isLoading"></i>
-                  <span class="c-success" v-else>
+                  <label class="c-success break-word" v-else>
                     {{hostname}}
                     <i class="el-icon-edit" v-show="hostname"></i>
-                  </span>
+                  </label>
                 </div>
               </el-tooltip>
             </common-popover>
           </el-form-item>
-          <el-form-item label="设备型号：">
+          <el-form-item :label="$t('sysinfo.dev_type_f')">
             <label class="web-static-form--label">{{sysinfo.product_class}}</label>
           </el-form-item>
-          <el-form-item label="联网状态：">
+          <el-form-item :label="$t('overview.network_status_f')">
             <div class="vm" v-show="netStatus.connnected">
               <i :class="{'c-success':netStatus.connnected==='true','c-danger':netStatus.connnected==='false'}">●</i>
-              <span v-if="netStatus.connnected==='true'">已联网</span>
-              <span v-else-if="netStatus.connnected==='false'">未联网</span>
+              <span v-if="netStatus.connnected==='true'">{{$t('overview.online')}}</span>
+              <span v-else-if="netStatus.connnected==='false'">{{$t('overview.offline')}}</span>
               <span v-else>--</span>
             </div>
             <span v-show="!netStatus.connnected">
@@ -45,38 +44,49 @@
               </el-tooltip>
             </template>
           </el-form-item>
-          <el-form-item label="主设备地址：" v-if="$roles().includes('slave')">
-            <el-tooltip content="前往主设备配置页面" placement="top">
+          <el-form-item :label="$t('msw.master_addr_f')" v-if="$roles().includes('slave')">
+            <el-tooltip :content="$t('msw.go_to_master')" placement="top">
               <a :href="`http://${masterIp}`" class="c-success" target="_blank">
                 <span>{{masterIp}}</span>
               </a>
             </el-tooltip>
           </el-form-item>
+          <el-form-item :label="$t('sysinfo.dev_mode_f')">
+            <dev-mode class="vm">
+              <span class="pointer">
+                <a
+                  class="c-success fs14"
+                  href="javascript:;"
+                >{{devMode.autoJoin==='true'?$t('msw.net_mode'):$t('msw.alone_mode')}}</a>
+                <i class="el-icon-edit ml5 c-success"></i>
+              </span>
+            </dev-mode>
+          </el-form-item>
         </el-col>
         <el-col :md="7" :sm="12" :xs="24">
-          <el-form-item label="管理IP地址：">
-            <el-tooltip content="前往配置管理IP" placement="top">
+          <el-form-item :label="$t('msw.manage_ip_addr_f')">
+            <el-tooltip :content="$t('msw.goto_manage_ip_addr')" placement="top">
               <a @click="_goToIp" class="c-success" href="javascript:;">
                 <span>{{sysinfo.wan_ip==='nil'?'--':sysinfo.wan_ip}}</span>
                 <i class="el-icon-setting"></i>
               </a>
             </el-tooltip>
           </el-form-item>
-          <el-form-item label="MAC地址：">
+          <el-form-item :label="$t('wan.mac_addr_f')">
             <label>{{sysinfo.sys_mac}}</label>
           </el-form-item>
-          <el-form-item label="序列号：">
+          <el-form-item :label="$t('sysinfo.sn_num_f')">
             <label>{{sysinfo.serial_num}}</label>
           </el-form-item>
         </el-col>
         <el-col :md="10" :sm="24" :xs="24">
-          <el-form-item label="软件版本：">
-            <label>{{sysinfo.software_version}}</label>
+          <el-form-item :label="$t('sysinfo.soft_version_f')">
+            <label class="break-word">{{sysinfo.software_version}}</label>
           </el-form-item>
-          <el-form-item label="系统时间：">
+          <el-form-item :label="$t('overview.sys_time_f')">
             <label>{{deviceInfo.local_time|formatDay}}</label>
           </el-form-item>
-          <el-form-item label="已运行：">
+          <el-form-item :label="$t('overview.sys_run_f')">
             <label>{{deviceInfo.uptime|formatTime}}</label>
           </el-form-item>
         </el-col>
@@ -102,15 +112,18 @@ export default {
   data() {
     return {
       isLoading: false,
-      networkStatusTimer: null,
       dateTimer: null,
       deviceInfo: {},
       hostnameRules: [
-        { required: true, message: '请输入设备名称', whitespace: true },
+        {
+          required: true,
+          message: I18N.t('overview.hostname_no_empty'),
+          whitespace: true
+        },
         {
           validator: nameLengthValidator,
           max: 64,
-          message: '设备名称不能超过64个字符，中文占3字符'
+          message: I18N.t('overview.hostname_len_rule')
         },
         { validator: hostNameValidator }
       ]
@@ -127,8 +140,6 @@ export default {
     await this._loadDeviceInfo()
   },
   beforeDestroy() {
-    clearInterval(this.networkStatusTimer)
-    this.networkStatusTimer = null
     clearInterval(this.dateTimer)
     this.dateTimer = null
   },
@@ -152,16 +163,10 @@ export default {
       this.isLoading = true
       try {
         await this.setHostname(hostname)
-        this.$message.success('修改成功')
+        this.$message.success(I18N.t('tip.edit_success'))
       } catch (error) {}
       this.isLoading = false
     }
   }
 }
 </script>
-<style lang="scss" scoped>
-.home-overview-sysinfo {
-  .mode-switcher {
-  }
-}
-</style>

@@ -1,31 +1,32 @@
 <template>
   <div class="auth-account">
-    <help-alert json-key="accountJson" title="账号认证">
+    <help-alert json-key="accountJson" :title="$t('egw.auth.auth_user')">
       <template slot="content">
-        <div class="mt10">1、开启账号认证，新增账号密码。</div>
-        <div class="mt10">2、用户在认证界面输入步骤1配置的账号密码，认证通过后即可上网。</div>
+        <div class="mt10">1.{{$t('egw.auth.add_user_open_admin')}}</div>
+        <div class="mt10">2.{{$t('egw.auth.pass_part1_allow_surfing')}}</div>
         <div class="c-warning">
           <div class="mt10">
-            <b>设备能够联通互联网的情况下终端才会弹出认证界面。</b>
+            <b>{{$t('egw.auth.open_by_net')}}</b>
           </div>
           <div class="mt10">
             <b>
-              如果EAP的IP在认证范围内，请将EAP的MAC添加到
-              <a @click="$parent.tabValue='4'" class="c-success pointer">“免认证”</a>的MAC白名单中。
+              <i18n path="egw.auth.erp_mac_to_white">
+                <a @click="$parent.tabValue='4'" class="c-success pointer">{{$t('egw.auth.certification_free')}}</a>
+              </i18n>
             </b>
           </div>
         </div>
       </template>
     </help-alert>
-    <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm">
-      <el-form-item label="账号认证">
+    <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+      <el-form-item :label="$t('egw.auth.auth_user')">
         <el-switch active-value="1" inactive-value="0" v-model="baseModel.en"></el-switch>
       </el-form-item>
       <template v-if="baseModel.en === '1'">
-        <el-form-item label="账号数">
+        <el-form-item :label="$t('egw.auth.auth_number')">
           <label>{{pageModel.allItem.length}}</label>
         </el-form-item>
-        <el-form-item class="is-required" label="认证IP/范围" prop="authList">
+        <el-form-item class="is-required" :label="$t('egw.auth.auth_ip_or_range')" prop="authList">
           <el-form-item
             :class="{mb20:index!==baseModel.authList.length-1}"
             :key="index"
@@ -33,7 +34,7 @@
             :rules="ipValidate(item,index)"
             v-for="(item,index) in baseModel.authList"
           >
-            <el-input class="w300" placeholder="范围格式：1.1.1.1-1.1.1.100" v-model="baseModel.authList[index]"></el-input>
+            <el-input class="w300" :placeholder="$t('wan.ip_range_example')" v-model="baseModel.authList[index]"></el-input>
             <el-button @click="onDelAuthIpList(index)" size="medium" type="text" v-if="baseModel.authList.length > 1">
               <i class="el-icon-close"></i>
             </el-button>
@@ -49,45 +50,46 @@
         </el-form-item>
       </template>
       <el-form-item>
-        <el-button class="w200" type="primary" v-auth="onSubmit">保存配置</el-button>
+        <el-button class="w160" type="primary" v-auth="onSubmit">{{$t('action.save_edit')}}</el-button>
       </el-form-item>
     </el-form>
     <template v-if="baseModel.en === '1'">
       <div class="box">
         <div class="box-header">
           <span class="box-header-tit">
-            账号管理
+            {{$t('egw.auth.user_manager')}}
             <small></small>
           </span>
           <div class="fr">
             <div class="vm mr10">
-              <el-input class="w200" placeholder="账户名称查询" size="small" v-model="searchKey">
-                <el-button @click.native="onAccountSearch" slot="append">查询</el-button>
+              <el-input class="w300" :placeholder="$t('egw.auth.username_search')" size="medium" v-model="searchKey">
+                <el-button @click.native="onAccountSearch" slot="append">{{$t('phrase.search')}}</el-button>
               </el-input>
             </div>
-            <el-button icon="el-icon-plus" size="small" type="primary" v-auth="onAddAccount">新增</el-button>
-            <el-button icon="el-icon-delete" size="small" type="primary" v-auth="onDelAccount">批量删除</el-button>
+            <el-button icon="el-icon-plus" plain size="medium" type="primary" v-auth="onAddAccount">{{$t('action.add')}}</el-button>
+            <el-button icon="el-icon-delete" plain size="medium" type="primary" v-auth="onDelAccount">{{$t('action.patch_delete')}}</el-button>
           </div>
         </div>
         <help-alert :show-icon="false" title>
           <div slot="content">
-            最大支持配置
-            <b class="c-warning mlr5">{{MAX_NUM}}</b>个账号。
+            <i18n path="egw.auth.username_add_any">
+                <b class="c-warning mlr5">{{MAX_NUM}}</b>
+            </i18n>
           </div>
         </help-alert>
-        <el-table :data="pageList" ref="accountTable" row-key="username" size="mini" stripe>
+        <el-table :data="pageList" ref="accountTable" row-key="username" size="medium" stripe>
           <el-table-column type="selection" width="55"></el-table-column>
-          <el-table-column label="账号" prop="username"></el-table-column>
-          <el-table-column align="center" label="密码" prop="password"></el-table-column>
-          <el-table-column align="center" label="mac地址" prop="mac">
+          <el-table-column :label="$t('egw.username')" prop="username"></el-table-column>
+          <el-table-column align="center" :label="$t('egw.password')" prop="password"></el-table-column>
+          <el-table-column align="center" :label="$t('egw.mac')" prop="mac">
             <template slot-scope="scope">
               <p :key="m" v-for="m of scope.row.mac||[]">{{m}}</p>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="操作">
+          <el-table-column align="center" :label="$t('action.ope')">
             <template slot-scope="scope">
-              <el-button @click="onEditAccount(scope.$index)" type="text">修改</el-button>
-              <el-button type="text" v-auth="{fn:onDelAccount,params:scope.row}">删除</el-button>
+              <el-button @click="onEditAccount(scope.$index)" size="medium" type="text">{{$t('action.edit')}}</el-button>
+              <el-button size="medium" type="text" v-auth="{fn:onDelAccount,params:scope.row}">{{$t('action.delete')}}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -107,26 +109,26 @@
     </template>
     <!-- 账户编辑modal -->
     <el-dialog :title="modalTitle" :visible.sync="accountModalShow" @open="onAccountOpen" width="550px">
-      <el-form :model="accountModel" :rules="accountRules" label-width="160px" ref="accountForm">
-        <el-form-item label="账户名称" prop="username">
+      <el-form :model="accountModel" :rules="accountRules" label-width="160px" ref="accountForm" size="medium">
+        <el-form-item :label="$t('egw.auth.username')" prop="username">
           <input name="advancedAccountName" type="text" v-show="false" />
           <el-input
             :disabled="editIndex!==-1"
             :title="accountModel.username"
             class="w250"
             name="advancedAccountName"
-            placeholder="账户名称"
+            :placeholder="$t('egw.auth.username')"
             v-model="accountModel.username"
           ></el-input>
         </el-form-item>
-        <el-form-item label="账户密码" prop="password">
+        <el-form-item :label="$t('egw.auth.password')" prop="password">
           <input name="advancedAccountPassword" type="text" v-show="false" />
-          <el-input class="w250" name="advancedAccountPassword" placeholder="账户密码" type="text" v-model="accountModel.password"></el-input>
+          <el-input class="w250" name="advancedAccountPassword" :placeholder="$t('egw.auth.password')" type="text" v-model="accountModel.password"></el-input>
         </el-form-item>
       </el-form>
       <span class="dialog-footer" slot="footer">
-        <el-button @click="accountModalShow = false">取 消</el-button>
-        <el-button :loading="isAddLoading" @click="onModalConfirm" type="primary">确 定</el-button>
+        <el-button @click="accountModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+        <el-button :loading="isAddLoading" @click="onModalConfirm" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -145,9 +147,9 @@ export default {
   data() {
     const nameValidator = (rule, value, cb) => {
       if (/[\/\\\[\]:;\|=,\+\*\?\<\>@"'&]/.test(value)) {
-        cb(new Error(`不能包含[/\[]:;|=,\+\*?\<\>@"'&`))
+        cb(new Error(this.$t('egw.auth.name_symbol_invalid')))
       } else if (value.replace(/[^\x00-\xff]/g, '01').length > 32) {
-        cb(new Error(`长度不能超过32个字符，中文占2个字符！`))
+        cb(new Error(this.$t('egw.auth.name_length_invalid')))
       }
       cb()
     }
@@ -159,7 +161,7 @@ export default {
             index !== this.getRealIndex(this.editIndex)
         )
       ) {
-        cb(new Error(`账户名称已被使用`))
+        cb(new Error(this.$t('egw.auth.username_is_used')))
       }
       cb()
     }
@@ -175,13 +177,13 @@ export default {
       accountModel: model.advancedAccountFn(),
       accountRules: {
         username: [
-          { required: true, message: '账户名称不能为空' },
+          { required: true, message: this.$t('egw.auth.username_is_required') },
           { validator: nameValidator },
           { validator: uniqueValidator }
         ],
         password: [
-          { required: true, message: '账户密码不能为空' },
-          { max: 16, message: '密码最多16位' },
+          { required: true, message: this.$t('egw.auth.password_is_required') },
+          { max: 16, message: this.$t('egw.auth.password_length_invalid') },
           { validator: passwdValidator }
         ]
       },
@@ -193,7 +195,7 @@ export default {
   mixins: [pageMixins],
   computed: {
     modalTitle() {
-      return this.editIndex !== -1 ? '编辑账户' : '添加账户'
+      return this.editIndex !== -1 ? this.$t('egw.auth.username_edit') : this.$t('egw.auth.username_add')
     }
   },
   methods: {
@@ -235,7 +237,7 @@ export default {
     // 新增账户
     onAddAccount() {
       if (this.pageModel.allItem.length >= this.MAX_NUM) {
-        this.$message.warning(`最多只能添加 ${this.MAX_NUM} 个账号`)
+        this.$message.warning( this.$t('egw.auth.username_add_any',{num:this.MAX_NUM}))
         return
       }
       this.accountModalShow = true
@@ -255,9 +257,9 @@ export default {
         _items = [item]
       }
       if (!_items.length) {
-        return this.$message.warning('请选择要删除的列表项')
+        return this.$message.warning(this.$t('tip.select_del_item'))
       }
-      this.$confirm('是否确认删除?').then(() => {
+      this.$confirm(this.$t('tip.confirm_delete')).then(() => {
         this.$api
           .setAccountAuthUser({
             username: _items.map(ite => ite.username),
@@ -269,7 +271,7 @@ export default {
               this.removeList(_index)
             })
             this.$message({
-              message: '删除成功',
+              message: this.$t('tip.del_success'),
               type: 'success'
             })
           })
@@ -302,7 +304,7 @@ export default {
                 })
               }
               this.$message({
-                message: '配置成功',
+                message: this.$t('tip.edit1_success'),
                 type: 'success'
               })
             })
@@ -319,7 +321,7 @@ export default {
         if (valid) {
           this.$api.setAccountAuth(this.baseModel).then(d => {
             this.$message({
-              message: '配置成功',
+              message: this.$t('tip.edit1_success'),
               type: 'success'
             })
           })

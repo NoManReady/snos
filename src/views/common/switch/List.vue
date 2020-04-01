@@ -1,69 +1,91 @@
 <template>
   <div class="switch-list">
-    <help-alert title="交换机列表">
-      <div slot="content">查看当前网络中的交换机信息。</div>
+    <help-alert :title="$t('devlist.switch_list')">
+      <div slot="content">{{ $t("devlist.switch_list_tip") }}</div>
     </help-alert>
     <help-alert :show-icon="true" title type="warning" v-if="showConflict">
       <p slot="content">
-        {{confilctMsg}}
-        <a @click="_onEditConflict" class="f-theme fs15" href="javascript:void(0);">点击去处理</a>
+        {{ confilctMsg }}
+        <a
+          @click="_onEditConflict"
+          class="f-theme fs15"
+          href="javascript:void(0);"
+        >{{ $t("action.click_to_handle") }}</a>
       </p>
     </help-alert>
     <div class="box-header">
-      <span class="box-header-tit">交换机列表</span>
+      <span class="box-header-tit">{{ $t("devlist.switch_list") }}</span>
       <div class="fr">
-        <el-button icon="el-icon-delete" size="small" type="danger" v-auth="_onDelete">批量删除离线设备</el-button>
-        <el-button icon="el-icon-place" size="small" type="primary" v-auth="_onPatchUpdate">批量升级设备</el-button>
+        <el-button
+          icon="el-icon-delete"
+          plain
+          size="medium"
+          type="primary"
+          v-auth="_onDelete"
+        >{{ $t("devlist.patch_del_off_dev") }}</el-button>
+        <el-button plain size="medium" type="primary" v-auth="_onPatchUpdate">
+          {{
+          $t("devlist.patch_upgrade_dev")
+          }}
+        </el-button>
       </div>
     </div>
-    <el-table :data="list" class="has-banner" ref="multipleTable" row-key="ip" size="small" tooltip-effect="dark">
+    <el-table :data="list" class="has-banner" ref="multipleTable" row-key="ip" size="medium" stripe>
       <el-table-column align="center" fixed="left" width="40">
-        <template slot-scope="{row}">
+        <template slot-scope="{ row }">
           <div class="banner-wrap">
-            <div class="banner" v-if="curSn===row.serialNumber">
-              <span>本机</span>
+            <div class="banner" v-if="curSn === row.serialNumber">
+              <span>{{ $t("devlist.local") }}</span>
             </div>
           </div>
         </template>
       </el-table-column>
       <el-table-column align="center" fixed="left" type="selection" width="25"></el-table-column>
-      <el-table-column align="center" fixed="left" label="操作" width="90">
-        <template slot-scope="{row,$index}">
-          <el-button :disabled="row.status!=='ON'" @click.native="_onEdit(row,$index)" type="text">配置管理</el-button>
+      <el-table-column :label="$t('action.ope')" align="center" fixed="left" width="90">
+        <template slot-scope="{ row, $index }">
+          <el-button
+            :disabled="row.status !== 'ON'"
+            @click.native="_onEdit(row, $index)"
+            size="medium"
+            type="text"
+          >{{ $t("devlist.cfg_manage") }}</el-button>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="设备名称" min-width="120" prop="hostName">
-        <template slot-scope="{row}">
+      <el-table-column :label="$t('sysinfo.dev_name')" align="center" min-width="120" prop="hostName">
+        <template slot-scope="{ row }">
           <template v-if="row.status === 'ON'">
             <common-popover
-              :rules="_getHostnameRule(row.role==='SWITCH'?23:64)"
+              :rules="_getHostnameRule(row.role === 'SWITCH' ? 23 : 64)"
+              :title="$t('sysinfo.dev_name_modify')"
               :value="row.hostName"
               @submit="_onHostnameSubmit($event)"
-              title="修改设备名称"
             >
-              <el-tooltip content="修改设备名称" placement="top">
+              <el-tooltip :content="$t('sysinfo.dev_name_modify')" placement="top">
                 <div>
-                  <i class="el-icon-loading" v-if="!row.hostName||row.$isLoading"></i>
-                  <span @click="_editHostname(row)" class="c-success" v-else>
-                    {{row.hostName}}
-                    <span class="c-warning" v-if="row.devSN === $store.getters.master.sn">【主】</span>
+                  <i class="el-icon-loading" v-if="!row.hostName || row.$isLoading"></i>
+                  <label @click="_editHostname(row)" class="c-success break-word" v-else>
+                    {{ row.hostName }}
+                    <span
+                      class="c-warning"
+                      v-if="row.devSN === $store.getters.master.sn"
+                    >[{{ $t("devlist.master") }}]</span>
                     <i class="el-icon-edit" v-show="row.hostName"></i>
-                  </span>
+                  </label>
                 </div>
               </el-tooltip>
             </common-popover>
           </template>
           <template v-else>
-            <el-button :disabled="true" class="fs12 btn-word-wrap" type="text">{{ row.hostName }}</el-button>
+            <el-button :disabled="true" class="fs12 btn-word-wrap" size="medium" type="text">{{ row.hostName }}</el-button>
           </template>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="IP地址" prop="ip" width="130">
-        <template slot-scope="{row}">
-          <template v-if="row.role==='SWITCH'">
-            <el-button :disabled="row.status!=='ON'" @click="goToIp(row.ip)" type="text">
+      <el-table-column :label="$t('sysinfo.ip_addr')" align="center" prop="ip" width="135">
+        <template slot-scope="{ row }">
+          <template v-if="row.role === 'SWITCH'">
+            <el-button :disabled="row.status !== 'ON'" @click="goToIp(row.ip)" size="medium" type="text">
               <el-tooltip placement="top">
-                <p slot="content">点击前往EWEB配置界面</p>
+                <p slot="content">{{ $t("devlist.go_eweb") }}</p>
                 <span>{{ row.ip }}</span>
               </el-tooltip>
             </el-button>
@@ -71,53 +93,61 @@
           <span v-else>{{ row.ip }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="MAC地址" prop="devMac" width="125"></el-table-column>
-      <el-table-column align="center" label="在线状态" prop="status" width="80">
-        <template slot-scope="{row}">
-          <span :class="row.status === 'ON' ? 'c-success' : 'c-info'">{{ _getStatus(row.status) }}</span>
+      <el-table-column :label="$t('sysinfo.mac_addr')" align="center" prop="devMac" width="138"></el-table-column>
+      <el-table-column :label="$t('devlist.online_status')" align="center" prop="status" width="80">
+        <template slot-scope="{ row }">
+          <span :class="row.status === 'ON' ? 'c-success' : 'c-info'">
+            {{
+            _getStatus(row.status)
+            }}
+          </span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="型号" prop="deviceType"></el-table-column>
-      <el-table-column align="center" label="软件版本" width="300">
+      <el-table-column :label="$t('sysinfo.dev_type')" align="center" prop="deviceType"></el-table-column>
+      <el-table-column :label="$t('sysinfo.soft_version')" align="center" width="300">
         <template slot-scope="scope">
-          <el-button :loading="true" type="text" v-if="onGetingVersion"></el-button>
+          <el-button :loading="true" size="medium" type="text" v-if="onGetingVersion"></el-button>
           <div v-else-if="scope.row.hasNewVersion">
             <el-tooltip effect="light" placement="left">
               <div slot="content">
-                有新的推荐版本
-                <a @click="_onSingleUpdate(scope.row)" class="c-success pointer">{{scope.row.newVersion}}</a>
-                ，点击确认升级
+                <i18n path="devlist.ver_to_upgrade" tag="span">
+                  <a @click="_onSingleUpdate(scope.row)" class="c-success pointer">{{ scope.row.newVersion }}</a>
+                </i18n>
               </div>
               <el-button
                 :disabled="scope.row.status !== 'ON'"
                 @click="_onSingleUpdate(scope.row)"
-                class="fs12 btn-word-wrap"
+                class="fs12"
+                size="medium"
                 type="text"
               >
-                {{scope.row.software}}
-                <i>
-                  <sup :class="['new-tip', {'new-tip-disabled': scope.row.status !== 'ON'}]">new</sup>
-                </i>
+                <el-badge
+                  :type="scope.row.status === 'ON' ? 'warning' : 'info'"
+                  class="cus-badge"
+                  value="new"
+                >{{ scope.row.software }}</el-badge>
               </el-button>
             </el-tooltip>
           </div>
-          <div v-else>{{scope.row.software}}</div>
+          <div v-else>{{ scope.row.software }}</div>
         </template>
       </el-table-column>
-      <el-table-column :sortable="true" align="center" label="序列号" prop="devSN" width="130"></el-table-column>
+      <el-table-column :label="$t('devlist.sn')" :sortable="true" align="center" prop="devSN" width="140"></el-table-column>
     </el-table>
-    <el-drawer :visible.sync="showDrawer" class="no-header-drawer" size="550px">
+    <el-drawer :visible.sync="showDrawer" class="no-header-drawer" size="650px">
       <switch-viewer :item="editItem" v-if="showDrawer" />
     </el-drawer>
     <input class="hidden" ref="inputHidden" />
   </div>
 </template>
 <script>
+import { Badge } from 'element-ui'
 import Viewer from './components/Viewer'
 import { hostNameValidator, nameLengthValidator } from '@/utils/rules'
 import { Drawer } from 'element-ui'
 import { popDevDetail } from '@/utils/iframeUtils'
 import CommonPopover from '@/common/CommonPopover'
+import { getMaccVersion } from '@/api/maccApi'
 export default {
   name: 'SwitchList',
   data() {
@@ -152,20 +182,19 @@ export default {
     try {
       await this._loadNeighber()
     } catch (error) {}
-    this.$bus.$on('SW_CHANGE', this._swItemChange)
     this._getConflictStatus()
   },
   mounted() {
     window.addEventListener('message', this._owItemChange, false)
   },
   beforeDestroy() {
-    this.$bus.$off('SW_CHANGE')
     window.removeEventListener('message', this._owItemChange)
   },
   components: {
     [Drawer.name]: Drawer,
     [Viewer.name]: Viewer,
-    [CommonPopover.name]: CommonPopover
+    [CommonPopover.name]: CommonPopover,
+    [Badge.name]: Badge
   },
   methods: {
     // ow修改名称检测
@@ -184,11 +213,15 @@ export default {
     // hostname修改规则
     _getHostnameRule(size = 64) {
       return [
-        { required: true, message: '请输入设备名称', whitespace: true },
+        {
+          required: true,
+          message: I18N.t('overview.hostname_no_empty'),
+          whitespace: true
+        },
         {
           validator: nameLengthValidator,
           max: size,
-          message: `设备名称不能超过${size}个字符，中文占3字符`
+          message: I18N.t('devlist.hostname_len_rule', { len: size })
         },
         { validator: hostNameValidator }
       ]
@@ -208,7 +241,7 @@ export default {
             { isSilence: true }
           )
           if (d.conflict_status === true) {
-            this.confilctMsg = '发现不属于本网络管理的设备，'
+            this.confilctMsg = I18N.t('devlist.found_diff_dev')
           }
         } catch (error) {}
       }
@@ -225,6 +258,7 @@ export default {
             status: 'ON'
           }
         })
+      // _list.forEach(esw => this._getEswLastestVersion(esw))
       if (_aplist.code == '0') {
         _list.push(
           ..._aplist.list.map(lis => {
@@ -240,6 +274,42 @@ export default {
       // 加载可升级版本
       if (_list.length) {
         this.onMatchVersion()
+      }
+    },
+    // esw获取最新版本
+    async _getEswLastestVersion(item) {
+      await this._getMd5Key(item)
+    },
+    // 获取MD5-key
+    async _getMd5Key(item) {
+      let ts = new Date().getTime()
+      try {
+        let _result = await this.$api.switchApi(
+          'doSwitchApi',
+          {
+            ip: item.ip,
+            sn: item.devSN,
+            method: 'get',
+            url: `get_md5_key.cgi?ts=${ts}`
+          },
+          { isSilence: true }
+        )
+        await this._getNewestVersion(item, _result)
+      } catch (error) {}
+    },
+    // 获取云端最新版本号
+    async _getNewestVersion(item, verSess) {
+      let _res = await getMaccVersion(verSess)
+      _res = _res.data
+      if (_res.code === 0) {
+        let _lis = _res.firmwareList
+        let _cur_v = verSess.reqList[0].software
+        _lis = (_lis || []).filter(l => l.versionCode !== _cur_v)
+        if (_lis && _lis[0]) {
+          let key = [item.deviceType, item.software, item.hardware].join('&')
+          item.newVersion = _lis[0]
+          this.mapData[key] = item
+        }
       }
     },
     // 处理列表数据
@@ -288,7 +358,7 @@ export default {
         this.editHostnameItem.hostName = hostname
         this.editingSn = ''
         this.$message({
-          message: '名称修改成功',
+          message: I18N.t('tip.edit_success'),
           type: 'success'
         })
       } catch (error) {}
@@ -307,7 +377,7 @@ export default {
           this.onGetingVersion = false
         })
         .catch(() => {
-          this.$alert('可升级版本获取失败，请刷新页面重新获取')
+          this.$alert(I18N.t('devlist.enable_dev_fail'))
         })
     },
     // 保存版本映射map
@@ -320,9 +390,9 @@ export default {
     // 设备状态
     _getStatus(status) {
       let map = {
-        ON: '在线',
-        OFF: '离线',
-        NEVER_ON: '从未上线'
+        ON: I18N.t('devlist.online'),
+        OFF: I18N.t('devlist.offline'),
+        NEVER_ON: I18N.t('devlist.never_online')
       }
       return map[status]
     },
@@ -332,14 +402,7 @@ export default {
         this.editIndex = index
         this.showDrawer = true
       } else {
-        popDevDetail(
-          {
-            ip: row.ip,
-            sn: row.serialNumber
-          },
-          'switchList',
-          row.product
-        )
+        popDevDetail(row, 'SwitchList')
       }
     },
     // 获取升级数据
@@ -359,7 +422,7 @@ export default {
     _onPatchUpdate() {
       let selection = this.$refs.multipleTable.selection
       if (!selection.length) {
-        return this.$message.warning('请选择要升级的设备')
+        return this.$message.warning(I18N.t('devlist.dev_upgrade_no_empty'))
       }
 
       let msgList = []
@@ -368,15 +431,13 @@ export default {
           msgList.push(this._getMsgList(item))
         }
       })
-      if (msgList.length == 0)
-        return this.$alert('当前选中的设备已是最新版本或是离线状态，不可升级。')
+      if (msgList.length == 0) return this.$alert(I18N.t('devlist.upgrade_tip'))
       this.$confirm(
-        `<div>当前选中 <span class="f-theme">${
-          selection.length
-        }</span> 台设备，其中已是最新版本和处于离线状态的设备有<span class="f-theme">${selection.length -
-          msgList.length} </span>台，将不执行升级，是否确认升级 <span class="f-red">${
-          msgList.length
-        }</span> 台设备？</div>`,
+        I18N.t('devlist.upgrade_confirm_tip', {
+          cnt: selection.length,
+          off_cnt: selection.length - msgList.length,
+          on_cnt: msgList.length
+        }),
         '',
         {
           dangerouslyUseHTMLString: true
@@ -394,7 +455,9 @@ export default {
     },
     // 单台升级
     _onSingleUpdate(row) {
-      this.$confirm(`是否确认升级到新版本（${row.newVersion}）？`)
+      this.$confirm(
+        I18N.t('devlist.upgrade_confirm', { version: row.newVersion })
+      )
         .then(() => {
           let data = {
             msgList: [
@@ -433,8 +496,7 @@ export default {
         .then(data => {
           this.$message.success({
             dangerouslyUseHTMLString: true,
-            message:
-              '升级命令已下发，请等待设备后台<strong>静默升级</strong>，<div class="c-warning pt10">请几分钟后刷新页面查看。<div/>',
+            message: I18N.t('devlist.upgrade_tip'),
             duration: 8000
           })
           this._loadNeighber()
@@ -445,7 +507,7 @@ export default {
     _onDelete() {
       let selection = this.$refs.multipleTable.selection
       if (!selection.length) {
-        return this.$message.warning('请选择要删除的设备')
+        return this.$message.warning(I18N.t('devlist.delete_dev_item'))
       }
 
       let data = { snList: [] }
@@ -457,16 +519,13 @@ export default {
         }
       })
       if (!data.snList.length)
-        return this.$alert('当前选中的设备均为在线设备，不可删除')
+        return this.$alert(I18N.t('devlist.online_dev_tip'))
       this.$confirm(
-        `<div>当前选中 <span class="f-theme">${
-          selection.length
-        }</span> 台设备，其中 <span class="f-theme">${selection.length -
-          data.snList
-            .length} </span>台是在线设备不会删除，将删除 <span class="f-red">${
-          data.snList.length
-        }</span> 台非在线设备，是否确认删除？</div>`,
-        '',
+        I18N.t('devlist.delete_confirm_tip', {
+          cnt: selection.length,
+          off_cnt: data.snList.length,
+          on_cnt: selection.length - data.snList.length
+        }),
         {
           dangerouslyUseHTMLString: true
         }
@@ -484,7 +543,7 @@ export default {
       })
     },
     goToIp(ip) {
-      this.$confirm('确认跳转到设备管理界面？')
+      this.$confirm(I18N.t('devlist.go_eweb'))
         .then(() => {
           window.open(['http:', ip].join('//'), '_blank')
         })
@@ -493,26 +552,20 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+.switch-list {
+  .cus-badge sup {
+    line-height: 14px;
+    right: 5px !important;
+  }
+}
+</style>
 <style lang="scss" scoped>
-@import '~@/style/utils/variable';
 .switch-list {
   .btn-word-wrap {
     white-space: normal;
     line-height: 23px;
     padding: 0;
-  }
-  .new-tip {
-    color: white;
-    width: 50px;
-    height: 10px;
-    background: $theme;
-    -moz-border-radius: 100px/50px;
-    -webkit-border-radius: 100px/50px;
-    border-radius: 100px/50px;
-    padding: 0 5px;
-  }
-  .new-tip-disabled {
-    background: $--color-info;
   }
 }
 </style>

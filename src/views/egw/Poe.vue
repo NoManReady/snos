@@ -1,26 +1,29 @@
 <template>
   <div class="poe">
-    <help-alert json-key title="POE供电"></help-alert>
+    <help-alert :title="$t('egw.poe_power_supply')" json-key></help-alert>
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">POE功耗详情</span>
+        <span class="box-header-tit">{{$t('egw.poe_power_consumption_details')}}</span>
       </div>
       <el-row :gutter="20">
         <el-col :span="8">
           <div class="data-box">
-            <span class="data-box--tit">最大总功耗</span>
+            <span class="data-box--tit">{{$t('egw.bigest_consumption')}}</span>
             <span class="data-box--val">{{info.totalPower}}</span>
           </div>
         </el-col>
         <el-col :span="8">
           <div class="data-box">
             <span class="data-box--tit">
-              当前功耗
+              {{$t('egw.consumption_now')}}
               <el-tooltip placement="top">
-                <div slot="content">过载时无法对新接入的设备供电。</div>
+                <div slot="content">{{$t('egw.power_supply_error_tip')}}</div>
                 <span class="c-warning" v-show="info.workStatus === 'Overload'">
-                  （过载
-                  <i class="el-icon-info ml5 c-warning"></i>）
+                  <div slot="content">
+                    <i18n path="egw.overload">
+                      <i class="el-icon-info ml5 c-warning"></i>
+                    </i18n>
+                  </div>
                 </span>
               </el-tooltip>
             </span>
@@ -29,7 +32,7 @@
         </el-col>
         <el-col :span="8">
           <div class="data-box">
-            <span class="data-box--tit">当前剩余功耗</span>
+            <span class="data-box--tit">{{$t('egw.remaining_power_consumption')}}</span>
             <span class="data-box--val">{{info.totalRemainPower}}</span>
           </div>
         </el-col>
@@ -37,20 +40,20 @@
     </div>
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">POE设备面板</span>
+        <span class="box-header-tit">{{$t('egw.poe_dev_tab')}}</span>
       </div>
       <div class="mb20">
         <div class="port-wrap vm">
           <i class="rjucd-upport on"></i>
-          <span>已供电</span>
+          <span>{{$t('egw.power_supply')}}</span>
         </div>
         <div class="port-wrap vm ml20">
           <i class="rjucd-upport off"></i>
-          <span>未供电</span>
+          <span>{{$t('egw.no_power_supply')}}</span>
         </div>
       </div>
       <div class="port-box">
-        <div class="tip">当前功耗：</div>
+        <div class="tip">{{$t('egw.consumption_now_f')}}</div>
         <port :key="p.portNum" :port="p" v-for="p in info.portInfo">
           <template slot="top" slot-scope="scope">{{scope.port.power}}</template>
           <template slot="bottom" slot-scope="scope">{{scope.port.portNum}}</template>
@@ -62,7 +65,6 @@
 <script>
 import Port from '@/common/Port'
 import timer from '@/utils/timer'
-import { Col, Row } from 'element-ui'
 export default {
   name: 'Poe',
   data() {
@@ -89,9 +91,7 @@ export default {
     }
   },
   components: {
-    Port,
-    [Col.name]: Col,
-    [Row.name]: Row
+    Port
   },
   beforeDestroy() {
     timer.clean()

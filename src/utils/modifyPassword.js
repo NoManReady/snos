@@ -11,7 +11,8 @@ const ModifyPassword = function (options) {
   }
 
   instance = new ModifyPasswordConstructor({
-    data: options
+    data: options,
+    i18n:I18N
   })
   instance.vm = instance.$mount()
   document.body.appendChild(instance.vm.$el)

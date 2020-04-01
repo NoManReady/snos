@@ -1,55 +1,38 @@
 <template>
   <div class="network-wan">
-    <help-alert json-key="wanMswJson" title="管理IP" v-if="type==='select'">
-      <div slot="content">上网配置页面</div>
+    <help-alert :title="$t('msw.wanip.manage_ip')" json-key="wanMswJson">
+      <div slot="content">{{$t('msw.wanip.wan_cfg_page')}}</div>
     </help-alert>
     <el-form
-      :class="type==='select'?'w500':''"
-      :label-position="labelPos"
+      :disabled="isLoading"
       :model="baseModel"
       :rules="baseRules"
-      :size="type==='select'?'small':'normal'"
-      class="components_wan web-form"
       label-width="160px"
       ref="baseForm"
+      size="medium"
+      status-icon
     >
-      <el-radio-group @change="_onProtoSwitch" class="radio-block mb20" v-if="type==='tab'" v-model="baseModel.proto">
-        <el-radio-button
-          :key="typer.value"
-          :label="typer.value"
-          :style="{width:100/staticTypes.length+'%'}"
-          v-for="typer in staticTypes"
-        >{{typer.label}}</el-radio-button>
-      </el-radio-group>
-      <el-form-item label="联网类型：" prop="proto" v-if="type==='select'">
-        <el-select @change="_onProtoSwitch" style="width:340px;" v-model="baseModel.proto">
+      <el-form-item :label="$t('msw.wanip.protocol_type_f')" prop="proto">
+        <el-select @change="_onProtoSwitch" class="w300" v-model="baseModel.proto">
           <el-option :key="typer.value" :label="typer.label" :value="typer.value" v-for="typer in staticTypes"></el-option>
         </el-select>
       </el-form-item>
-      <!-- <el-form-item v-if="baseModel.proto==='dhcp'">
-        <span class="c-info">DHCP动态上网无需账号密码</span>
-      </el-form-item>-->
-      <el-form-item label="管理VLAN：" prop="vlanid">
-        <el-input placeholder="范围为1~4094,不填默认为1" v-model="baseModel.vlanid"></el-input>
-        <el-tooltip class="item" content="(范围为1~4094,不填默认为1)" effect="light" placement="right">
-          <i class="el-icon-info form-tip"></i>
-        </el-tooltip>
+      <el-form-item :label="$t('msw.wanip.manage_vlan_f')" prop="vlanid">
+        <el-input :debounce="500" class="w300" v-model="baseModel.vlanid"></el-input>
+        <span class="c-info">({{$t('msw.wanip.vlan_tip')}})</span>
       </el-form-item>
       <template v-if="baseModel.proto==='dhcp'">
         <template v-if="showStaticInfo">
-          <el-form-item label="IP地址：">
-            <label v-if="staticInfo.ip!=='0.0.0.0'">{{staticInfo.ip}}</label>
-            <label v-else>
-              <i class="el-icon-loading fs16"></i>
-            </label>
+          <el-form-item :label="$t('wan.ip_addr_f')">
+            <label>{{staticInfo.ip}}</label>
           </el-form-item>
-          <el-form-item label="子网掩码：">
+          <el-form-item :label="$t('wan.mask_addr_f')">
             <label>{{staticInfo.mask}}</label>
           </el-form-item>
-          <el-form-item label="网关：">
+          <el-form-item :label="$t('wan.gateway_addr_f')">
             <label>{{staticInfo.gateway||'0.0.0.0'}}</label>
           </el-form-item>
-          <el-form-item label="DNS服务器：">
+          <el-form-item :label="$t('wan.dns_addr_f')">
             <div v-if="staticInfo.dnsList.length">
               <p :key="dns+index" v-for="(dns,index) in staticInfo.dnsList.split(/\,|\s/)">{{dns}}</p>
             </div>
@@ -58,29 +41,32 @@
         </template>
       </template>
       <template v-if="baseModel.proto==='static'">
-        <el-form-item key="ipaddr" label="IP地址：" prop="ipaddr">
-          <el-input @blur="_generateGateway('netmask')" placeholder="格式：192.168.1.1" v-model="baseModel.ipaddr"></el-input>
+        <el-form-item :label="$t('wan.ip_addr_f')" key="ipaddr" prop="ipaddr">
+          <el-input
+            :placeholder="$t('wan.ip_example')"
+            @blur="_generateGateway('netmask')"
+            class="w300"
+            v-model="baseModel.ipaddr"
+          ></el-input>
         </el-form-item>
-        <el-form-item key="netmask" label="子网掩码：" prop="netmask">
+        <el-form-item :label="$t('wan.mask_addr_f')" key="netmask" prop="netmask">
           <net-mask
+            :placeholder="$t('wan.mask_example')"
             @blur="_generateGateway('ipaddr')"
-            placeholder="格式：255.255.255.0"
-            style="width:100%;"
+            class="w300"
             v-model="baseModel.netmask"
           ></net-mask>
         </el-form-item>
-        <el-form-item key="gateway" label="网关：" prop="gateway">
-          <el-input placeholder="格式：192.168.1.1" v-model="baseModel.gateway"></el-input>
+        <el-form-item :label="$t('wan.gateway_addr_f')" key="gateway" prop="gateway">
+          <el-input :placeholder="$t('wan.ip_example')" class="w300" v-model="baseModel.gateway"></el-input>
         </el-form-item>
-        <el-form-item key="dns" label="DNS服务器：" prop="dns">
-          <el-input placeholder="114.114.114.114，多个以空格隔开" v-model="baseModel.dns"></el-input>
-          <el-tooltip class="item" content="格式：114.114.114.114（多个以空格隔开）" effect="light" placement="right">
-            <i class="el-icon-info form-tip"></i>
-          </el-tooltip>
+        <el-form-item :label="$t('wan.dns_addr_f')" key="dns" prop="dns">
+          <el-input :placeholder="$t('wan.dns_example')" class="w300" v-model="baseModel.dns"></el-input>
+          <span class="c-info">{{$t('wan.dns_example')}}</span>
         </el-form-item>
       </template>
-      <el-form-item v-if="type==='select'">
-        <el-button :loading="isLoading" class="w160" type="primary" v-auth="onSubmit">{{btnText}}</el-button>
+      <el-form-item>
+        <el-button :loading="isLoading||vlanVertity" class="w160" size="medium" type="primary" v-auth="onSubmit">{{btnText}}</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -90,25 +76,25 @@ import {
   maskValidator,
   ipValidator,
   dnsValidator,
-  vlanidValidator
+  vlanidOldValidator
 } from '@/utils/rules'
-import { inSameNet, getGateway, isIp, getNetCodeNum } from '@/utils/rulesUtils'
+import {
+  inSameNet,
+  getGateway,
+  isIp,
+  getNetCodeNum,
+  ipToLong
+} from '@/utils/rulesUtils'
 import NetMask from '@/common/NetMask'
 import { sleep } from '@/utils'
+import { debounce } from '@/utils/utils'
 import { wan } from '@/model/msw/sec'
 export default {
   name: 'home-wan',
   props: {
-    labelPos: {
-      type: String,
-      default: 'right'
-    },
-    type: {
-      type: String,
-      default: 'select',
-      validator(v) {
-        return ['tab', 'select'].indexOf(v) > -1
-      }
+    data: {
+      type: Object,
+      default: () => ({})
     }
   },
   components: {
@@ -129,19 +115,63 @@ export default {
       if (!value) {
         return cb()
       }
-      if (this.vlanList.length === 0) {
-        return cb(new Error('远程验证VLAN ID失败（请求超时或出现错误）'))
+      // if (this.vlanList.length === 0) {
+      //   return cb(new Error('远程验证VLAN ID失败（请求超时或出现错误）'))
+      // }
+      // if (this.vlanList.find(lis => lis.v == value)) {
+      //   cb()
+      // } else {
+      //   cb(new Error('管理VLAN ID还未创建，请前往VLAN划分进行创建'))
+      // }
+      let _result = null
+      if (!this.vlanCache[value]) {
+        this.vlanVertity = true
+        try {
+          this.vlanCache[value] = await this.$api.cmd(
+            'devSta.get',
+            {
+              module: 'vlan_port',
+              data: { v: value }
+            },
+            { isSilence: true, timeout: 0 }
+          )
+        } catch (error) {}
+        this.vlanVertity = false
       }
-      if (this.vlanList.find(lis => lis.v == value)) {
-        cb()
+      _result = this.vlanCache[value]
+      if (_result && _result.v) {
+        // 暂时不判断上联口this._getPortidsAndExist(_result.l, uplink)
+        if (!_result.l) {
+          return cb(new Error(I18N.t('msw.wanip.vlan_no_port_tip')))
+        }
       } else {
-        cb(new Error('管理VLAN ID还未创建，请前往VLAN划分进行创建'))
+        return cb(new Error(I18N.t('msw.wanip.vlan_no_exist_tip')))
       }
+      cb()
+    }
+    const ipAddrValidate = (rule, value, cb) => {
+      let _mask = this.baseModel.netmask
+      let _ip = this.baseModel.ipaddr
+      let _gateWay = this.baseModel.gateway
+      if (!_mask) return cb()
+      let n = ipToLong(value) & ~ipToLong(_mask)
+      let m = (ipToLong(value) + 1) & ~ipToLong(_mask)
+      if (n === 0) {
+        return cb(new Error(I18N.t('wan.net_addr')))
+      }
+      if (m === 0) {
+        return cb(new Error(I18N.t('wan.cast_addr')))
+      }
+      if (_ip === _gateWay) {
+        return cb(new Error(I18N.t('wan.ip_gateway_same')))
+      }
+      cb()
     }
     return {
+      vlanCache: {},
+      vlanVertity: false,
       loop: true,
       isLoading: false,
-      btnText: '加载中',
       network: null,
       staticInfo: {
         ip: '0.0.0.0',
@@ -149,34 +179,52 @@ export default {
         dnsList: '0.0.0.0',
         gateway: '0.0.0.0'
       },
-      vlanList: [],
+      // vlanList: [],
       baseModel: wan(),
       baseRules: {
         ipaddr: [
-          { required: true, message: '请输入IP地址', whitespace: true },
-          { validator: ipValidator, message: '请输入有效的IP地址' }
+          {
+            required: true,
+            message: I18N.t('wan.ip_no_empty'),
+            whitespace: true
+          },
+          { validator: ipValidator, message: I18N.t('wan.invalid_ip_addr') },
+          { validator: ipAddrValidate }
         ],
         netmask: [
-          { required: true, message: '请输入子网掩码', whitespace: true },
-          { validator: maskValidator, message: '请输入有效的子网掩码' }
+          {
+            required: true,
+            message: I18N.t('wan.mask_no_empty'),
+            whitespace: true
+          },
+          { validator: maskValidator, message: I18N.t('wan.invalid_mask_addr') }
         ],
         dns: [
-          { required: true, message: '请输入DNS', whitespace: true },
+          {
+            required: true,
+            message: I18N.t('wan.dns_no_empty'),
+            whitespace: true
+          },
           {
             validator: dnsValidator,
-            message: '请输入有效的DNS地址,多个以空格隔开'
+            message: I18N.t('wan.invalid_dns_addr')
           }
         ],
         gateway: [
-          { required: true, message: '请输入网关地址', whitespace: true },
-          { validator: ipValidator, message: '请输入有效的IP地址' },
+          {
+            required: true,
+            message: I18N.t('wan.gateway_no_empty'),
+            whitespace: true
+          },
+          { validator: ipValidator, message: I18N.t('wan.invalid_ip_addr') },
           {
             validator: gatewayValidator,
-            message: '网关地址与IP地址不在同一个网段'
-          }
+            message: I18N.t('wan.ip_gateway_net_diff')
+          },
+          { validator: ipAddrValidate }
         ],
         vlanid: [
-          { validator: vlanidValidator, message: '请输入有效的VLAN ID' },
+          { validator: vlanidOldValidator },
           { validator: vlanExistValidator }
         ]
       }
@@ -184,11 +232,10 @@ export default {
   },
   async created() {
     try {
-      await this._loadVlanList()
       await this._loadNetwork()
     } catch (error) {
       this.$message({
-        message: '请求错误',
+        message: I18N.t('msw.wanip.request_err'),
         type: 'warning'
       })
     }
@@ -200,12 +247,12 @@ export default {
     staticTypes() {
       let _types = [
         {
-          label: '动态IP',
-          value: 'dhcp'
+          label: I18N.t('wan.static_ip'),
+          value: 'static'
         },
         {
-          label: '静态IP',
-          value: 'static'
+          label: I18N.t('wan.dynamic_ip'),
+          value: 'dhcp'
         }
       ]
       return _types
@@ -218,6 +265,15 @@ export default {
         this.baseModel.proto === 'dhcp' &&
         this.network.wan[0].proto === this.baseModel.proto
       )
+    },
+    btnText() {
+      if (this.isLoading) {
+        return I18N.t('msw.wanip.loading')
+      }
+      if (this.vlanVertity) {
+        return I18N.t('msw.wanip.validing')
+      }
+      return I18N.t('action.submit')
     }
   },
   methods: {
@@ -225,35 +281,61 @@ export default {
     _loadNetwork() {
       this.isLoading = true
       let _promise = null
-      _promise = this.$api.getNetwork(true)
+      if (this.data && Object.keys(this.data).length) {
+        _promise = Promise.resolve({ wan: [this.data] })
+      } else {
+        _promise = this.$api.getNetwork(true)
+      }
       _promise
-        .then(async d => {
+        .then(d => {
           let _wan = d ? d.wan[0] : null
           if (_wan) {
-            this._getWanIp()
             this.network = { ...d }
             this.baseModel = Object.assign(wan(), _wan || {})
+            this._getWanIp(true)
           }
         })
         .finally(() => {
-          this.btnText = '提交'
           this.isLoading = false
         })
     },
     // 获取wan口ip
-    async _getWanIp() {
+    async _getWanIp(first = false) {
       if (!this.loop) {
         return
       }
       try {
-        if (this.showStaticInfo) {
+        if (this.showStaticInfo || first) {
           let _result = await this.$api.getWanIp()
-          this.staticInfo = _result.wan
+          if (_result.wan) {
+            this.staticInfo = _result.wan
+          }
+          this._settingWanData()
         }
       } finally {
         await sleep(3000)
-        this._getWanIp()
+        this._getWanIp(false)
       }
+    },
+    // 获取端口原子信息,并判断是否存在
+    _getPortidsAndExist(portStr, p) {
+      let _items = portStr.split(',')
+      let _ranges = []
+      _ranges = _items.map(item => {
+        let [b, e] = item.split('-').map(Number)
+        if (e) {
+          return [b, e]
+        } else {
+          return [b, b]
+        }
+      })
+      for (let _range of _ranges) {
+        let [b, e] = _range
+        if (p >= b && p <= e) {
+          return true
+        }
+      }
+      return false
     },
     // 网关生成
     _generateGateway(field) {
@@ -279,34 +361,25 @@ export default {
         }
       }
     },
-    // 加载vlan列表
-    async _loadVlanList() {
-      try {
-        let _result = await await this.$api.cmd(
-          'devConfig.get',
-          { module: 'vlan' },
-          { isSilence: true, timeout: 0 }
-        )
-        this.vlanList = Object.freeze(_result.list || [])
-      } catch (error) {}
-    },
     // 协议tab切换
     _onProtoSwitch(v) {
-      if (v === 'static') {
-        if (!this.baseModel.ipaddr) {
-          this.baseModel.ipaddr = this.staticInfo.ip
-        }
-        if (!this.baseModel.netmask) {
-          this.baseModel.netmask = this.staticInfo.mask
-        }
-        if (!this.baseModel.dns) {
-          this.baseModel.dns = this.staticInfo.dnsList
-        }
-        if (!this.baseModel.gateway) {
-          this.baseModel.gateway = this.staticInfo.gateway
-        }
-      }
+      this._settingWanData()
       this._clearValidate()
+    },
+    // 配置动态数据
+    _settingWanData() {
+      if (!this.baseModel.ipaddr || this.baseModel.ipaddr === '0.0.0.0') {
+        this.baseModel.ipaddr = this.staticInfo.ip
+      }
+      if (!this.baseModel.netmask || this.baseModel.netmask === '0.0.0.0') {
+        this.baseModel.netmask = this.staticInfo.mask
+      }
+      if (!this.baseModel.dns || this.baseModel.dns === '0.0.0.0') {
+        this.baseModel.dns = (this.staticInfo.dnsList || '').replace(/,/g, ' ')
+      }
+      if (!this.baseModel.gateway || this.baseModel.gateway === '0.0.0.0') {
+        this.baseModel.gateway = this.staticInfo.gateway
+      }
     },
     // 清除验证信息
     _clearValidate() {
@@ -345,7 +418,7 @@ export default {
         .setNetwork(this.network)
         .then(d => {
           this.$message({
-            message: '设置成功',
+            message: I18N.t('tip.edit1_success'),
             type: 'success'
           })
         })

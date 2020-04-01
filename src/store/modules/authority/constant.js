@@ -1,4 +1,5 @@
 export const APP_MENUS = 'APP_MENUS'
+export const APP_USERNAME = 'APP_USERNAME'
 export const APP_CHILD_MENUS = 'APP_CHILD_MENUS'
 export const APP_ROUTES = 'APP_ROUTES'
 export const APP_ROLES = 'APP_ROLES'

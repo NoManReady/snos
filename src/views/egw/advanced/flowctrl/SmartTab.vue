@@ -1,31 +1,31 @@
 <template>
   <div class="advanced-smart-tab">
-    <help-alert json-key="smartJson" title="智能流控">
-      <div slot="content">根据用户数智能的调整每个用户的带宽，保证每个用户公平共享带宽。</div>
+    <help-alert json-key="smartJson" :title="$t('egw.flowctrl.smart_flow_control')">
+      <div slot="content">{{$t('egw.flowctrl.smart_falow_control_tip')}}</div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          智能流控
+          {{$t('egw.flowctrl.smart_flow_control')}}
           <small></small>
         </span>
-        <span class="ml20 c-danger" v-if="baseModel.tcSwitch === 'on' && showTip">检测到有wan口未配置流控，请重新点击“保存配置”生效流控。</span>
+        <span class="ml20 c-danger" v-if="baseModel.tcSwitch === 'on' && showTip">{{$t('egw.flowctrl.wan_fail_reoperate')}}</span>
       </div>
-      <el-form :inline="true" :model="baseModel" class="w600" label-width="150px" ref="baseForm">
-        <el-form-item label="开启流控" prop="tcSwitch">
+      <el-form :inline="true" :model="baseModel" class="w600" label-width="160px" ref="baseForm" size="medium">
+        <el-form-item :label="$t('egw.flowctrl.open_flow_control')" prop="tcSwitch">
           <el-switch active-value="on" inactive-value="off" v-model="baseModel.tcSwitch"></el-switch>
-          <strong class="vm ml10 c-warning">如需测试外网宽带的真实速度，可先暂时关闭流控功能</strong>
+          <strong class="vm ml10 c-warning">{{$t('egw.flowctrl.close_flow_control_tip')}}</strong>
         </el-form-item>
         <el-form-item
           :key="index"
-          :label="`${wan.ifname.split(/-/)[1].toLocaleUpperCase()} 口线路带宽`"
+          :label="$t('egw.flowctrl.rate_by_port', {port:wan.ifname.split(/-/)[1].toLocaleUpperCase()})"
           v-for="(wan,index) in baseModel.list"
           v-show="baseModel.tcSwitch==='on'"
         >
           <el-form-item
             :prop="`list[${index}].uploadBand`"
             :rules="getPositiveValidator(wan.enable)"
-            label="上行"
+            :label="$t('egw.flowctrl.upstream')"
             label-width="60px"
           >
             <el-input class="w80" v-model="wan.uploadBand"></el-input>Mbps
@@ -33,14 +33,14 @@
           <el-form-item
             :prop="`list[${index}].downloadBand`"
             :rules="getPositiveValidator(wan.enable)"
-            label="下行"
+            :label="$t('egw.flowctrl.downstream')"
             label-width="60px"
           >
             <el-input class="w80" v-model="wan.downloadBand"></el-input>Mbps
           </el-form-item>
         </el-form-item>
-        <el-form-item class="ml150">
-          <el-button class="w200" type="primary" v-auth="onSubmit">保存配置</el-button>
+        <el-form-item label=" ">
+          <el-button class="w160" type="primary" v-auth="onSubmit">{{$t('action.save_edit')}}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -101,12 +101,12 @@ export default {
       //   return []
       // } else {
       return [
-        { required: true, message: '请输入数值' },
+        { required: true, message: this.$t('egw.enter_positive_integer') },
         {
           validator: rangeValidator,
           min: 1,
           max: 10000,
-          message: '带宽范围 1~10000'
+          message: this.$t('egw.flowctrl.band_range2')
         }
       ]
       // }
@@ -119,7 +119,7 @@ export default {
             this.showTip = false
             this.$message({
               type: 'success',
-              message: '设置成功'
+              message: this.$t('tip.edit1_success')
             })
 
             this.$emit('smart-change', this.baseModel.tcSwitch)

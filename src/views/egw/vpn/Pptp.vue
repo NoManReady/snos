@@ -1,17 +1,15 @@
 <template>
   <div class="vpn-pptp">
-    <el-tabs v-model="tabValue" @tab-click="_onTabClick">
-      <el-tab-pane name="0" label="PPTP服务器"></el-tab-pane>
-      <el-tab-pane name="1" label="PPTP客户端"></el-tab-pane>
-      <el-tab-pane name="2" label="隧道信息列表"></el-tab-pane>
+    <el-tabs @tab-click="_onTabClick" v-model="tabValue">
+      <el-tab-pane :label="$t('egw.pptp.pptp_service')" name="0"></el-tab-pane>
+      <el-tab-pane :label="$t('egw.pptp.pptp_initiator')" name="1"></el-tab-pane>
+      <el-tab-pane :label="$t('egw.pptp.tunnel_information_tab')" name="2"></el-tab-pane>
     </el-tabs>
-    <keep-alive>
-      <pptp-tab :type="tabValue"></pptp-tab>
-    </keep-alive>
+    <pptp-tab :key="randomId" :type="tabValue"></pptp-tab>
   </div>
 </template>
 <script>
-import pptpTab from './Pptp'
+import pptpTab from './pptpTab/Index'
 import tabMixins from '@/mixins/tabMixins'
 export default {
   name: 'vpn-pptp',
@@ -19,8 +17,16 @@ export default {
     pptpTab
   },
   mixins: [tabMixins],
-  data() {
-    return {}
+  computed: {
+    showServer() {
+      return this.$roles().includes('pptp_server')
+    },
+    showClient() {
+      return this.$roles().includes('pptp_client')
+    }
+  },
+  created() {
+    this.tabValue = this.showServer ? '0' : this.showClient ? '1' : '2'
   }
 }
 </script>

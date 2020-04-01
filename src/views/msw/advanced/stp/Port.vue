@@ -1,26 +1,34 @@
 <template>
   <div class="advanced-stp-port">
-    <help-alert title="生成树端口设置">
+    <help-alert :title="$t('msw.stp.cfg_port')">
       <div slot="content">
-        <b>说明：</b> 建议直连PC的端口开启Port Fast
+        <b>{{$t('phrase.explain_f')}}</b>
+        {{$t('msw.stp.scf_port_tip')}}
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">端口列表</span>
+        <span class="box-header-tit">{{$t('msw.port_list')}}</span>
         <div class="fr">
-          <el-button icon="el-icon-refresh" size="small" type="primary" v-auth="refresh">刷新</el-button>
-          <el-button icon="el-icon-edit" size="small" type="primary" v-auth="_onPatchEdit">批量设置</el-button>
+          <el-button
+            :disabled="isLoading"
+            icon="el-icon-refresh"
+            plain
+            size="medium"
+            type="primary"
+            v-auth="_onFresh"
+          >{{$t('action.refresh')}}</el-button>
+          <el-button icon="el-icon-edit" plain size="medium" type="primary" v-auth="_onPatchEdit">{{$t('action.patch_edit')}}</el-button>
         </div>
       </div>
-      <el-table :data="pageList" :span-method="_spanMethods" ref="baseTable" size="small" stripe>
-        <el-table-column align="center" label="端口">
+      <el-table :data="pageList" :span-method="_spanMethods" ref="baseTable" size="medium" stripe>
+        <el-table-column :label="$t('msw.port')" align="center">
           <template slot-scope="{row}">
-            <span>{{row.interface}}</span>
+            <span>{{row.ifname}}</span>
             <i class="rjucd-shanglian uplink" v-if="uplink.lpid.includes(row.lpid)"></i>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="端口角色" prop="role">
+        <el-table-column :label="$t('msw.stp.port_role')" align="center" prop="role">
           <template slot-scope="{row}">
             <!-- 0 ：disabled   1 ：master 2 ：root 3 ：designated 4 ：alternate 5 ：backup -->
             <span v-if="row.role===0">disabled</span>
@@ -31,7 +39,7 @@
             <span v-if="row.role===5">backup</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="端口状态" prop="status">
+        <el-table-column :label="$t('msw.stp.port_status')" align="center" prop="status">
           <template slot-scope="{row}">
             <!-- 0 ：disabled  1 ：blocking 2 ：learning 3 ：forwarding -->
             <span v-if="row.status===0">disabled</span>
@@ -40,38 +48,38 @@
             <span v-if="row.status===3">forwarding</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="优先级" prop="priority"></el-table-column>
-        <el-table-column align="center" label="连接类型">
-          <el-table-column align="center" label="配置状态" prop="linktype">
+        <el-table-column :label="$t('msw.stp.priority')" align="center" prop="priority"></el-table-column>
+        <el-table-column :label="$t('msw.stp.link_type')" align="center">
+          <el-table-column :label="$t('msw.stp.cfg_status')" align="center" prop="linktype">
             <template slot-scope="{row}">
-              <span v-if="row.linktype===2">自动</span>
-              <span v-if="row.linktype===0">共享</span>
-              <span v-if="row.linktype===1">点对点</span>
+              <span v-if="row.linktype===2">{{$t('msw.stp.auto')}}</span>
+              <span v-if="row.linktype===0">{{$t('msw.stp.share')}}</span>
+              <span v-if="row.linktype===1">{{$t('msw.stp.ptop')}}</span>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="实际状态" prop="r_linktype">
+          <el-table-column :label="$t('msw.stp.actual_status')" align="center" prop="r_linktype">
             <template slot-scope="{row}">
-              <span v-if="row.r_linktype===0">共享</span>
-              <span v-if="row.r_linktype===1">点对点</span>
+              <span v-if="row.r_linktype===0">{{$t('msw.stp.share')}}</span>
+              <span v-if="row.r_linktype===1">{{$t('msw.stp.ptop')}}</span>
             </template>
           </el-table-column>
         </el-table-column>
         <el-table-column align="center" label="BPDU Guard" prop="bpdu_guard">
           <template slot-scope="{row}">
-            <span v-if="row.bpdu_guard===0">关闭</span>
-            <span v-if="row.bpdu_guard===1">开启</span>
+            <span v-if="row.bpdu_guard===0">{{$t('phrase.disable')}}</span>
+            <span v-if="row.bpdu_guard===1">{{$t('phrase.enable')}}</span>
           </template>
         </el-table-column>
         <el-table-column align="center" label="Port Fast" prop="fastport">
           <template slot-scope="{row}">
-            <span v-if="row.fastport===0">关闭</span>
-            <span v-if="row.fastport===1">开启</span>
+            <span v-if="row.fastport===0">{{$t('phrase.disable')}}</span>
+            <span v-if="row.fastport===1">{{$t('phrase.enable')}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column :label="$t('action.ope')" align="center">
           <template slot-scope="{row,$index}">
-            <span class="c-info" v-if="row.aggregate_port>0">当前口属于lag{{row.aggregate_port}},不可配置</span>
-            <el-button size="mini" type="text" v-auth="{fn:_onEdit,params:$index}" v-else>修改</el-button>
+            <span class="c-info" v-if="row.aggregate_port>0">{{$t('msw.agg_port_tip',{id:row.aggregate_port})}}</span>
+            <el-button size="medium" type="text" v-auth="{fn:_onEdit,params:$index}" v-else>{{$t('action.edit')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -93,35 +101,41 @@
         :visible.sync="baseModalShow"
         @open="_clearValidate"
         append-to-body
-        width="650px"
+        width="700px"
       >
-        <el-form :model="baseModel" :rules="baseRules" label-width="180px" ref="baseForm" size="small">
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
           <el-form-item label="Port Fast：" prop="fastport">
             <el-switch :active-value="1" :inactive-value="0" v-model="baseModel.fastport"></el-switch>
           </el-form-item>
           <el-form-item label="BPDU Guard：" prop="bpdu_guard">
             <el-switch :active-value="1" :inactive-value="0" v-model="baseModel.bpdu_guard"></el-switch>
           </el-form-item>
-          <el-form-item label="连接类型：" prop="linktype">
-            <el-select class="w200" placeholder="请选择" v-model="baseModel.linktype">
-              <el-option :value="2" label="自动"></el-option>
-              <el-option :value="0" label="共享"></el-option>
-              <el-option :value="1" label="点对点"></el-option>
+          <el-form-item :label="$t('msw.stp.link_type_f')" prop="linktype">
+            <el-select :placeholder="$t('action.select')" class="w200" v-model="baseModel.linktype">
+              <el-option :label="$t('msw.stp.auto')" :value="2"></el-option>
+              <el-option :label="$t('msw.stp.share')" :value="0"></el-option>
+              <el-option :label="$t('msw.stp.ptop')" :value="1"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="优先级：" prop="priority">
-            <el-select class="w200" placeholder="请选择" v-model="baseModel.priority">
+          <el-form-item :label="$t('msw.stp.priority_f')" prop="priority">
+            <el-select :placeholder="$t('action.select')" class="w200" v-model="baseModel.priority">
               <el-option :key="i" :label="(i-1)*16" :value="`${(i-1)*16}`" v-for="i in 16"></el-option>
             </el-select>
           </el-form-item>
           <template v-if="editIndex===-1">
-            <el-form-item class="inline-message" inline-message label="选择端口：" prop="portid"></el-form-item>
+            <el-form-item :label="$t('msw.port_select_f')" class="inline-message" inline-message prop="portid"></el-form-item>
             <port-panel :selecteds.sync="baseModel.portid" has-agg mutilple />
           </template>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click.native="baseModalShow = false" size="small">取 消</el-button>
-          <el-button :loading="isLoading" @click.native="_onModalConfirm" size="small" type="primary">确定</el-button>
+          <el-button @click.native="baseModalShow = false" class="w120" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button
+            :loading="isLoading"
+            @click.native="_onModalConfirm"
+            class="w120"
+            size="medium"
+            type="primary"
+          >{{isLoading?$t('action.editing'):$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -131,6 +145,7 @@
 import pageMixins from '@/mixins/msw/pageMixins'
 import formMixins from '@/mixins/formMixins'
 import PortPanel from '@/common/PortPanel'
+import { isPhyPort, hasLagmemberByLpid } from '@/utils/lag'
 import { stpPort } from '@/model/msw/advanced'
 import { rangeValidator } from '@/utils/rules'
 import { mapGetters } from 'vuex'
@@ -145,9 +160,9 @@ export default {
       isLoading: false,
       baseModel: stpPort(),
       baseRules: {
-        portid: [{ required: true, message: '请选择需要配置的端口' }],
+        portid: [{ required: true, message: I18N.t('msw.port_is_required') }],
         priority: [
-          { required: true, message: '请输入优先级' },
+          { required: true, message: I18N.t('msw.stp.priority_no_empty') },
           { validator: rangeValidator, min: 0, max: 240 }
         ]
       },
@@ -156,10 +171,12 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('switcher', ['portinfo', 'lagPort', 'uplink']),
+    ...mapGetters('switcher', ['portinfo', 'uplink']),
     modalTitle() {
       let _item = this.getItem(this.editIndex)
-      return _item ? `端口：${_item.interface}` : '批量配置'
+      return _item
+        ? `${I18N.t('msw.port_f')}${_item.ifname}`
+        : I18N.t('action.patch_edit')
     }
   },
   watch: {
@@ -172,6 +189,8 @@ export default {
   methods: {
     // 加载port列表
     async _loadList() {
+      this.isLoading = true
+      let _list = []
       try {
         let params = [
           { method: 'devConfig.get', params: { module: 'stp_port' } },
@@ -189,26 +208,27 @@ export default {
             status: lis.status
           }
         })
-        return (
-          stpPort.list
-            .map(lis => {
-              return {
-                ...lis,
-                ..._statusList.find(status => status.lpid === lis.lpid),
-                ...this.portinfo.find(p => p.lpid === lis.lpid)
-              }
-            })
-            // 过滤逻辑口和具有成员口的聚合口
-            .filter(port => {
-              return (
-                port.aggregate_port !== undefined ||
-                this.lagPort.find(p => p.lpid === port.lpid)
-              )
-            })
-        )
+        _list = stpPort.list
+          .map(lis => {
+            return {
+              ...lis,
+              ..._statusList.find(status => status.lpid === lis.lpid),
+              ...this.portinfo.find(p => p.lpid === lis.lpid)
+            }
+          })
+          // 过滤逻辑口和具有成员口的聚合口
+          .filter(port => {
+            return isPhyPort(port.lpid) || hasLagmemberByLpid(port.lpid)
+          })
       } catch (error) {
         return []
       }
+      this.isLoading = false
+      return _list
+    },
+    // 刷新数据
+    _onFresh() {
+      this.refresh()
     },
     // 批量编辑
     _onPatchEdit() {
@@ -242,7 +262,7 @@ export default {
                 list: _confirmData
               }
             })
-            this.$message.success('配置成功')
+            this.$message.success(I18N.t('tip.edit1_success'))
             this.refresh()
             this.baseModalShow = false
           } catch (error) {}
@@ -271,8 +291,4 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.advanced-stp-port {
-}
-</style>
 

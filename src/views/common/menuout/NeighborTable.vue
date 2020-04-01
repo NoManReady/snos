@@ -1,86 +1,121 @@
 <template>
   <div class="neighbor-table">
-    <el-table
-      :data="fromNetworkData"
-      :default-expand-all="!isNeiborNetwork"
-      class="mb15"
-      ref="multipleTable"
-      size="small"
-      tooltip-effect="dark"
-    >
-      <el-table-column label="展开/收起" type="expand" width="80">
-        <template slot-scope="props">
-          <el-table :data="props.row.subDevice" :ref="`deviceRef${props.row.networkId}`" class="has-banner" size="small">
-            <el-table-column align="center" type="selection" v-if="isNeiborNetwork" width="70"></el-table-column>
-            <el-table-column align="center" label="IP地址" width="160">
-              <template slot-scope="subprops">
-                <div class="banner-wrap">
-                  {{subprops.row.ip}}
-                  <span class="c-warning" v-if="subprops.row.devSN === $store.getters.master.sn">【主】</span>
-                  <div class="banner" v-if="curSn===subprops.row.devSN">
-                    <span>本机</span>
-                  </div>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column align="center" label="设备MAC">
-              <template slot-scope="subprops">{{subprops.row.devMac}}</template>
-            </el-table-column>
-            <el-table-column align="center" label="设备序列号">
-              <template slot-scope="subprops">{{subprops.row.devSN}}</template>
-            </el-table-column>
-            <el-table-column align="center" label="软件版本">
-              <template slot-scope="subprops">{{subprops.row.software}}</template>
-            </el-table-column>
-            <el-table-column align="center" label="设备类型">
-              <template slot-scope="subprops">{{subprops.row.deviceType}}</template>
-            </el-table-column>
-          </el-table>
-        </template>
-      </el-table-column>
-      <el-table-column :label="isNeiborNetwork ? '操作' : ' '" align="center" width="150">
-        <template slot-scope="scope">
+    <el-collapse v-model="activeNames">
+      <el-collapse-item :key="i" :name="network.networkId" v-for="(network, i) in fromNetworkData">
+        <template slot="title">
+          <div class="w280">
+            <strong :title="getNetworkName(network)" class="fs14 ellipsis vm width-name pl10">{{ getNetworkName(network) }}</strong>
+            <span class="vm">{{ $t("nei.dev_cnt", { cnt: network.subDevice.length }) }}</span>
+          </div>
           <el-button
             :disabled="isMergerLock"
-            @click="onPreMergeNetwork(scope.row)"
-            size="mini"
-            type="text"
-            v-show="isNeiborNetwork"
-          >添加到我的网络</el-button>
+            @click.stop="onPreMergeNetwork(network)"
+            size="medium"
+            type="plain"
+            v-if="isNeiborNetwork"
+          >{{ $t("nei.add_to_mynet") }}</el-button>
         </template>
-      </el-table-column>
-      <el-table-column :formatter="getNetworkNameDetail" align="center" label="网络名称"></el-table-column>
-    </el-table>
-    <el-dialog :visible.sync="isModalShow" @open="_clearValidate" width="450px">
-      <el-form :model="mergeData" :rules="baseRules" label-width="80px" ref="baseForm">
-        <div class="tc mb30 fs14">{{ tips }}</div>
-        <!-- 表单单个输入框回车会刷新页面，放一个隐藏输入框 -->
+        <el-table
+          :data="network.subDevice"
+          :ref="`deviceRef${network.networkId}`"
+          @row-click="onRowSelect"
+          class="has-banner"
+          size="medium"
+          stripe
+        >
+          <el-table-column align="center" type="selection" v-if="isNeiborNetwork" width="40"></el-table-column>
+          <el-table-column :label="$t('sysinfo.dev_type')" :min-width="isNeiborNetwork ? 185 : 245" align="center">
+            <template slot-scope="{ row }">
+              <div :class="{ pl15: !isNeiborNetwork }" class="banner-wrap tl">
+                <el-tag class="device-tag tc" size="mini" type="success" v-if="row.product === 'EHR'">{{ $t("nei.router") }}</el-tag>
+                <el-tag class="device-tag tc" size="mini" v-else-if="row.product === 'EAP' || row.forwardMode === 'AP' ">A P</el-tag>
+                <el-tag class="device-tag tc" size="mini" type="success" v-else-if="row.forwardMode === 'AC'">A C</el-tag>
+                <el-tag
+                  class="device-tag tc"
+                  size="mini"
+                  type="success"
+                  v-else-if="['GW_RGOS', 'EGW', 'EWR'].includes(row.product)"
+                >{{ $t("nei.gateway") }}</el-tag>
+                <el-tag
+                  class="device-tag tc"
+                  size="mini"
+                  type="warning"
+                  v-else-if="['SW', 'MSW'].includes(row.product)"
+                >{{ $t("nei.switch") }}</el-tag>
+                <el-tag class="device-tag tc" size="mini " type="danger" v-else>{{ row.product }}</el-tag>
+                <span
+                  :class="{ 'widther-type': !isNeiborNetwork }"
+                  :title="row.deviceType"
+                  class="ellipsis vm width-type"
+                >{{ row.deviceType }}</span>
+                <template v-if="!isNeiborNetwork">
+                  <span class="c-warning" v-if="row.devSN === $store.getters.master.sn">[{{ $t("devlist.master") }}]</span>
+                  <div class="banner" v-if="curSn === row.devSN">
+                    <span>{{ $t("devlist.local") }}</span>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('devlist.sn')" align="center" min-width="145">
+            <template slot-scope="{ row }">{{ row.devSN }}</template>
+          </el-table-column>
+          <el-table-column :label="$t('sysinfo.ip_addr')" align="center" min-width="130">
+            <template slot-scope="{ row }">{{ row.ip }}</template>
+          </el-table-column>
+          <el-table-column :label="$t('sysinfo.mac_addr')" align="center" min-width="145">
+            <template slot-scope="{ row }">{{ row.devMac }}</template>
+          </el-table-column>
+          <el-table-column :label="$t('sysinfo.soft_version')" align="center" min-width="300">
+            <template slot-scope="{ row }">{{ row.software }}</template>
+          </el-table-column>
+        </el-table>
+      </el-collapse-item>
+    </el-collapse>
+    <el-dialog :title="tips" :visible.sync="isModalShow" @open="_clearValidate" width="450px">
+      <el-form :model="mergeData" :rules="baseRules" @submit.native.prevent label-width="80px" ref="baseForm" size="medium">
+        <!-- 表单单个输入框回车会刷新页面，放一个隐藏输入框, 改用@submit.native.prevent解决
         <el-form-item label v-show="false">
           <el-input></el-input>
-        </el-form-item>
-        <el-form-item label="管理密码" prop="password">
+        </el-form-item>-->
+        <el-form-item :label="$t('nei.manage_pass')" prop="password">
           <el-input
-            :placeholder="`请输入选中设备的管理密码 -（网络：${fromNetworkName}）`"
+            :placeholder="$t('nei.input_dev_pass', { netname: fromNetworkName })"
+            @keydown.enter.native="onAdd"
             ref="password"
             type="password"
             v-model="mergeData.password"
           ></el-input>
         </el-form-item>
-        <el-form-item label="目标网络" prop="toNetworkId" v-if="!isNeiborNetwork">
-          <el-select class="w100p" placeholder="请选择目标网络ID" v-model="mergeData.toNetworkId">
+        <el-form-item :label="$t('nei.dest_net')" prop="toNetworkId" v-if="!isNeiborNetwork">
+          <el-select :placeholder="$t('nei.dest_net_id')" class="w100p" v-model="mergeData.toNetworkId">
             <el-option :key="item.networkId" :label="item.networkId" :value="item.networkId" v-for="item in toNetworkData"></el-option>
           </el-select>
         </el-form-item>
-        <div class="tc">
-          <el-button @click="onClickFormBtn()" size="small">取 消</el-button>
-          <el-button @click="onClickFormBtn(true)" size="small" type="primary">确 定</el-button>
-        </div>
       </el-form>
+      <span class="dialog-footer" slot="footer">
+        <el-button @click="forgotShow = true" class="c-info" type="text">{{ $t("nei.forgot") }}</el-button>
+        <el-button @click="onAdd" size="medium" type="primary">{{ $t("nei.join_to_mynet") }}</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog :title="$t('nei.forget_pass')" :visible.sync="forgotShow" width="450px">
+      <div>
+        {{ $t("nei.cfg_step_f") }}
+        <ol class="ul-tips ml15">
+          <li>{{ $t("nei.dev_power_on") }}</li>
+          <li>{{ $t("nei.dev_reset") }}</li>
+          <li>{{ $t("nei.dev_long_click") }}</li>
+        </ol>
+      </div>
+      <span class="dialog-footer" slot="footer">
+        <el-button @click="forgotShow = false" size="medium" type="primary">{{ $t("nei.i_know") }}</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
 <script>
 import formMixins from '@/mixins/formMixins'
+import { Tag, Collapse, CollapseItem } from 'element-ui'
 export default {
   name: 'NeighborTable',
   props: {
@@ -102,11 +137,16 @@ export default {
     }
   },
   mixins: [formMixins],
+  components: {
+    [Tag.name]: Tag,
+    [Collapse.name]: Collapse,
+    [CollapseItem.name]: CollapseItem
+  },
   computed: {
     tips() {
       return this.isNeiborNetwork
-        ? '将选中设备添加到我的网络当中'
-        : '将我的设备添加到目标网络中'
+        ? I18N.t('nei.destnet_to_mynet')
+        : I18N.t('nei.mynet_to_destnet')
     },
     myNetworkId() {
       return this.isNeiborNetwork
@@ -126,45 +166,68 @@ export default {
       return (window.top.APP_SYSINFO || this.$store.getters.sysinfo).serial_num
     }
   },
+  watch: {
+    myNetworkId() {
+      this.activeNames = [this.myNetworkId]
+    }
+  },
   data() {
     return {
+      activeNames: [],
       mergeData: {},
       isModalShow: false,
+      forgotShow: false,
       deviceRef: 'deviceRef',
       selectObj: {
         eswItems: [],
         apItems: []
       },
       baseRules: {
-        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-        toNetworkId: [{ required: true, message: '请选择目标网络' }]
+        password: [
+          {
+            required: true,
+            message: I18N.t('nei.pass_no_empty'),
+            trigger: 'blur'
+          }
+        ],
+        toNetworkId: [
+          { required: true, message: I18N.t('nei.destnet_no_empty') }
+        ]
       },
       fromNetworkName: ''
     }
   },
   methods: {
+    onRowSelect(row, col, e) {
+      this.$refs[`deviceRef${row.networkId}`][0].toggleRowSelection(row)
+    },
+    isUseEswMerger(ite) {
+      return ite.role === 'SWITCH' || ite.product === 'GW_RGOS'
+    },
     onPreMergeNetwork(row) {
       this.fromNetworkName = this.getNetworkName(row, true)
       let patch = { esw_fromSn: [], fromSn: [] }
-      this.$refs.multipleTable.toggleRowExpansion(row, true)
       this.selectObj = {
         eswItems: [],
         apItems: []
       }
       row.subDevice.forEach(ite => {
-        if (ite.role === 'SWITCH') {
+        if (this.isUseEswMerger(ite)) {
           this.selectObj.eswItems.push(ite.devSN)
         } else {
           this.selectObj.apItems.push(ite.devSN)
         }
       })
       this.$nextTick(() => {
-        let fromDevices = this.$refs[`deviceRef${row.networkId}`].selection
+        let fromDevices = this.$refs[`deviceRef${row.networkId}`][0].selection
         if (!fromDevices.length) {
-          return this.$message('请先选中当前网络下需要进行网络合并的设备')
+          if (!this.activeNames.includes(row.networkId)) {
+            this.activeNames.push(row.networkId)
+          }
+          return this.$message(I18N.t('nei.joindev_no_empty'))
         }
         fromDevices.forEach(ite => {
-          if (ite.role === 'SWITCH') {
+          if (this.isUseEswMerger(ite)) {
             patch.esw_fromSn.push(ite.devSN)
           } else {
             patch.fromSn.push(ite.devSN)
@@ -184,8 +247,8 @@ export default {
       this.mergeData.patch = patch
       if (row.networkId === '0') {
         this.$confirm(
-          `确认将这 ${this.fromDevicesLen || ''} 个新设备添加到我的网络中吗?`,
-          '提示',
+          I18N.t('nei.devjoin_confirm', { cnt: this.fromDevicesLen || '' }),
+          I18N.t('phrase.tip'),
           {
             type: 'info'
           }
@@ -198,17 +261,12 @@ export default {
     },
     getNetworkName(row, hideDetail) {
       return row.networkId === '0'
-        ? '新设备'
-        : row.networkName
+        ? I18N.t('nei.new_dev')
+        : row.networkName && row.networkName !== 'defaultNetwork'
         ? row.networkName
-        : '未命名网络'
+        : I18N.t('nei.unname_network')
     },
-    getNetworkNameDetail(row) {
-      let name = this.getNetworkName(row)
-      return `${name}　（${row.subDevice.length} 台设备）`
-    },
-    onClickFormBtn(isConfirm) {
-      if (!isConfirm) return (this.isModalShow = false)
+    onAdd() {
       this.$refs.baseForm.validate(ok => {
         if (ok) {
           this._addToMyNetwork()
@@ -251,7 +309,11 @@ export default {
       if (_401.length) {
         _jsx401 = (
           <div class="mb10">
-            密码错误：<b class="c-danger">{_401.length}</b>台,SN:
+            <i18n path="nei.join_err_pass" tag="span">
+              <b class="c-danger" place="pass">
+                {_401.length}
+              </b>
+            </i18n>
             {_401.map(e => (
               <p>{e.sn}</p>
             ))}
@@ -261,8 +323,11 @@ export default {
       if (_500.length) {
         _jsx500 = (
           <div class="mb10">
-            配置失败（可能网络相关问题）：
-            <b class="c-danger">{_500.length}</b>台,SN:
+            <i18n path="nei.join_err_server" tag="span">
+              <b class="c-danger" place="server">
+                {_500.length}
+              </b>
+            </i18n>
             {_500.map(e => (
               <p>{e.sn}</p>
             ))}
@@ -272,8 +337,11 @@ export default {
       if (_000.length) {
         _jsx000 = (
           <div class="mb10">
-            网络超时（可能邻居IP变更，尝试重新选择设备再进行合并操作）：
-            <b class="c-danger">{_000.length}</b>台,SN:
+            <i18n path="nei.join_err_timeout" tag="span">
+              <b class="c-danger" place="timeout">
+                {_000.length}
+              </b>
+            </i18n>
             {_000.map(e => (
               <p>{e.sn}</p>
             ))}
@@ -298,9 +366,10 @@ export default {
         errPatch: _errPatch,
         errMsg: _apFail ? (
           <div class="mb10">
-            合并失败{reason ? `(${reason})` : null}：
-            <b class="c-danger">{patch.length}</b>
-            台,SN:
+            {I18N.t('nei.join_err_common', {
+              reason: reason ? `(${reason})` : null,
+              len: patch.length
+            })}
             {patch.map(sn => (
               <p>{sn}</p>
             ))}
@@ -359,11 +428,14 @@ export default {
               message: (
                 <div style="max-height:500px;overflow-y:auto;">
                   <h3 class="mb10">
-                    合并成功：
-                    <b class="c-success">{Math.max(_successSize, 0)}</b>
-                    台, 失败：
-                    <b class="c-danger">{_errSize}</b>
-                    台,原因：
+                    <i18n path="nei.join_result_tip" tag="span">
+                      <b class="c-success" place="success">
+                        {Math.max(_successSize, 0)}
+                      </b>
+                      <b class="c-danger" place="faile">
+                        {_errSize}
+                      </b>
+                    </i18n>
                   </h3>
                   {ap.errMsg}
                   {esw.errMsg}
@@ -390,10 +462,36 @@ export default {
 </script>
 <style lang="scss">
 @import '~@/theme/theme.scss';
+.neighbor-table .el-collapse-item__header {
+  line-height: 1;
+}
 .neighbor-table {
+  .device-tag {
+    min-width: 40px;
+  }
+  .el-table.has-banner .banner-wrap {
+    height: 45px !important;
+    line-height: 45px !important;
+  }
   .el-icon-arrow-right {
     font-weight: bold;
     color: $--color-primary;
+  }
+  .ul-tips li {
+    margin-top: 3px;
+    list-style: decimal;
+  }
+  .ellipsis {
+    width: auto;
+    &.width-name {
+      max-width: 170px;
+    }
+    &.width-type {
+      max-width: 120px;
+    }
+    &.widther-type {
+      max-width: 170px;
+    }
   }
 }
 </style>

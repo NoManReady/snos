@@ -1,12 +1,30 @@
 <template>
   <div class="port-icon">
     <slot name="before"></slot>
-    <div :class="{'vm':direct==='h','pointer':hover,'disabled':disabled}" class="icon">
-      <i :class="classArr" :style="iconStyl"></i>
-      <slot name="inner">
-        <span :class="[textClazz]" v-if="text">{{text}}</span>
-        <i :class="`rjucd-${innerIcon}`" class="inner-icon" v-if="innerIcon"></i>
+    <div :class="{'vm':direct==='h','pointer':hover,'disabled':disabled}" class="port-icon--main">
+      <i :class="colorMap[dot]" class="notice" v-if="dot"></i>
+      <i :class="classArr" :style="iconStyl" class="icon"></i>
+      <slot name="inner-icon">
+        <div class="inner-icon" v-if="innerIcons.length">
+          <i :class="[`rjucd-${icon}`]" :key="icon" :style="innerIconStyl" v-for="icon of innerIcons"></i>
+        </div>
       </slot>
+      <div class="sub-wrap">
+        <slot name="sub-icon">
+          <template v-if="subIcons.length">
+            <i
+              :class="[`rjucd-${icon}`]"
+              :key="icon"
+              :style="{'z-index':index,right:`${index*60}%`}"
+              class="sub-icon"
+              v-for="(icon,index) of subIcons"
+            ></i>
+          </template>
+          <div :style="{'z-index':subIcons.length,right:`${subIcons.length*60}%`}" class="sub-text" v-if="text">
+            <span>{{text}}</span>
+          </div>
+        </slot>
+      </div>
     </div>
     <slot name="after"></slot>
   </div>
@@ -15,11 +33,6 @@
 const types = ['info', 'error', 'success', 'warning', 'closed']
 export default {
   name: 'port-icon',
-  inject: {
-    textClazz: {
-      default: () => ['subscript']
-    }
-  },
   props: {
     hover: {
       type: Boolean,
@@ -33,7 +46,8 @@ export default {
       type: String,
       default: 'v'
     },
-    innerIcon: String,
+    innerIcon: String | Array,
+    subIcon: String | Array,
     text: String | Number,
     port: Object,
     label: String,
@@ -54,6 +68,10 @@ export default {
     size: {
       type: Number,
       default: 32
+    },
+    dot: {
+      type: String | Boolean,
+      default: false
     }
   },
   computed: {
@@ -68,10 +86,41 @@ export default {
     },
     iconStyl() {
       return { 'font-size': `${this.size}px` }
+    },
+    innerIconStyl() {
+      return { 'font-size': `${Math.max(this.size - 20, 12)}px` }
+    },
+    innerIcons() {
+      if (typeof this.innerIcon === 'string') {
+        return [this.innerIcon]
+      }
+      if (Array.isArray(this.innerIcon)) {
+        return this.innerIcon
+      }
+      return []
+    },
+    subIcons() {
+      if (typeof this.subIcon === 'string') {
+        return [this.subIcon]
+      }
+      if (Array.isArray(this.subIcon)) {
+        return this.subIcon
+      }
+      return []
+    },
+    subIconSize() {
+      return this.text ? this.subIcons.length + 1 : this.subIcons.length
     }
   },
   data() {
-    return {}
+    return {
+      colorMap: {
+        info: 'c-info',
+        warning: 'c-warning',
+        success: 'c-sunccess',
+        error: 'c-error'
+      }
+    }
   }
 }
 </script>
@@ -86,68 +135,91 @@ export default {
   white-space: nowrap;
   .disabled {
     cursor: not-allowed;
+    // cursor: default;
   }
-  .label {
-    font-size: 12px;
-  }
-  .icon {
+  &--main {
     position: relative;
-    > i {
+    text-align: center;
+    line-height: 1;
+    .icon {
       display: inline-block;
-      line-height: 1;
     }
-    > span,
-    > i.inner-icon {
+    .notice {
       position: absolute;
+      width: 4px;
+      height: 4px;
+      background: red;
+      border-radius: 50%;
+      right: 2px;
+      top: 3px;
+    }
+    > .inner-icon,
+    > .sub-wrap {
+      position: absolute;
+      transform-origin: center center;
       top: 50%;
       left: 50%;
-      display: inline-block;
       font-size: 12px;
-      color: #fff;
-      transform-origin: center center;
-      transform: translate(-50%, -50%) scale(0.8);
+      width: 1.4em;
+      height: 1.4em;
+      line-height: 1.4em;
     }
-    > span.subscript {
-      top: 100%;
-      left: 100%;
-      background: $--color-info;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      transform: translate(-80%, -90%) scale(0.8);
+    > .inner-icon {
+      color: #fff;
+      transform: translate(-50%, -50%);
+    }
+    > .sub-wrap {
+      & > [class^='sub-'] {
+        display: block;
+        background: currentColor;
+        border-radius: 50%;
+        border: 1px solid #fff;
+        position: absolute;
+        font-size: 12px;
+        width: 100%;
+        height: 100%;
+      }
     }
   }
-  /deep/ .icon {
+  /deep/ .port-icon--main {
     .info {
-      color: #e6e6e6;
-      & ~ .subscript {
-        background-color: #e6e6e6;
+      color: #595959;
+      & ~ .sub-wrap > [class^='sub-'] {
+        background-color: #595959;
+        color: #fff;
       }
     }
     .closed {
-      color: #595959;
-      & ~ .subscript {
-        background-color: #595959;
+      color: #bfbfbf;
+      & ~ .sub-wrap > [class^='sub-'] {
+        background-color: #bfbfbf;
+        color: #8c8c8c;
+      }
+      & ~ .inner-icon {
+        color: #8c8c8c;
       }
     }
     .error {
       color: $--color-danger;
-      & ~ .subscript {
+      & ~ .sub-wrap > [class^='sub-'] {
         background-color: $--color-danger;
+        color: #fff;
       }
     }
     .good,
     .success {
       color: $--color-success;
-      & ~ .subscript {
+      & ~ .sub-wrap > [class^='sub-'] {
         background-color: $--color-success;
+        color: #fff;
       }
     }
     .normal,
     .warning {
       color: $--color-warning;
-      & ~ .subscript {
+      & ~ .sub-wrap > [class^='sub-'] {
         background-color: $--color-warning;
+        color: #fff;
       }
     }
     .rotate {

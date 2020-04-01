@@ -2,27 +2,63 @@
   <div class="time-selection">
     <div class="time-selection--header" v-if="showHeader">
       <slot name="timeSelection_title">
-        <h2>{{title}}</h2>
+        <h2>{{ title }}</h2>
       </slot>
     </div>
-    <div ref="timeSelectionWrap" class="time-selection-wrap">
-      <div class="time-selection--yaxis" ref="timeSelectionYaxis" :style="yaxisStyl">
-        <div v-for="(row,index) in rows" :key="row.value" :class="['yaxis-picker',`time-selection--yaxis_item_${index}`]" :style="yaxisItemStyl" @click="_onTableAxisBetweenClick(index,'row',$event)">{{row.label}}</div>
+    <div class="time-selection-wrap" ref="timeSelectionWrap">
+      <div :style="yaxisStyl" class="time-selection--yaxis" ref="timeSelectionYaxis">
+        <div
+          :class="['yaxis-picker', `time-selection--yaxis_item_${index}`]"
+          :key="row.value"
+          :style="yaxisItemStyl"
+          @click="_onTableAxisBetweenClick(index, 'row', $event)"
+          v-for="(row, index) in rows"
+        >{{ row.label }}</div>
       </div>
-      <div class="time-selection--main" :style="{'margin-left':`${yaxisWidth}px`}">
+      <div :style="{ 'margin-left': `${yaxisWidth}px` }" class="time-selection--main">
         <table class="time-selection-picker">
           <thead ref="timeSelectionPickerHeader">
             <tr v-if="columns.length">
-              <th v-for="(col,index) in columns" :key="col.value" :class="['header-picker',`time-selection-picker--header_item_${index}`]" :style="{'height':`${headerHeight}px`}" @click="_onTableAxisClick(index,'col',$event)">
-                {{col.label}}
-              </th>
+              <th
+                :class="[
+                  'header-picker',
+                  `time-selection-picker--header_item_${index}`
+                ]"
+                :key="col.value"
+                :style="{ height: `${headerHeight}px` }"
+                @click="_onTableAxisClick(index, 'col', $event)"
+                v-for="(col, index) in columns"
+              >{{ col.label }}</th>
             </tr>
           </thead>
           <tbody ref="timeSelectionArea">
-            <tr v-for="(row,i) in rows" :key="`${row.value}-${rows[i+1].value}`" v-if="i<rows.length-1">
-              <td class="time-selection-picker--bordered" :class="{begin:enable}" v-for="(col,j) in columns" :key="col.value" :data-col="j" :data-row="i" @click="_onTimePickerClick({row:i,col:j,value:[`${row.value}-${rows[i+1].value}`,col.value]})">
-                <div :class="['time-picker',`time-selection-picker--body_item_${j}`,{'is-active':_hasActive(i,j)}]" :style="timeItemStyl"></div>
-              </td>
+            <tr :key="`${row.value}-${i}`" v-for="(row, i) in rows">
+              <template v-if="i < rows.length - 1">
+                <td
+                  :class="{ begin: enable }"
+                  :data-col="j"
+                  :data-row="i"
+                  :key="col.value"
+                  @click="
+                    _onTimePickerClick({
+                      row: i,
+                      col: j,
+                      value: [`${row.value}-${rows[i + 1].value}`, col.value]
+                    })
+                  "
+                  class="time-selection-picker--bordered"
+                  v-for="(col, j) in columns"
+                >
+                  <div
+                    :class="[
+                      'time-picker',
+                      `time-selection-picker--body_item_${j}`,
+                      { 'is-active': _hasActive(i, j) }
+                    ]"
+                    :style="timeItemStyl"
+                  ></div>
+                </td>
+              </template>
             </tr>
           </tbody>
         </table>
@@ -31,7 +67,7 @@
     </div>
     <div class="time-selection--footer" v-if="showFooter">
       <slot name="timeSelection_legend">
-        <h2>{{legend}}</h2>
+        <h2>{{ legend }}</h2>
       </slot>
     </div>
   </div>
@@ -60,13 +96,13 @@ export default {
     columns: {
       type: Array,
       default: () => [
-        { value: 'mon', label: '星期一' },
-        { value: 'tue', label: '星期二' },
-        { value: 'wed', label: '星期三' },
-        { value: 'thu', label: '星期四' },
-        { value: 'fri', label: '星期五' },
-        { value: 'sat', label: '星期六' },
-        { value: 'sun', label: '星期日' }
+        { value: 'mon', label: I18N.t('comp.week[0]') },
+        { value: 'tue', label: I18N.t('comp.week[1]') },
+        { value: 'wed', label: I18N.t('comp.week[2]') },
+        { value: 'thu', label: I18N.t('comp.week[3]') },
+        { value: 'fri', label: I18N.t('comp.week[4]') },
+        { value: 'sat', label: I18N.t('comp.week[5]') },
+        { value: 'sun', label: I18N.t('comp.week[6]') }
       ]
     },
     // 初始选中数据（数组标识每个单元格索引，对象标识每种数据的范围）

@@ -7,7 +7,7 @@
           <el-option :key="unit.value" :label="unit.label" :value="unit.value" v-for="unit of units"></el-option>
         </el-select>
         <el-select class="w80" size="mini" v-model="tabSwitch" v-show="tabs.length">
-          <el-option :key="index" :label="tab" :value="index" v-for="(tab,index) in tabs"></el-option>
+          <el-option :key="index" :label="tab.toUpperCase()" :value="index" v-for="(tab,index) in tabs"></el-option>
         </el-select>
       </el-col>
     </el-row>
@@ -22,7 +22,6 @@
   </div>
 </template>
 <script>
-import { Col, Row } from 'element-ui'
 import FlowChart from '@/views/egw/components/FlowChart'
 const CHART_DATA = {}
 let TAB_DATA = []
@@ -55,9 +54,7 @@ export default {
     timer = null
   },
   components: {
-    FlowChart,
-    [Col.name]: Col,
-    [Row.name]: Row
+    FlowChart
   },
   computed: {
     // 表格名称
@@ -65,7 +62,7 @@ export default {
       let _unit = this.units.find(unit => {
         return unit.value === this.unit
       })
-      return `实时总流量(${_unit.label})`
+      return this.$t('egw.flow_real_time', { lable: _unit.label })
     }
   },
   watch: {
@@ -89,7 +86,10 @@ export default {
       try {
         let _result = await this.$api.interfaceFlow()
         let _chartInfo = _result.data
-        this.$bus.$emit('flowIntfInfo', { from: 'FlowInfo', flowInfo: _chartInfo })
+        this.$bus.$emit('flowIntfInfo', {
+          from: 'FlowInfo',
+          flowInfo: _chartInfo
+        })
         for (let key in _chartInfo) {
           if (!CHART_DATA[key]) {
             TAB_DATA.push(key)

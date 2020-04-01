@@ -1,20 +1,21 @@
 <template>
   <div>
     <div class="mb10">
-      <help-alert json-key title="LED状态控制" type="info">
+      <help-alert :title="$t('wifi_comm.led_ctrl')" json-key type="info">
         <div slot="content">
-          控制下联设备
-          <strong class="c-warning">EAP</strong>的LED灯开关。
-          <label class="c-warning" v-if="!editAble">此配置项由主AP统一管理。</label>
+          <i18n path="wifi_comm.led_ctrl_tip1">
+            <strong class="c-warning">{{ isEhr ? '所有设备' : '下联EAP'}}</strong>
+          </i18n>
+          <label class="c-warning" v-if="!editAble">{{$t('wifi_comm.led_ctrl_tip2')}}</label>
         </div>
       </help-alert>
     </div>
-    <el-form :model="baseModel" class="w500" label-width="160px" ref="baseForm" size="small">
-      <el-form-item label="LED灯开关" prop="led_all">
+    <el-form :model="baseModel" class="w500" label-width="160px" ref="baseForm" size="medium">
+      <el-form-item :label="$t('wifi_comm.led_status')" prop="led_all">
         <el-switch :disabled="!editAble" active-value="restore" inactive-value="close" v-model="baseModel.led_all"></el-switch>
       </el-form-item>
       <el-form-item>
-        <el-button :disabled="!editAble" @click="onSubmit" size="small" type="primary">保存配置</el-button>
+        <el-button :disabled="!editAble" @click="onSubmit" class="w160" type="primary">{{$t('action.save_edit')}}</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -32,6 +33,9 @@ export default {
   computed: {
     editAble() {
       return !this.$roles().includes('slave')
+    },
+    isEhr() {
+      return this.$roles().includes('ehr')
     }
   },
   created() {
@@ -47,24 +51,18 @@ export default {
     },
     // 提交表单验证
     onSubmit() {
-      this.$refs.baseForm.validate(valid => {
-        if (valid) {
-          this.$api
-            .cmd('acConfig.set', {
-              module: 'devLed',
-              data: this.baseModel
-            })
-            .then(d => {
-              this.$message({
-                type: 'success',
-                message: '设置完成'
-              })
-            })
-        }
-      })
+      this.$api
+        .cmd('acConfig.set', {
+          module: 'devLed',
+          data: this.baseModel
+        })
+        .then(d => {
+          this.$message({
+            type: 'success',
+            message: I18N.t('tip.edit1_success')
+          })
+        })
     }
   }
 }
 </script>
-<style lang="scss" scoped>
-</style>

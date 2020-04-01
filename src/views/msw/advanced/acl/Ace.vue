@@ -2,17 +2,17 @@
   <div class="acl-ace">
     <p class="c-danger mb5" v-show="isBinding">
       <i class="el-icon-warning"></i>
-      <span>当前ACL已被应用，不可进行修改，点击指定规则可查看规则详细信息。</span>
+      <span>{{$t('msw.acl.ace_binded_tip')}}</span>
     </p>
     <div class="ace-edit-box">
-      <el-form :disabled="isBinding" :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="small">
-        <el-form-item label="ACL名称：">
+      <el-form :disabled="isBinding" :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+        <el-form-item :label="$t('msw.acl.acl_name_f')">
           <span>{{acl.name}}</span>
         </el-form-item>
-        <el-form-item label="访问控制：" prop="action">
+        <el-form-item :label="$t('msw.acl.access_ctrl_f')" prop="action">
           <el-radio-group v-model="baseModel.action">
-            <el-radio :label="1">禁止</el-radio>
-            <el-radio :label="0">允许</el-radio>
+            <el-radio :label="1">{{$t('msw.acl.forbid')}}</el-radio>
+            <el-radio :label="0">{{$t('msw.acl.allow')}}</el-radio>
           </el-radio-group>
         </el-form-item>
         <!-- <el-form-item label="生效时间：" prop="tmngtName">
@@ -22,8 +22,8 @@
         </el-form-item>-->
         <!-- IP -->
         <template v-if="acl.type===2">
-          <el-form-item label="IP协议号：" prop="protol">
-            <el-checkbox v-model="protolType">所有</el-checkbox>
+          <el-form-item :label="$t('msw.acl.ip_protocol')" prop="protol">
+            <el-checkbox v-model="protolType">{{$t('msw.acl.all')}}</el-checkbox>
             <div v-if="!protolType">
               <!-- <el-input :disabled="protolType" class="w180" placeholder="0-255" v-model.number="baseModel.protol"></el-input> -->
               <el-autocomplete :fetch-suggestions="_querySearch" placeholder="0-255" v-model="baseModel.protol">
@@ -33,11 +33,20 @@
                 </template>
               </el-autocomplete>
               <label class="c-info">(0-255)</label>
+              <el-tooltip effect="light" placement="right">
+                <div class="content" slot="content">
+                  <p :key="item.v" v-for="item of protolList">
+                    <label>{{item.k}}</label>：
+                    <span>{{item.v}}</span>
+                  </p>
+                </div>
+                <i class="el-icon-info form-tip"></i>
+              </el-tooltip>
             </div>
           </el-form-item>
           <!-- 源IP -->
-          <el-form-item label="源IP地址：">
-            <el-checkbox v-model="sipType">所有</el-checkbox>
+          <el-form-item :label="$t('msw.acl.source_ip_f')">
+            <el-checkbox v-model="sipType">{{$t('msw.acl.all')}}</el-checkbox>
             <div v-if="!sipType">
               <el-form-item class="vm" label-width="0px" prop="sip" style="margin-bottom:0;">
                 <el-input :disabled="sipType" class="w180" placeholder="192.168.1.1" v-model="baseModel.sip"></el-input>
@@ -46,12 +55,12 @@
               <el-form-item class="vm" label-width="0px" prop="smask" style="margin-bottom:0;">
                 <net-mask :disabled="sipType" class="w180" v-model="baseModel.smask" />
               </el-form-item>
-              <span class="c-info vm">(地址/掩码)</span>
+              <span class="c-info vm">{{$t('msw.acl.addr_mask')}}</span>
             </div>
           </el-form-item>
           <!-- 目的IP -->
-          <el-form-item label="目的IP地址：">
-            <el-checkbox v-model="dipType">所有</el-checkbox>
+          <el-form-item :label="$t('msw.acl.dest_ip_f')">
+            <el-checkbox v-model="dipType">{{$t('msw.acl.all')}}</el-checkbox>
             <div v-if="!dipType">
               <el-form-item class="vm" label-width="0px" prop="dip" style="margin-bottom:0;">
                 <el-input :disabled="dipType" class="w180" placeholder="192.168.1.1" v-model="baseModel.dip"></el-input>
@@ -60,14 +69,14 @@
               <el-form-item class="vm" label-width="0px" prop="dmask" style="margin-bottom:0;">
                 <net-mask :disabled="dipType" class="w180" v-model="baseModel.dmask" />
               </el-form-item>
-              <span class="c-info vm">(地址/掩码)</span>
+              <span class="c-info vm">{{$t('msw.acl.addr_mask')}}</span>
             </div>
           </el-form-item>
           <!-- 只有tcp和udp才有端口 -->
           <template v-if="baseModel.protol==6||baseModel.protol==17">
             <!-- 源端口 -->
-            <el-form-item label="源端口：">
-              <el-checkbox v-model="sportType">所有</el-checkbox>
+            <el-form-item :label="$t('msw.acl.source_port_f')">
+              <el-checkbox v-model="sportType">{{$t('msw.acl.all')}}</el-checkbox>
               <div v-if="!sportType">
                 <el-form-item class="vm" label-width="0px" prop="sports" style="margin-bottom:0;">
                   <el-input :disabled="sportType" class="w180" placeholder="0-65535" v-model.number="baseModel.sports"></el-input>
@@ -76,12 +85,12 @@
                 <el-form-item class="vm" label-width="0px" prop="sporte" style="margin-bottom:0;">
                   <el-input :disabled="sportType" class="w180" placeholder="0-65535" v-model.number="baseModel.sporte"></el-input>
                 </el-form-item>
-                <span class="c-info vm">(起始-结束)</span>
+                <span class="c-info vm">{{$t('msw.acl.begin_end')}}</span>
               </div>
             </el-form-item>
             <!-- 目的端口 -->
-            <el-form-item label="目的端口：">
-              <el-checkbox v-model="dportType">所有</el-checkbox>
+            <el-form-item :label="$t('msw.acl.dest_port_f')">
+              <el-checkbox v-model="dportType">{{$t('msw.acl.all')}}</el-checkbox>
               <div v-if="!dportType">
                 <el-form-item class="vm" label-width="0px" prop="dports" style="margin-bottom:0;">
                   <el-input :disabled="dportType" class="w180" placeholder="0-65535" v-model.number="baseModel.dports"></el-input>
@@ -90,15 +99,15 @@
                 <el-form-item class="vm" label-width="0px" prop="dporte" style="margin-bottom:0;">
                   <el-input :disabled="dportType" class="w180" placeholder="0-65535" v-model.number="baseModel.dporte"></el-input>
                 </el-form-item>
-                <span class="c-info vm">(起始-结束)</span>
+                <span class="c-info vm">{{$t('msw.acl.begin_end')}}</span>
               </div>
             </el-form-item>
           </template>
         </template>
         <!-- MAC -->
         <template v-else>
-          <el-form-item label="报文类型号：">
-            <el-checkbox v-model="ethType">所有</el-checkbox>
+          <el-form-item :label="$t('msw.acl.pack_type_f')">
+            <el-checkbox v-model="ethType">{{$t('msw.acl.all')}}</el-checkbox>
             <el-form-item prop="eth" v-if="!ethType">
               <el-input class="w180" v-model="baseModel.eth">
                 <template slot="prepend">0x</template>
@@ -107,8 +116,8 @@
             </el-form-item>
           </el-form-item>
           <!-- 源MAC -->
-          <el-form-item label="源MAC地址：">
-            <el-checkbox v-model="smacType">所有</el-checkbox>
+          <el-form-item :label="$t('msw.acl.source_mac_f')">
+            <el-checkbox v-model="smacType">{{$t('msw.acl.all')}}</el-checkbox>
             <div v-if="!smacType">
               <el-form-item class="vm" label-width="0px" prop="smac" style="margin-bottom:0;">
                 <el-input :disabled="smacType" class="w180" placeholder="00:11:22:33:44:55" v-model="baseModel.smac"></el-input>
@@ -117,12 +126,12 @@
               <el-form-item class="vm" label-width="0px" prop="smask" style="margin-bottom:0;">
                 <net-mask :disabled="smacType" class="w180" type="mac" v-model="baseModel.smask" />
               </el-form-item>
-              <span class="c-info vm">(地址/掩码)</span>
+              <span class="c-info vm">{{$t('msw.acl.addr_mask')}}</span>
             </div>
           </el-form-item>
           <!-- 目的MAC -->
-          <el-form-item label="目的MAC地址：">
-            <el-checkbox v-model="dmacType">所有</el-checkbox>
+          <el-form-item :label="$t('msw.acl.dest_mac_f')">
+            <el-checkbox v-model="dmacType">{{$t('msw.acl.all')}}</el-checkbox>
             <div v-if="!dmacType">
               <el-form-item class="vm" label-width="0px" prop="dmac" style="margin-bottom:0;">
                 <el-input :disabled="dmacType" class="w180" placeholder="00:11:22:33:44:55" v-model="baseModel.dmac"></el-input>
@@ -131,7 +140,7 @@
               <el-form-item class="vm" label-width="0px" prop="dmask" style="margin-bottom:0;">
                 <net-mask :disabled="dmacType" class="w180" type="mac" v-model="baseModel.dmask" />
               </el-form-item>
-              <span class="c-info vm">(地址/掩码)</span>
+              <span class="c-info vm">{{$t('msw.acl.addr_mask')}}</span>
             </div>
           </el-form-item>
         </template>
@@ -139,17 +148,21 @@
           <el-button
             :disabled="aceLoading"
             :loading="isLoading&&!aceLoading"
-            size="small"
+            class="w120"
             type="primary"
             v-auth="_onConfirmRule"
-          >{{this.editIndex===-1?'添加规则':'修改规则'}}</el-button>
-          <el-button :disabled="isLoading" @click.native="_onReset" size="small">{{this.editIndex===-1?'重置':'取消修改'}}</el-button>
+          >{{this.editIndex===-1?$t('msw.acl.add_rule'):$t('msw.acl.edit_rule')}}</el-button>
+          <el-button
+            :disabled="isLoading"
+            @click.native="_onReset"
+            class="w120"
+          >{{this.editIndex===-1?$t('msw.acl.reset'):$t('msw.acl.cancel_edit')}}</el-button>
         </el-form-item>
       </el-form>
     </div>
-    <h4 class="ace-tit">
-      <strong>已有规则：</strong>
-      <small class="c-info">(拖动序号可交换规则顺序)</small>
+    <h4 class="header-tit">
+      <strong>{{$t('msw.acl.exist_rule')}}</strong>
+      <small class="c-info">{{$t('msw.acl.drag_tip')}}</small>
       <!-- <span>
         最大支持配置
         <b class="c-warning mlr5">{{maxLimit}}</b>条。
@@ -157,71 +170,71 @@
     </h4>
     <el-table
       :data="aceList"
+      :empty-text="$t('msw.acl.no_rule')"
       :row-class-name="_aceRowClass"
       @row-click="_onRowClick"
       class="drag-table"
-      empty-text="暂无规则"
       max-height="300px"
       ref="aceTable"
       row-key="uuid"
-      size="mini"
+      size="medium"
       v-loading="aceLoading"
     >
       <!-- <el-table-column :selectable="_isSelectable" type="selection" width="55"></el-table-column> -->
-      <el-table-column align="center" label="序号" width="60">
+      <el-table-column :label="$t('phrase.serial')" align="center" width="60">
         <template slot-scope="{row,$index}">
           <span class="drag-icon">{{$index+1}}</span>
         </template>
       </el-table-column>
       <!-- MAC -->
       <template v-if="acl.type===1">
-        <el-table-column label="匹配规则">
+        <el-table-column :label="$t('msw.acl.matched_rule')">
           <template slot-scope="{row}">
-            <p>
-              <b>【源MAC】</b>
-              <span>{{row.smac!=='any'?`${row.smac}/${row.smask}`:'所有'}}</span>
+            <p class="ace-tit">
+              <b>【{{$t('msw.acl.source_mac')}}】</b>
+              <span>{{row.smac!=='any'?`${row.smac}/${row.smask}`:$t('msw.acl.all')}}</span>
             </p>
-            <p>
-              <b>【目的MAC】</b>
-              <span>{{row.dmac!=='any'?`${row.dmac}/${row.dmask}`:'所有'}}</span>
+            <p class="ace-tit">
+              <b>【{{$t('msw.acl.dest_mac')}}】</b>
+              <span>{{row.dmac!=='any'?`${row.dmac}/${row.dmask}`:$t('msw.acl.all')}}</span>
             </p>
-            <p>
-              <b>【报文类型号】</b>
-              <span>{{row.eth!=='any'?`${row.eth}`:'所有'}}</span>
+            <p class="ace-tit">
+              <b>【{{$t('msw.acl.pack_type')}}】</b>
+              <span>{{row.eth!=='any'?`${row.eth}`:$t('msw.acl.all')}}</span>
             </p>
           </template>
         </el-table-column>
       </template>
       <!-- IP -->
       <template v-if="acl.type===2">
-        <el-table-column label="匹配规则">
+        <el-table-column :label="$t('msw.acl.matched_rule')">
           <template slot-scope="{row}">
-            <p>
-              <b>【源IP】</b>
-              <span>{{row.sip!=='any'?`${row.sip}/${row.smask}`:'所有'}}</span>
+            <p class="ace-tit">
+              <b>【{{$t('msw.acl.source_ip')}}】</b>
+              <span>{{row.sip!=='any'?`${row.sip}/${row.smask}`:$t('msw.acl.all')}}</span>
             </p>
-            <p v-if="row.protol==6||row.protol==17">
-              <b>【源地址端口范围】</b>
-              <span>{{row.sports!=='any'?`${row.sports}-${row.sporte}`:'所有'}}</span>
+            <p class="ace-tit" v-if="row.protol==6||row.protol==17">
+              <b>【{{$t('msw.acl.source_port_range')}}】</b>
+              <span>{{row.sports!=='any'?`${row.sports}-${row.sporte}`:$t('msw.acl.all')}}</span>
             </p>
-            <p>
-              <b>【目的IP】</b>
-              <span>{{row.dip!=='any'?`${row.dip}/${row.dmask}`:'所有'}}</span>
+            <p class="ace-tit">
+              <b>【{{$t('msw.acl.dest_ip')}}】</b>
+              <span>{{row.dip!=='any'?`${row.dip}/${row.dmask}`:$t('msw.acl.all')}}</span>
             </p>
-            <p v-if="row.protol==6||row.protol==17">
-              <b>【目的地址端口范围】</b>
-              <span>{{row.dports!=='any'?`${row.dports}-${row.dporte}`:'所有'}}</span>
+            <p class="ace-tit" v-if="row.protol==6||row.protol==17">
+              <b>【{{$t('msw.acl.dest_port_range')}}】</b>
+              <span>{{row.dports!=='any'?`${row.dports}-${row.dporte}`:$t('msw.acl.all')}}</span>
             </p>
-            <p>
-              <b>【IP协议号】</b>
-              <span>{{row.protol!=='any'?`${_getProtolName(row.protol)}`:'所有'}}</span>
+            <p class="ace-tit">
+              <b>【{{$t('msw.acl.ip_protocol')}}】</b>
+              <span>{{row.protol!=='any'?`${_getProtolName(row.protol)}`:$t('msw.acl.all')}}</span>
             </p>
           </template>
         </el-table-column>
       </template>
-      <el-table-column align="center" label="规则类型" width="100px">
+      <el-table-column :label="$t('msw.acl.rule_type')" align="center" width="100px">
         <template slot-scope="{row}">
-          <span>{{row.action===1?'阻塞':'允许'}}</span>
+          <span>{{row.action===1?$t('msw.acl.block'):$t('msw.acl.allow')}}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column align="center" label="生效时间" width="100px">
@@ -229,49 +242,52 @@
           <acl-date-view :time="_getTimeByName(row.tmngtName)" />
         </template>
       </el-table-column>-->
-      <el-table-column align="center" label="操作" width="160px">
+      <el-table-column :label="$t('action.ope')" align="center" width="160px">
         <template slot-scope="{row,$index}">
-          <el-button size="mini" type="text" v-auth="{fn:_onEditRule,params:$index}" v-if="editIndex!==$index">修改</el-button>
-          <el-button @click.native="_onReset" size="mini" type="text" v-else>取消修改</el-button>
+          <el-button
+            size="medium"
+            type="text"
+            v-auth="{fn:_onEditRule,params:$index}"
+            v-if="editIndex!==$index"
+          >{{$t('action.edit')}}</el-button>
+          <el-button @click.native="_onReset" size="medium" type="text" v-else>{{$t('msw.acl.cancel_edit')}}</el-button>
           <el-button
             :disabled="aceList.length<=1||editIndex>-1"
-            size="mini"
+            size="medium"
             type="text"
             v-auth="{fn:_onMoveRule,params:$index}"
-          >移动</el-button>
+          >{{$t('msw.acl.move')}}</el-button>
           <el-button
             :class="{'c-danger':editIndex===-1}"
             :disabled="editIndex>-1"
-            size="mini"
+            size="medium"
             type="text"
             v-auth="{fn:_onDelRule,params:row.uuid}"
-          >删除</el-button>
+          >{{$t('action.delete')}}</el-button>
         </template>
       </el-table-column>
     </el-table>
     <!-- 上下移动 -->
     <el-dialog
       :close-on-click-modal="false"
+      :title="$t('msw.acl.move_tip')"
       :visible.sync="moveModalShow"
       @open="_clearValidate('moveForm')"
       append-to-body
-      title="移动规则选择"
-      width="650px"
+      width="500px"
     >
-      <el-form :model="moveModel" :rules="moveRules" class="inline-tip" inline inline-message ref="moveForm" size="small">
-        <span class="vm">
-          将选中的第
-          <b class="c-success">{{moveIndex+1}}</b> 条规则和第
-        </span>
-        <el-form-item class="vm" inline-message prop="index" style="margin:0;vertical-align:middle;">
-          <el-input class="w60" placeholder="索引" v-model="moveModel.index"></el-input>
-        </el-form-item>
-        <span class="vm">条规则互换</span>
+      <el-form :model="moveModel" :rules="moveRules" class="inline-tip" inline inline-message ref="moveForm" size="medium">
+        <i18n path="msw.acl.move_desc" tag="div">
+          <b class="c-success" place="begin">{{moveIndex+1}}</b>
+          <el-form-item class="vm" inline-message place="end" prop="index" style="margin:0;vertical-align:middle;">
+            <el-input :placeholder="$t('msw.acl.index')" class="w80" v-model="moveModel.index"></el-input>
+          </el-form-item>
+        </i18n>
       </el-form>
-      <p class="c-info">（注：规则匹配优先级是从上到下依次匹配）</p>
+      <p class="c-info">{{$t('msw.acl.move_rule_tip')}}</p>
       <span class="dialog-footer" slot="footer">
-        <el-button @click.native="moveModalShow = false" size="small">取 消</el-button>
-        <el-button :loading="isLoading" @click.native="_onMoveModalConfirm" size="small" type="primary">移动</el-button>
+        <el-button @click.native="moveModalShow = false" class="w120">{{$t('action.cancel')}}</el-button>
+        <el-button :loading="isLoading" @click.native="_onMoveModalConfirm" class="w120" type="primary">{{$t('msw.acl.move')}}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -286,6 +302,7 @@ import {
   ipValidator,
   intValidator
 } from '@/utils/rules'
+import { objIsSame } from '@/utils/utils'
 import { ace } from '@/model/msw/advanced'
 import { Checkbox } from 'element-ui'
 import NetMask from '@/common/NetMask'
@@ -307,13 +324,16 @@ export default {
   mixins: [formMixins],
   props: {
     acl: Object,
-    times: Array
+    times: {
+      type: Array,
+      default: () => []
+    }
   },
   data() {
     // 端口号验证
     const portValidator = (r, v, cb) => {
       if (this.baseModel[`${r.type}ports`] > this.baseModel[`${r.type}porte`]) {
-        return cb(new Error('起始端口号不能小于结束端口号'))
+        return cb(new Error(I18N.t('msw.acl.bp_not_lg_ep')))
       }
       cb()
     }
@@ -323,14 +343,14 @@ export default {
         return cb()
       }
       if (!intValidate(v)) {
-        return cb(new Error('请输入数字'))
+        return cb(new Error(I18N.t('rules.require_int')))
       }
       if (v == this.moveIndex + 1) {
-        return cb(new Error('互换的规则号不能相同'))
+        return cb(new Error(I18N.t('msw.acl.is_same_rule')))
       }
       let _aceLen = this.aceList.length
       if (!isBetween(v, 1, _aceLen)) {
-        return cb(new Error(`规则号范围为1~${_aceLen}`))
+        return cb(new Error(I18N.t('msw.acl.rule_range', { end: _aceLen })))
       }
       cb()
     }
@@ -341,11 +361,11 @@ export default {
         return
       }
       if (!intValidate(v)) {
-        cb(new Error('请输入整数'))
+        cb(new Error(I18N.t('rules.require_int')))
         return
       }
       if (!isBetween(v, 0, 255)) {
-        cb(new Error(`取值范围 0~255`))
+        cb(new Error(I18N.t('msw.acl.protocol_range')))
         return
       }
       cb()
@@ -356,15 +376,15 @@ export default {
         return cb()
       }
       if (!v) {
-        return cb(new Error('请输入掩码'))
+        return cb(new Error(I18N.t('msw.acl.mask_no_empty')))
       }
       if (this.acl.type === 1) {
         if (!macValidate(v)) {
-          return cb(new Error('请输入正确的掩码格式,如ff:ff:ff:ff:ff:00'))
+          return cb(new Error(I18N.t('msw.acl.mac_mask_format')))
         }
       } else {
         if (!isIp(v)) {
-          return cb(new Error('请输入正确的掩码格式,如255.255.255.0'))
+          return cb(new Error(I18N.t('msw.acl.ip_mask_format')))
         }
       }
       cb()
@@ -382,48 +402,48 @@ export default {
         smask: [{ validator: maskValidator }],
         dmask: [{ validator: maskValidator }],
         sip: [
-          { required: true, message: '请输入源IP地址' },
+          { required: true, message: I18N.t('msw.acl.sourceip_no_empty') },
           { validator: ipValidator }
         ],
         dip: [
-          { required: true, message: '请输入目的IP地址' },
+          { required: true, message: I18N.t('msw.acl.destip_no_empty') },
           { validator: ipValidator }
         ],
         smac: [
-          { required: true, message: '请输入源MAC地址' },
+          { required: true, message: I18N.t('msw.acl.sourcemac_no_empty') },
           { validator: macValidator }
         ],
         dmac: [
-          { required: true, message: '请输入目的MAC地址' },
+          { required: true, message: I18N.t('msw.acl.destmac_no_empty') },
           { validator: macValidator }
         ],
         protol: [{ validator: protolValidator }],
         sports: [
-          { required: true, message: '请输入源端口起始端口号' },
+          { required: true, message: I18N.t('msw.acl.sp_begin_no_empty') },
           { validator: intValidator },
           { validator: rangeValidator, min: 0, max: 65535 },
           { validator: portValidator, type: 's' }
         ],
         sporte: [
-          { required: true, message: '请输入源端口结束端口号' },
+          { required: true, message: I18N.t('msw.acl.sp_end_no_empty') },
           { validator: intValidator },
           { validator: rangeValidator, min: 0, max: 65535 },
           { validator: portValidator, type: 's' }
         ],
         dports: [
-          { required: true, message: '请输入目的端口起始端口号' },
+          { required: true, message: I18N.t('msw.acl.dp_begin_no_empty') },
           { validator: intValidator },
           { validator: rangeValidator, min: 0, max: 65535 },
           { validator: portValidator, type: 'd' }
         ],
         dporte: [
-          { required: true, message: '请输入目的端口结束端口号' },
+          { required: true, message: I18N.t('msw.acl.dp_end_no_empty') },
           { validator: intValidator },
           { validator: rangeValidator, min: 0, max: 65535 },
           { validator: portValidator, type: 'd' }
         ],
         eth: [
-          { required: true, message: '请输入报文类型号' },
+          { required: true, message: I18N.t('msw.acl.eth_no_empty') },
           { validator: rangeHexValidator, min: '600', max: 'ffff' }
         ]
       },
@@ -435,7 +455,7 @@ export default {
       },
       moveRules: {
         index: [
-          { required: true, message: '请输入数字' },
+          { required: true, message: I18N.t('msw.acl.should_be_number') },
           { validator: moveValidator }
         ]
       },
@@ -630,26 +650,28 @@ export default {
             uuid: [_oldItem.uuid, _newItem.uuid]
           }
           await this._onMovePostData(_model)
-          this.$message.success('操作成功')
-          // this._loadAceList()
-          this.aceList.splice(
-            newIndex,
-            1,
-            ...this.aceList.splice(oldIndex, 1, _newItem)
-          )
+          await this._loadAceList()
+          this.$message.success(I18N.t('tip.ope_success'))
+          // this.aceList.splice(
+          //   newIndex,
+          //   1,
+          //   ...this.aceList.splice(oldIndex, 1, _newItem)
+          // )
         }
       })
     },
-    // 配置初始化时间
+    // 配置初始化时间（默认所有时段）
     _setInitTime() {
       if (this.times.length) {
         this.baseModel.tmngtName = this.times[0].tmngtName
+      } else {
+        this.baseModel.tmngtName = I18N.t('phrase.alltime')
       }
     },
     // 获取ip协议号名称
     _getProtolName(protol) {
       let _protol = this.protolList.find(p => p.v === protol)
-      return _protol ? _protol.k : protol
+      return _protol ? `${_protol.k}(${_protol.v})` : protol
     },
     // 是否可勾选
     _isSelectable() {
@@ -688,11 +710,11 @@ export default {
         ? [uuid]
         : this.$refs.aceTable.selection.map(s => s.uuid)
       if (!_uuids.length) {
-        return this.$message.warning('请选择要删除的列表项')
+        return this.$message.warning(I18N.t('tip.select_del_item'))
       }
-      await this.$confirm(`是否确认删除？`, {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      await this.$confirm(I18N.t('tip.confirm_delete'), {
+        confirmButtonText: I18N.t('action.confirm'),
+        cancelButtonText: I18N.t('action.cancel'),
         type: 'warning'
       })
       try {
@@ -702,7 +724,7 @@ export default {
         })
         this.aceList = this.aceList.filter(ace => !_uuids.includes(ace.uuid))
         // this._loadAceList()
-        this.$message.success('删除成功')
+        this.$message.success(I18N.t('tip.del_success'))
       } catch (error) {}
     },
     // 重置规则
@@ -755,7 +777,7 @@ export default {
       this.$refs.baseForm.validate(async valid => {
         if (valid) {
           if (this._judgeRuleIsExist()) {
-            this.$alert('规则已被配，请重新修改', { type: 'error' })
+            this.$alert(I18N.t('msw.acl.rule_is_exist'), { type: 'error' })
             return
           }
           let _isEdit = this.editIndex !== -1
@@ -764,6 +786,14 @@ export default {
           _model.acl_type = this.acl.type
           if (_model.protol && _model.protol !== 'any') {
             _model.protol = +_model.protol
+          }
+          if (_isEdit) {
+            let _oldItem = this.aceList[this.editIndex]
+            if (objIsSame(_oldItem, { ...this.baseModel })) {
+              this.$message(I18N.t('msw.acl.rule_no_modify'))
+              this._onReset()
+              return
+            }
           }
           this.isLoading = true
           try {
@@ -789,7 +819,11 @@ export default {
               )
               this.aceList.splice(this.editIndex, 1, _model)
             }
-            this.$message.success(`${_isEdit ? '编辑程功' : '添加成功'}`)
+            this.$message.success(
+              `${
+                _isEdit ? I18N.t('tip.edit_success') : I18N.t('tip.add_success')
+              }`
+            )
             this._onReset()
           } catch (error) {}
           this.isLoading = false
@@ -828,14 +862,14 @@ export default {
             uuid: [_curAce.uuid, _replaceAce.uuid]
           }
           await this._onMovePostData(_model)
-          // this._loadAceList()
-          this.aceList.splice(
-            this.moveModel.index - 1,
-            1,
-            ...this.aceList.splice(this.moveIndex, 1, _replaceAce)
-          )
+          await this._loadAceList()
+          // this.aceList.splice(
+          //   this.moveModel.index - 1,
+          //   1,
+          //   ...this.aceList.splice(this.moveIndex, 1, _replaceAce)
+          // )
           this.moveModalShow = false
-          this.$message.success('操作成功')
+          this.$message.success(I18N.t('action.ope_success'))
           this._onMoveReset()
         }
       })
@@ -851,7 +885,7 @@ export default {
     cursor: move;
     font-size: 14px;
   }
-  .ace-tit {
+  .header-tit {
     padding: 5px 20px;
   }
   padding: 0 8px;
@@ -861,6 +895,14 @@ export default {
     border-radius: 3px;
     max-height: 350px;
     overflow-y: auto;
+  }
+  .ace-tit {
+    b {
+      min-width: 90px;
+      display: inline-block;
+      text-align: right;
+      font-size: 13px;
+    }
   }
 }
 </style>

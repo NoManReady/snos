@@ -1,11 +1,11 @@
 <template>
   <div class="vpn-l2tp">
-    <el-tabs v-model="tabValue" @tab-click="_onTabClick">
-      <el-tab-pane name="0" v-if="showServer" label="L2TP服务器"></el-tab-pane>
-      <el-tab-pane name="1" v-if="showClient" label="L2TP客户端"></el-tab-pane>
-      <el-tab-pane name="2" label="隧道信息列表"></el-tab-pane>
+    <el-tabs @tab-click="_onTabClick" v-model="tabValue">
+      <el-tab-pane :label="$t('egw.l2tp.l2tp_service')" name="0" v-if="showServer"></el-tab-pane>
+      <el-tab-pane :label="$t('egw.l2tp.l2tp_initiator')" name="1" v-if="showClient"></el-tab-pane>
+      <el-tab-pane :label="$t('egw.l2tp.tunnel_information_tab')" name="2"></el-tab-pane>
     </el-tabs>
-    <l2tp-tab :type="tabValue" :key="randomId"></l2tp-tab>
+    <l2tp-tab :key="randomId" :type="tabValue"></l2tp-tab>
   </div>
 </template>
 <script>

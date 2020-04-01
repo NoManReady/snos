@@ -1,37 +1,57 @@
 <template>
   <div class="ssid-radio-tab" v-show="isLoaded">
     <!-- 公寓SSID -->
-    <dev-ssid :max="MAX_NUM" :is-dev-group="wireless.existIndepend === 'true'" :json-key="'wifiRadioJson'"></dev-ssid>
+    <dev-ssid :is-dev-group="wireless.existIndepend === 'true'" :json-key="'wifiRadioJson'" :max="MAX_NUM"></dev-ssid>
     <!-- 高级设置 -->
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          <span class="vm">高级设置</span>
+          <span class="vm">{{$t('wifi_comm.advanced_cfg')}}</span>
+          <dev-group :exist-independ="wireless.existIndepend === 'true'" @change-group="changeGroup" v-if="!hideGroup"></dev-group>
         </span>
-        <dev-group @change-group="changeGroup" :exist-independ="wireless.existIndepend === 'true'" v-if="!hideGroup"></dev-group>
       </div>
-      <el-form class="box-content" ref="baseForm" :model="baseModel" label-width="140px" :disabled="!editable">
-        <div class="vm" v-for="(radio,index) in baseModel.radioList.slice(0,Math.min(2, baseModel.radioList.length))" :key="radio.radioIndex" :style="{width:1/Math.min(2,baseModel.radioList.length)*100+'%', minWidth: '300px'}" v-show="showRadioFlag(radio.radioIndex)">
-          <el-form-item label="频段类型">
-            <b class="f-theme">{{radio.type}}</b>
-          </el-form-item>
-          <el-form-item :prop="`radioList[${index}].maxSta`" label="最大用户数" :rules="countValidate(radio.radioIndex)">
-            <el-input class="w200" v-model="radio.maxSta" :disabled="!editable"></el-input>
-          </el-form-item>
-          <el-form-item :prop="`radioList[${index}].bandWidth`" label="频宽">
-            <el-select class="w200" v-model="radio.bandWidth" :disabled="!editable">
-              <el-option v-for="band in _getBandByType(radio.radioIndex)" :key="band.value" :value="band.value" :label="band.label"></el-option>
-            </el-select>
-          </el-form-item>
-        </div>
-        <div class="tc">
-          <el-button class="w200" type="primary" v-auth="{fn:_onSaveRadio,params:'radio'}">保 存</el-button>
-        </div>
+      <el-form :disabled="!editable" :model="baseModel" class="box-content" label-width="140px" ref="baseForm" size="medium">
+        <el-row>
+          <el-col
+            :key="index"
+            :lg="10"
+            :md="12"
+            :span="24"
+            :xl="6"
+            v-for="(radio,index) in baseModel.radioList.slice(0,Math.min(2, baseModel.radioList.length))"
+            v-show="showRadioFlag(radio.type)"
+          >
+            <el-form-item :label="$t('wifi_comm.radio_type')">
+              <b class="f-theme">{{radio.type}}</b>
+            </el-form-item>
+            <el-form-item
+              :label="$t('wifi_comm.user_cnt_max')"
+              :prop="`radioList[${index}].maxSta`"
+              :rules="countValidate(radio.type)"
+            >
+              <el-input :disabled="!editable" class="form-input-pc" v-model="radio.maxSta"></el-input>
+            </el-form-item>
+            <el-form-item :label="$t('wifi_comm.band_width')" :prop="`radioList[${index}].bandWidth`">
+              <el-select :disabled="!editable || (repeaterRadio === radio.type)" v-model="radio.bandWidth">
+                <el-option :key="band.value" :label="band.label" :value="band.value" v-for="band in _getBandByType(radio.type)"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :lg="18" :md="22" :span="2" :xl="12">
+            <el-form-item :class="{'tc': baseModel.radioList.slice(0,Math.min(2, baseModel.radioList.length)) > 1 }">
+              <el-button class="w160" size="medium" type="primary" v-auth="{fn:_onSaveRadio,params:'radio'}">{{$t('action.save')}}</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
     </div>
   </div>
 </template>
 <script>
+import radioMixins from './radioMixins'
 import { deepClone } from '@/utils/utils'
 import { intValidate } from '@/utils/rulesUtils'
 import DevSsid from './DevSsid'
@@ -69,25 +89,25 @@ export default {
     [DevSsid.name]: DevSsid,
     [DevGroup.name]: DevGroup
   },
-  mixins: [wifiMixins],
+  mixins: [wifiMixins, radioMixins],
   computed: {
-    capacity() {
-      return this.$store.getters.capacity
+    isMaster() {
+      return this.$roles().includes('master')
     }
+  },
+  created() {
+    let _capWireless = this.$store.getters.capacity.wireless
+    this.capRadiolist = _capWireless && _capWireless.radiolist
   },
   watch: {
     'wireless.radioList': {
       handler(v) {
         let _list = this.handlerRadiolist(deepClone(v))
         _list.forEach(radio => {
-          radio.maxSta = this.getRadioMaxSta(
-            radio.radioIndex,
-            radio.maxSta
-          )
+          radio.maxSta = this.getRadioMaxSta(radio.type, radio.maxSta)
           // macc下发为空时默认配置频宽
           if (!radio.bandWidth) {
             radio.bandWidth = 'auto'
-            // radio.bandWidth = radio.radioIndex === '1' ? '20' : '40'
           }
         })
         this.baseModel.radioList = _list
@@ -97,11 +117,11 @@ export default {
   },
   methods: {
     // 获取radio频宽
-    _getBandByType(radioIndex) {
+    _getBandByType(type) {
       let _bands = [
         {
           value: 'auto',
-          label: '自动'
+          label: I18N.t('phrase.auto')
         },
         {
           value: '20',
@@ -112,66 +132,57 @@ export default {
           label: '40MHz'
         }
       ]
-      if (radioIndex === '2') {
+      if (type === '5G') {
         _bands.push({ value: '80', label: '80MHz' })
       }
       return _bands
     },
     // 是否显示单频5G设置
-    showRadioFlag(radioIndex) {
+    showRadioFlag(type) {
       let _flag = true
-      if (this.capacity.wireless) {
-        let _radioListCapacity = this.capacity.wireless.radiolist
-        _flag =
-          !!_radioListCapacity.find(radio => {
-            return radio.index === radioIndex
-          }) || this.$roles().includes('master')
+      if (!this.isMaster && this.capRadiolist) {
+        _flag = this.capRadiolist.find(radio => {
+          return radio.band_support === type
+        })
       }
-      return _flag
+      return !!_flag
     },
     // 处理radiolist
     handlerRadiolist(radios = []) {
       if (!radios.length) {
         radios.push(RADIO2G)
       }
-      if (radios.length === 1) {
-        if (this.$roles().includes('egw') || this.$roles().includes('master')) {
-          radios.push(RADIO5G)
-        }
+      if (radios.length === 1 && this.isMaster) {
+        radios.push(RADIO5G)
       }
       return radios
     },
     // 获取最大用户数
-    getRadioMaxSta(radioIndex, sta) {
-      let _radio = { sta_limit_max: sta || '64' }
-      if (this.capacity.wireless && !this.$roles().includes('master')) {
-        let _radioListCapacity = this.capacity.wireless.radiolist
-        let _r = _radioListCapacity.find(radio => {
-          return radio.index === radioIndex
+    getRadioMaxSta(type, sta) {
+      let _sta_limit_max = sta || (type === '2.4G' ? '64' : '128')
+      if (this.capRadiolist) {
+        let _r = this.capRadiolist.find(radio => {
+          return radio.band_support === type
         })
-        if (_r) {
-          _r = Object.assign({}, _r, {
-            sta_limit_max: Math.min(_radio.sta_limit_max, _r.sta_limit_max) + ''
-          })
-        }
-        _radio = _r || _radio
+        let _cap_sta_limit_max = !!_r ? _r.sta_limit_max : '64'
+        _sta_limit_max = Math.min(_cap_sta_limit_max, _sta_limit_max) // 配置值若超过能力值，要选小值
       }
-      return _radio.sta_limit_max
+      return _sta_limit_max + ''
     },
     // 射频用户数验证
-    countValidate(radioIndex) {
-      let _maxSta = +this.getRadioMaxSta(radioIndex)
+    countValidate(type) {
+      let _maxSta = +this.getRadioMaxSta(type)
       return [
         {
           validator(rule, value, cb) {
             if (!intValidate(value)) {
-              return cb(`请输入整数`)
+              return cb(I18N.t('rules.require_int'))
             }
             let _value = +(value || 0)
             if (_value <= _maxSta && _value >= 1) {
               cb()
             } else {
-              cb(`用户数介于1~${_maxSta}之间`)
+              cb(I18N.t('wifi_comm.user_cnt_range', { max: _maxSta }))
             }
           }
         }
@@ -191,4 +202,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.form-input-pc {
+  max-width: 200px;
+}
 </style>

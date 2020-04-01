@@ -26,7 +26,7 @@ export const userList = (isSilence = false) => {
   return api.cmd(
     'devSta.get',
     { module: 'user_list', data: { devType: 'all', dataType: 'timely' } },
-    { isSilence }
+    { isSilence, noParse: true }
   )
 }
 
@@ -77,15 +77,19 @@ export const getHostName = () => {
 export const setHostName = (params) => {
   return api.cmd(
     'devConfig.set', {
-      module: 'hostName',
-      data: params
-    }, {
-      timeout: 0,
-      isSilence: true
-    }
+    module: 'hostName',
+    data: params
+  }, {
+    timeout: 0,
+    isSilence: true
+  }
   ).then(d => {
     if (window.top.$$MASTER_WINDOW) {
-      window.top.$$MASTER_WINDOW.postMessage({ value: params.name, sn: params.sn[0], type: 'ewebHostname' })
+      try {
+        window.top.$$MASTER_WINDOW.postMessage({ value: params.name, sn: params.sn[0], type: 'ewebHostname' }, '*')
+      } catch (error) {
+
+      }
     }
     return d
   })

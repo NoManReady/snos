@@ -15,32 +15,32 @@ export default {
     return {
       tabs: Object.freeze([
         {
-          label: 'MAC地址表',
+          label: I18N.t('msw.mac.mac_addr_list'),
           value: '0',
           comp: pdmanage.List
         },
         {
-          label: '静态MAC地址',
+          label: I18N.t('msw.mac.static_mac_addr'),
           value: '1',
           comp: pdmanage.Static
         },
         {
-          label: '动态MAC地址',
+          label: I18N.t('msw.mac.dynamic_mac_addr'),
           value: '2',
           comp: pdmanage.Dynamic
         },
         {
-          label: '过滤MAC地址',
+          label: I18N.t('msw.mac.filter_mac_addr'),
           value: '3',
           comp: pdmanage.Filter
         },
         {
-          label: 'MAC基础配置',
+          label: I18N.t('msw.mac.mac_cfg'),
           value: '4',
           comp: pdmanage.Base
         },
         {
-          label: 'ARP列表',
+          label: I18N.t('msw.mac.arp_addr_list'),
           value: '5',
           comp: pdmanage.Arpstatic
         }

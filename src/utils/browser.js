@@ -1,6 +1,8 @@
 export default {
   versions: function () {
-    let u = navigator.userAgent, app = navigator.appVersion;
+    let u = navigator.userAgent
+    let app = navigator.appVersion
+    let ie = u.match(/(MSIE\s+?)(\d+.\d+?)/)
     return {     //移动终端浏览器版本信息
       trident: u.indexOf('Trident') > -1, //IE内核
       presto: u.indexOf('Presto') > -1, //opera内核
@@ -11,8 +13,12 @@ export default {
       android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或uc浏览器
       iPhone: u.indexOf('iPhone') > -1, //是否为iPhone或者QQHD浏览器
       iPad: u.indexOf('iPad') > -1, //是否iPad
-      webApp: u.indexOf('Safari') == -1 //是否web应该程序，没有头部与底部
+      webApp: u.indexOf('Safari') == -1, //是否web应该程序，没有头部与底部
+      isIe: ie,
+      ieVersion: ie ? Number(ie[2]) : null
     };
   }(),
   language: (navigator.browserLanguage || navigator.language).toLowerCase()
 }
+
+export const navigatorLang = (navigator.language || navigator.browserLanguage).toLowerCase().replace(/-/,'_') || 'zh_cn'

@@ -1,114 +1,101 @@
 <template>
-  <el-dialog class="common-steps" title="" :before-close="_onBeforeClose" :close-on-click-modal="false" :close-on-press-escape="false" :visible.sync="visible" width="600px">
-    <el-carousel ref="carousel"  @change='_onChange' indicator-position='none'  arrow='always' :autoplay='false' >
-      <el-carousel-item v-for="(item, i) in steps" :key="item.src">
-        <div class="tc">
-          <img :src='item.src' :class='[{"mb15": i!=steps.length-2}, "step-img"]' :alt="item.text" width="500" height="200"/>
-          <p class="c-info"><i v-show="i==steps.length-1" class="el-icon-loading fs18 c-success" ></i>{{item.text}}</p>
-          <el-button class="w200 mt20" v-show="i==steps.length-2" type="primary" @click.native="_onStart">{{btnText}}</el-button>
-        </div>
-      </el-carousel-item>
-    </el-carousel>
+  <el-dialog
+    :before-close="_onBeforeClose"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    :title="$t('steps.title')"
+    :visible.sync="visible"
+    append-to-body
+    modal-append-to-body
+    width="550px"
+  >
+    <div class="tc">
+      <img :src="require('@/assets/eg/step_4.png')" class="w100p" />
+      <div class="tl mt10 ml40" v-if="errorMsg">
+        <strong class="c-warning">{{errorMsg}}</strong>
+        <ol>
+          <li class="mt5">{{ $t("steps.error1") }}</li>
+          <li class="mt5">{{ $t("steps.error2") }}</li>
+          <li class="mt5">{{ $t("steps.error3") }}</li>
+        </ol>
+      </div>
+      <div class="tl mt10 ml40" v-else>
+        <strong class="c-info">{{$t('steps.stepTip')}}</strong>
+        <ol>
+          <li class="mt5">{{ $t("steps.steps1") }}</li>
+          <li class="mt5">{{ $t("steps.steps2") }}</li>
+          <li class="mt5">{{ $t("steps.steps3") }}</li>
+        </ol>
+      </div>
+      <el-button :loading="running" @click.native="_onStart" class="w200 mt20" type="primary">{{btnText}}</el-button>
+    </div>
   </el-dialog>
 </template>
 <script>
-import { Carousel, CarouselItem } from 'element-ui'
-import bus from '@/utils/bus'
 export default {
-  name: 'CommonSteps',
+  name: 'EhrSteps',
   props: {
-    activeItem: {
-      type: Number,
-      default: 0
+    value: {
+      type: Boolean,
+      default: false
+    },
+    remoteIp: {
+      type: String | Boolean,
+      default: false
     }
   },
   data() {
-    const STEPS = [
-      {
-        src: require('@/assets/eg/step_1.png'),
-        text: '1、将旧路由器连接电源'
-      },
-      {
-        src: require('@/assets/eg/step_2.png'),
-        text: '2、将网线一头插入旧路由器WAN口'
-      },
-      {
-        src: require('@/assets/eg/step_3.png'),
-        text: '3、将网线另一头插入EG的LAN口'
-      },
-      {
-        src: require('@/assets/eg/step_4.png'),
-        text: '正在获取，请稍后...'
-      }
-    ]
     return {
-      visible: false,
-      steps: STEPS,
-      btnText: '开始获取',
-      running: false
+      visible: this.value,
+      btnText: this.$t('steps.get_start'),
+      running: false,
+      errorMsg: false
     }
   },
-  components: {
-    [Carousel.name]: Carousel,
-    [CarouselItem.name]: CarouselItem
-  },
+  created() {},
   watch: {
+    value(v) {
+      this.visible = v
+    },
     visible(v) {
-      // 关闭时切回到第一步
+      this.$emit('input', v)
       if (!v) {
-        this.setActiveItem(1)
-        this.btnText = '开始获取'
-        bus.$off('pppoe-learn-callback')
+        this.errorMsg = false
+        this.btnText = this.$t('steps.get_start')
       }
     }
   },
   methods: {
-    _onChange(step) {
-      switch (step) {
-        case 0:
-          this._setArrowDisplay('el-carousel__arrow--left', 'none')
-          this._setArrowDisplay('el-carousel__arrow--right', 'inherit')
-          break
-        case 1:
-          this._setArrowDisplay('el-carousel__arrow--left', 'inherit')
-          this._setArrowDisplay('el-carousel__arrow--right', 'inherit')
-          break
-        case 2:
-          this._setArrowDisplay('el-carousel__arrow--left', 'inherit')
-          this._setArrowDisplay('el-carousel__arrow--right', 'none')
-          break
-        case 3:
-          this._setArrowDisplay('el-carousel__arrow--left', 'none')
-          this._setArrowDisplay('el-carousel__arrow--right', 'none')
-          break
-        default:
-          this._setArrowDisplay('el-carousel__arrow--left', 'inherit')
-          this._setArrowDisplay('el-carousel__arrow--right', 'inherit')
-          break
-      }
-    },
-    _setArrowDisplay(cname, val) {
-      let _doms = document.getElementsByClassName(cname)
-      _doms && _doms[0] && (_doms[0].style.display = val)
-    },
     _onStart() {
-      this._confirmStart(async () => {
-        this.setActiveItem(4)
-        let _res = await this.$api.cmd(
-          'devSta.get',
-          { module: 'pppoe_learn' },
-          { isSilence: true, timeout: 0 }
-        )
-        if (this.visible) {
-          this._dealRes(_res)
-        }
+      this._confirmStart(() => {
+        this.running = true
+        this.errorMsg = false
+        this.btnText = this.$t('steps.steps4')
+        this.$api
+          .cmd(
+            'devSta.get',
+            { module: 'pppoe_learn', remoteIp: this.remoteIp },
+            { isSilence: true, timeout: 0 }
+          )
+          .then(res => {
+            this._dealRes(res)
+          })
+          .catch(e => {
+            this._dealRes({
+              state: 'fail',
+              error: this.$t('steps.over_check_error')
+            })
+          })
+          .finally(_ => {
+            this.running = false
+          })
       })
     },
     _onBeforeClose(done) {
       if (this.running) {
         this.$message({
           duration: 6000,
-          message: '设备正在获取宽带账号密码，请等待结果返回...'
+          message: this.$t('steps.loading_response')
         })
         // this.$confirm(
         //   '您正在获取宽带账号和密码，是否保持继续获取？',
@@ -129,53 +116,41 @@ export default {
     },
     _confirmStart(cb) {
       this.$confirm(
-        '您已根据提示连接好设备，否则获取账号将超时或异常。',
-        '请确认',
+        this.$t('steps.get_connected_confirm'),
+        this.$t('steps.confirm_is_required'),
         {
-          confirmButtonText: '已连接，开始获取',
-          cancelButtonText: '我再检查下',
+          confirmButtonText: this.$t('steps.get_start_by_link'),
+          cancelButtonText: this.$t('steps.check_response'),
           type: 'warning'
         }
       )
         .then(cb)
         .catch()
     },
-    setActiveItem(i) {
-      this.running = i === 4
-      if (this.$refs.carousel.setActiveItem) {
-        this.$refs.carousel.setActiveItem(i - 1)
-      }
-    },
     _dealRes(res) {
+      if (!this.visible) {
+        return
+      }
+      // res = { state: 'finish', user: 'test', pwd: 'pass' } // test data
       if (res.state === 'finish') {
         this.$message({
           type: 'success',
           duration: 6000,
-          message: '已获取到账号密码并填充到页面'
+          message: this.$t('steps.response_wright')
         })
         this.learnOk(res)
       } else {
-        this.btnText = '重新获取'
-        this.setActiveItem(3)
-        this.$message({
-          type: 'error',
-          duration: 6000,
-          message: `获取账号密码失败：${res.error}，请检查线路连接。`
-        })
+        this.btnText = this.$t('steps.next_get')
+        this.errorMsg = this.$t('steps.get_account_error_tip') + res.error
       }
     },
     learnOk(res) {
-      bus.$emit('pppoe-learn-callback', res)
+      this.$emit('result', {
+        user: res.user || '',
+        pwd: res.pwd || ''
+      })
       this.visible = false
     }
   }
 }
 </script>
-<style lang="scss" scoped>
-.common-steps {
-  .step-img {
-    display: block;
-    margin: 0 auto;
-  }
-}
-</style>

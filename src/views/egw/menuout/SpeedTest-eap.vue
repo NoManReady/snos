@@ -1,34 +1,37 @@
 <template>
   <div class="diagnose-speed">
-    <help-alert json-key title="测速结果和实际带宽可能有误差，建议多测试几次查看带宽。"></help-alert>
-    <el-form :model="baseModel" class="w500" label-width="160px" ref="baseForm" status-icon>
-      <el-form-item label="选择测速接口">
-        <el-select class="w340" placeholder="请选择" v-model="baseModel.intf">
+    <help-alert :title="$t('egw.test_error_tip')" json-key></help-alert>
+    <el-form :model="baseModel" class="w500" label-width="160px" ref="baseForm" size="medium" status-icon>
+      <el-form-item :label="$t('egw.select_speedTest')">
+        <el-select :placeholder="$t('action.select')" class="w340" v-model="baseModel.intf">
           <el-option :key="value" :label="key" :value="value" v-for="(key, value) in intfObj"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button :loading="btnText === '正在测速...'" @click="onSubmit" class="w160" type="primary">{{btnText}}</el-button>
+        <el-button :loading="btnText === $t('egw.speedtesting')" @click="onSubmit" class="w160" type="primary">{{btnText}}</el-button>
       </el-form-item>
       <template v-if="resMsg">
-        <el-form-item label="您的IP地址">
+        <el-form-item :label="$t('egw.your_ip')">
           <label>{{speedRes.client_ip}}</label>
         </el-form-item>
-        <el-form-item label="所属运营商">
+        <el-form-item :label="$t('egw.beyond_manage')">
           <label>{{speedRes.client_isp}}</label>
         </el-form-item>
-        <el-form-item label="测速服务器">
+        <el-form-item :label="$t('egw.test_service')">
           <span v-if="speedRes.best_server == 'NA'">
-            <i class="el-icon-loading fs18"></i>正在获取服务器...
+            <i class="el-icon-loading fs18"></i>
+            {{$t('egw.getting_service')}}
           </span>
           <span type="text" v-else>{{speedRes.best_server}}</span>
         </el-form-item>
-        <el-form-item label="测速结果">
+        <el-form-item :label="$t('egw.result_test')">
           <span class="c-success fs14">{{resMsg}}</span>&nbsp;
           <small v-show="speedRes.status === 'finish'">({{speedRes.end_time}})</small>
-          <br />下载速度 =
+          <br />
+          {{$t('egw.download_speed')}}
           <span :class="{'c-success': isDownload}">{{speedRes.download}} Mbit/s</span>
-          <br />上传速度 =
+          <br />
+          {{$t('egw.update_speed')}}
           <span :class="{'c-success': isUpload}">{{speedRes.upload}} Mbit/s</span>
         </el-form-item>
       </template>
@@ -42,7 +45,8 @@ export default {
   name: 'DiagnoseSpeed',
   data() {
     const countValidate = (r, v, cb) => {
-      if (v && !isBetween(v, 20, 100)) return cb(new Error('超时次数 20~100'))
+      if (v && !isBetween(v, 20, 100))
+        return cb(new Error(I18N.t('egw.exceeding_number_tip')))
       cb()
     }
     return {
@@ -52,7 +56,7 @@ export default {
       },
       speedRes: {},
       interval: null,
-      btnText: '开始测速'
+      btnText: I18N.t('egw.speedtest_start')
     }
   },
   computed: {
@@ -68,17 +72,17 @@ export default {
     },
     resMsg() {
       const resMap = {
-        running: '计算最优测速服务器...',
-        upload: '检测上传速度...',
-        download: '检测下载速度...',
-        finish: '测速完成'
+        running: I18N.t('egw.calculate_test_service'),
+        upload: I18N.t('egw.check_update_speed'),
+        download: I18N.t('egw.check_download_speed'),
+        finish: I18N.t('egw.test_finish')
       }
       let status = this.speedRes.status
 
       if (resMap[status]) {
         return resMap[status]
       } else if (status === 'error') {
-        return this.speedRes.error.replace('NA', '检测失败，请尝试重新检测')
+        return this.speedRes.error.replace('NA', I18N.t('egw.check_error_tip'))
       }
       return false
     }
@@ -102,7 +106,7 @@ export default {
     },
     // 开始诊断
     onSubmit() {
-      this.btnText = '正在测速...'
+      this.btnText = I18N.t('egw.speedtesting')
       this.$api.setSpeedTest(this.baseModel)
 
       setTimeout(() => {
@@ -117,18 +121,18 @@ export default {
         this.speedRes.status === 'finish' ||
         this.speedRes.status === 'error'
       ) {
-        this.btnText = '重新测速'
+        this.btnText = I18N.t('egw.speedtest_sencond')
         if (isFirst) {
           // 发现上次测速已结束，设置status空，计算出resMsg为false不显示上次结果
           this.speedRes.status = ''
-          this.btnText = '开始测速'
+          this.btnText = I18N.t('egw.speedtest_start')
         }
       } else {
         if (isFirst && !this.speedRes.status) {
           // 未执行过测速返回还是空数据时
           return
         }
-        this.btnText = '正在测速...'
+        this.btnText = I18N.t('egw.speedtesting')
         let time = this.speedRes.status === 'running' ? 3000 : 1000
 
         this.interval = setTimeout(() => {

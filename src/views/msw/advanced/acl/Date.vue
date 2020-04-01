@@ -21,11 +21,11 @@
           <el-button
             :disabled="dateList.length>=maxLimit||isLoading"
             icon="el-icon-plus"
-            size="small"
+            size="medium"
             type="primary"
             v-auth="_onAdd"
           >新增</el-button>
-          <el-button :disabled="isLoading" icon="el-icon-delete" size="small" type="danger" v-auth="_onBatchRemove">批量删除</el-button>
+          <el-button :disabled="isLoading" icon="el-icon-delete" size="medium" type="danger" v-auth="_onBatchRemove">{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
@@ -34,10 +34,14 @@
           <b class="c-warning mlr5">{{maxLimit}}</b>条。
         </div>
       </help-alert>
-      <el-table :data="dateList" ref="baseTable" size="mini" stripe>
+      <el-table :data="dateList" ref="baseTable" size="medium" stripe>
         <el-table-column :selectable="_isSelectable" type="selection" width="55"></el-table-column>
         <el-table-column type="index"></el-table-column>
-        <el-table-column align="center" label="时间名称" prop="tmngtName"></el-table-column>
+        <el-table-column align="center" label="时间名称" prop="name">
+          <template slot-scope="scope">
+            {{scope.row.name || scope.row.tmngtName}}
+          </template>
+        </el-table-column>
         <el-table-column align="center" label="时间对象">
           <template slot-scope="{row}">
             <acl-date-view :time="row" icon />
@@ -45,11 +49,11 @@
         </el-table-column>
         <el-table-column align="center" label="操作">
           <template slot-scope="scope">
-            <el-button :disabled="!_isSelectable(scope.row)" size="mini" type="text" v-auth="{fn:onEdit,params:scope.$index}">修改</el-button>
+            <el-button :disabled="!_isSelectable(scope.row)" size="medium" type="text" v-auth="{fn:onEdit,params:scope.$index}">修改</el-button>
             <el-button
               :class="{'c-danger':_isSelectable(scope.row)}"
               :disabled="!_isSelectable(scope.row)"
-              size="mini"
+              size="medium"
               type="text"
               v-auth="{fn:_onBatchRemove,params:scope.row}"
             >删除</el-button>
@@ -58,7 +62,10 @@
       </el-table>
       <!-- 时间对象modal -->
       <el-dialog :close-on-click-modal="false" :title="modalTitle" :visible.sync="baseModalShow" width="700px">
-        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="small">
+        <el-divider content-position="left">
+          <b class="c-success">时间编辑</b>
+        </el-divider>
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
           <el-form-item label="时间名称" prop="tmngtName">
             <el-input
               :disabled="editIndex!==-1"
@@ -68,66 +75,74 @@
               v-model="baseModel.tmngtName"
             ></el-input>
           </el-form-item>
-          <el-form-item label="时间段：">
-            <el-form :model="timeModel" :rules="timeRules" inline ref="timeForm" size="small">
-              <el-form-item prop="week">
-                <!-- <el-select class="w170" clearable multiple placeholder="请选择" v-model="timeModel.week">
-                  <el-option :key="item.value" :label="item.label" :value="item.value" v-for="item in weeks"></el-option>
-                </el-select>-->
-                <treeselect :multiple="true" :options="weeks" style="width:195px;" v-model="timeModel.week" />
-              </el-form-item>
-              <el-form-item prop="time">
-                <el-time-picker
-                  :clearable="false"
-                  :editable="true"
-                  :picker-options="{format:'HH:mm'}"
-                  align="center"
-                  class="time-select vm w220"
-                  end-placeholder="结束时间"
-                  format="HH:mm"
-                  is-range
-                  range-separator="至"
-                  start-placeholder="开始时间"
-                  v-model="timeModel.time"
-                  value-format="HH:mm"
-                ></el-time-picker>
-              </el-form-item>
-              <el-form-item>
-                <el-button @click.native="_onAddTimeRange" type="plain">添加</el-button>
-                <small class="ml5 c-warning">（添加完时间段，请点击右下角确定按钮保存时间对象。）</small>
-              </el-form-item>
-            </el-form>
-          </el-form-item>
-          <el-divider content-position="left">
-            <b class="c-success">时间列表</b>
-          </el-divider>
-          <el-table
-            :data="_getTimeArr(baseModel.time)"
-            class="el-table__empty-text--warning"
-            empty-text="不添加时间范围，默认所有时间。"
-            size="mini"
-          >
-            <el-table-column align="center" label="星期" property="label" width="100"></el-table-column>
-            <el-table-column align="center" label="时间段" property="slot">
-              <template slot-scope="{row}">
-                <div class="pt5 pl5 tl">
-                  <el-tag
-                    :key="`${f}-${row.value}`"
-                    @click="_onTabClick(row,i)"
-                    @close="_onTabClose(row,i)"
-                    class="mr5 mb5 pointer"
-                    closable
-                    size="mini"
-                    v-for="(f,i) in row.slot"
-                  >{{`${f[0]}-${f[1]}`}}</el-tag>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
         </el-form>
+        <el-form :model="timeModel" :rules="timeRules" label-width="160px" ref="timeForm" size="medium">
+          <el-form-item label="星期" prop="week">
+            <el-select :disabled="timeRangeEditing" class="w300" clearable multiple placeholder="请选择" v-model="timeModel.week">
+              <el-option :key="item.value" :label="item.label" :value="item.value" v-for="item in weeks"></el-option>
+            </el-select>
+            <!-- <treeselect :multiple="true" :options="weeks" style="width:195px;" v-model="timeModel.week" /> -->
+          </el-form-item>
+          <el-form-item label="时间范围" required>
+            <el-form-item class="vm" prop="begin" style="margin-bottom:0;">
+              <el-time-picker
+                :clearable="true"
+                :editable="true"
+                @change="_timeChange('end')"
+                class="w170"
+                format="HH:mm"
+                placeholder="开始时间"
+                v-model="timeModel.begin"
+                value-format="HH:mm"
+              ></el-time-picker>
+            </el-form-item>
+            <span class="vm mr5 ml5">至</span>
+            <el-form-item class="vm" prop="end" style="margin-bottom:0;">
+              <el-time-picker
+                :clearable="true"
+                :editable="true"
+                @change="_timeChange('begin')"
+                class="w170"
+                format="HH:mm"
+                placeholder="结束时间"
+                v-model="timeModel.end"
+                value-format="HH:mm"
+              ></el-time-picker>
+            </el-form-item>
+          </el-form-item>
+          <el-form-item>
+            <el-button @click.native="_onAddTimeRange" class="w120" type="primary">{{timeRangeEditing?'修改':'添加'}}</el-button>
+            <el-button @click.native="_onCancelTimeRange" class="w120" type="default" v-show="timeRangeEditing">取消</el-button>
+            <small class="ml5 c-warning">（添加完时间段，请点击右下角确定按钮保存时间对象。）</small>
+          </el-form-item>
+        </el-form>
+        <el-divider content-position="left">
+          <b class="c-success">时间列表</b>
+        </el-divider>
+        <el-table :data="timeList" class="el-table__empty-text--warning" empty-text="不添加时间范围，默认所有时间。" size="medium">
+          <el-table-column align="center" label="星期" property="label" width="100"></el-table-column>
+          <el-table-column align="center" label="时间段" property="slot">
+            <template slot-scope="{row}">
+              <div class="pt5 pl5 tl">
+                <el-tag
+                  :closable="_timeRangeClosable(row.value,i)"
+                  :disable-transitions="true"
+                  :key="`${f}-${row.value}`"
+                  @click="_onTabClick(row,i)"
+                  @close="_onTabClose(row,i)"
+                  class="mr5 mb5 pointer"
+                  effect="plain"
+                  hit
+                  size="mini"
+                  v-for="(f,i) in row.slot"
+                >{{`${f[0]}-${f[1]}`}}</el-tag>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
         <span class="dialog-footer" slot="footer">
-          <el-button @click.native="baseModalShow = false" size="small">取 消</el-button>
-          <el-button :loading="isLoading" @click.native="onModalConfirm" size="small" type="primary">确 定</el-button>
+          <el-button @click.native="baseModalShow = false" class="w120" size="medium">取 消</el-button>
+          <el-button :loading="isLoading" @click.native="onModalConfirm" class="w120" size="medium" type="primary">确 定</el-button>
         </span>
       </el-dialog>
     </div>
@@ -137,7 +152,7 @@
 import { nameLengthValidator } from '@/utils/rules'
 import { date, time } from '@/model/msw/advanced'
 import { TimePicker, Tag, Divider } from 'element-ui'
-import { getConnectStrByType } from '@/utils/utils'
+import { mergeArray } from '@/utils/utils'
 import DateView from './DateView'
 import formMixins from '@/mixins/formMixins'
 import Treeselect from '@riophae/vue-treeselect'
@@ -169,15 +184,16 @@ export default {
       cb()
     }
     const timeValidator = (r, v, cb) => {
-      if (!v[0] || !v[1]) {
-        return cb(new Error('请选择时间范围'))
+      if (!v) {
+        return cb(new Error(r.requireMsg))
       }
-      let _time1 = v[0].split(':')
-      let _time2 = v[1].split(':')
+      let { begin, end } = this.timeModel
+      let _time1 = begin.split(':')
+      let _time2 = end.split(':')
       let _sec1 = parseInt(_time1[0]) * 60 + parseInt(_time1[1])
       let _sec2 = parseInt(_time2[0]) * 60 + parseInt(_time2[1])
       if (_sec1 >= _sec2) {
-        return cb(new Error('开始时间需小于结束时间'))
+        return cb(new Error(r.rangeMsg))
       }
       cb()
     }
@@ -206,7 +222,20 @@ export default {
       },
       timeRules: {
         week: [{ required: true, message: '请选择星期' }],
-        time: [{ validator: timeValidator }]
+        begin: [
+          {
+            validator: timeValidator,
+            requireMsg: '请选择开始时间',
+            rangeMsg: '开始时间需小于结束时间'
+          }
+        ],
+        end: [
+          {
+            validator: timeValidator,
+            requireMsg: '请选择结束时间',
+            rangeMsg: '结束时间需大于开始时间'
+          }
+        ]
       },
       dateList: [],
       weeks: Object.freeze([
@@ -217,32 +246,58 @@ export default {
         { label: '星期五', value: 'fri', id: 'fri', sort: 5 },
         { label: '星期六', value: 'sat', id: 'sat', sort: 6 },
         { label: '星期日', value: 'sun', id: 'sun', sort: 7 }
-      ])
+      ]),
+      editRangeOption: null
     }
   },
   mixins: [formMixins],
   computed: {
     modalTitle() {
       return this.editIndex === -1 ? '添加时间' : '编辑时间'
+    },
+    timeList() {
+      let _timeArr = []
+      let _timeObj = this.baseModel.time
+      for (let key in _timeObj) {
+        let _rangeList = _timeObj[key]
+        if (_rangeList.length) {
+          let _item = this.weeks.find(week => week.value === key)
+          _timeArr.push({
+            ..._item,
+            slot: [..._rangeList]
+          })
+        }
+      }
+      return Object.freeze(_timeArr.sort((a, b) => a.sort - b.sort))
+    },
+    timeRangeEditing() {
+      return Array.isArray(this.editRangeOption)
     }
   },
   created() {
     this._loadDateList()
   },
   methods: {
-    // 获取时间对象数组
-    _getTimeArr(timeObj) {
-      let _timeArr = []
-      for (let key in timeObj) {
-        if (timeObj[key].length) {
-          let _item = this.weeks.find(week => week.value === key)
-          _timeArr.push({
-            ..._item,
-            slot: timeObj[key]
-          })
+    // 手否可关闭
+    _timeRangeClosable(week, index) {
+      if (this.editRangeOption) {
+        let [_week, _index] = this.editRangeOption
+        if (_week === week && _index === index) {
+          return false
         }
       }
-      return Object.freeze(_timeArr.sort((a, b) => a.sort - b.sort))
+      return true
+    },
+    // 手动校验
+    _timeChange(prop) {
+      if (this.$refs.timeForm) {
+        this.$refs.timeForm.validateField(prop)
+      }
+    },
+    // 取消时间编辑
+    _onCancelTimeRange() {
+      this.editRangeOption = null
+      this.$refs.timeForm.resetFields()
     },
     // 添加时间片段至列表
     _onAddTimeRange() {
@@ -250,49 +305,95 @@ export default {
         if (valid) {
           let _baseModel = { ...this.baseModel }
           let _timeModel = this.timeModel
-          _timeModel.week.forEach(week => {
-            let _timeRange = _baseModel.time[week]
-            if (!_timeRange) {
-              _timeRange = [_timeModel.time]
-            } else {
-              _timeRange.push(_timeModel.time)
-            }
-            _baseModel.time[week] = this._reDoTimeRange(_timeRange)
-          })
+          let _range = [_timeModel.begin, _timeModel.end]
+          if (this.editRangeOption) {
+            let [w, i] = this.editRangeOption
+            let _tr = _baseModel.time[w]
+            _tr.splice(i, 1, _range)
+            this.$set(_baseModel.time, w, this._reDoTimeRange2(_tr))
+          } else {
+            _timeModel.week.forEach(week => {
+              let _timeRange = _baseModel.time[week]
+              if (!_timeRange) {
+                _timeRange = [_range]
+              } else {
+                _timeRange.push(_range)
+              }
+              this.$set(_baseModel.time, week, this._reDoTimeRange2(_timeRange))
+            })
+          }
           this.baseModel = _baseModel
-          this.$refs.timeForm.resetFields()
+          this._onCancelTimeRange()
         }
       })
     },
+    // 时间戳转时间格式
+    _stampToFormat(a, b) {
+      let _s = `${parseInt(a / 60)
+        .toString()
+        .padStart(2, 0)}:${(a % 60).toString().padStart(2, 0)}`
+      let _e = `${parseInt(b / 60)
+        .toString()
+        .padStart(2, 0)}:${(b % 60).toString().padStart(2, 0)}`
+      return [_s, _e]
+    },
+    // 时间格式转时间戳
+    _formatToStamp(format) {
+      let _time1 = format[0].split(':')
+      let _time2 = format[1].split(':')
+      let _sec1 = parseInt(_time1[0]) * 60 + parseInt(_time1[1])
+      let _sec2 = parseInt(_time2[0]) * 60 + parseInt(_time2[1])
+      return [_sec1, _sec2]
+    },
+    // 重组时间范围（控件复杂度高）
+    // _reDoTimeRange(timeArr) {
+    //   let _timeRange = timeArr.map(this._formatToStamp)
+    //   let _set = new Set()
+    //   _timeRange.forEach(([a, b]) => {
+    //     while (a <= b) {
+    //       _set.add(a)
+    //       a++
+    //     }
+    //   })
+    //   let _finalStr = mergeArray([..._set], this._stampToFormat)
+    //   return _finalStr
+    // },
     // 重组时间范围
-    _reDoTimeRange(timeArr) {
-      timeArr = timeArr.map(t => {
-        let _time1 = t[0].split(':')
-        let _time2 = t[1].split(':')
-        let _sec1 = parseInt(_time1[0]) * 60 + parseInt(_time1[1])
-        let _sec2 = parseInt(_time2[0]) * 60 + parseInt(_time2[1])
-        return [_sec1, _sec2]
-      })
-      let _set = new Set()
-      timeArr.forEach(([a, b]) => {
-        while (a <= b) {
-          _set.add(a)
-          a++
-        }
-      })
-      let _finalStr = getConnectStrByType([..._set], (a, b) => {
-        let _s = `${parseInt(a / 60)
-          .toString()
-          .padStart(2, 0)}:${(a % 60).toString().padStart(2, 0)}`
-        let _e = `${parseInt(b / 60)
-          .toString()
-          .padStart(2, 0)}:${(b % 60).toString().padStart(2, 0)}`
-        return [_s, _e]
-      })
-      return _finalStr
+    _reDoTimeRange2(timeArr) {
+      let _timeOrderRange = timeArr
+        .map(this._formatToStamp)
+        .sort(([begin1, end1], [begin2, end2]) => {
+          let _diff = begin1 - begin2
+          let _abs = Math.abs(_diff)
+          return _diff / _abs
+        })
+      return _timeOrderRange
+        .reduce((prev, next) => {
+          let _last = prev[prev.length - 1]
+          if (_last) {
+            let [begin1, end1] = _last
+            let [begin2, end2] = next
+            if (end1 < begin2) {
+              prev.push(next)
+            } else {
+              _last[1] = Math.max(end1, end2)
+            }
+          } else {
+            prev.push(next)
+          }
+          return prev
+        }, [])
+        .map(range => this._stampToFormat(...range))
     },
     // tag点击事件
-    _onTabClick() {
+    _onTabClick(row, index) {
+      let [begin, end] = row.slot[index]
+      this.timeModel = {
+        week: [row.value],
+        begin,
+        end
+      }
+      this.editRangeOption = [row.value, index]
       // console.log(arguments)
     },
     // tag关闭事件
@@ -319,8 +420,6 @@ export default {
     _isSelectable(row, index) {
       return row.type === 'user' && row.user == 0
     },
-    // 打开时间选择控件
-    onOpenTimeSelection(selections, enable) {},
     // 删除NAT
     _onBatchRemove(item) {
       let _items

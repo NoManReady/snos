@@ -21,7 +21,8 @@ export const date = () => {
 export const time = () => {
   return {
     week: [],
-    time: ['', '']
+    begin: '',
+    end: ''
   }
 }
 
@@ -108,5 +109,24 @@ export const lldpPort = () => {
     rx: 0,
     tx: 0,
     med: 0
+  }
+}
+
+// RLDP协议
+export const rldpBase = () => {
+  return {
+    enable: 0,
+    detect_interval: '3',//rldp 报文检测时间间隔(2-15--3)
+    recovery_enable: 0,//是否开启errdisable 端口自动恢复功能(0)
+    recovery_interval: '30'//定时自动恢复时间(0/30-86400)
+  }
+}
+
+// 端口rldp
+export const rldpPort = () => {
+  return {
+    portid: [],
+    detect_enable: 0,
+    detect_action: 0
   }
 }

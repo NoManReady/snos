@@ -13,18 +13,40 @@ export default {
   },
   data() {
     return {
-      tabs: Object.freeze([
+      menus: [
         {
-          label: '备份与导入',
+          label: I18N.t('systool.back_and_import'),
           value: '0',
           comp: recover.BackupTab
         },
         {
-          label: '恢复出厂',
+          label: I18N.t('systool.reset'),
           value: '1',
           comp: recover.RecoverTab
         }
-      ])
+      ]
+    }
+  },
+  computed: {
+    isEhr() {
+      return this.$roles().includes('ehr')
+    },
+    tabs() {
+      if (this.isEhr) {
+        this.menus.push(
+          {
+            label: '整网重启/恢复',
+            value: '2',
+            comp: recover.ManagerTab
+          },
+          {
+            label: 'LED灯设置',
+            value: '3',
+            comp: recover.LedTab
+          }
+        )
+      }
+      return this.menus
     }
   }
 }

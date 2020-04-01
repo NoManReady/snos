@@ -1,39 +1,55 @@
 <template>
   <div class="network-client">
-    <help-alert json-key="dhcpClientJson" title="客户端列表">
-      <div slot="content">您可以在本页面查看DHCP的客户端相关信息。</div>
+    <help-alert :title="$t('network.client_list')" json-key="dhcpClientJson">
+      <div slot="content">{{ $t("network.client_info_tip") }}</div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          客户端列表
+          {{ $t("network.client_list") }}
           <small></small>
         </span>
         <div class="fr">
-          <el-button @click.native="_initPage" size="small" type="primary">
-            <i class="el-icon-refresh"></i>
-            <span>刷新</span>
-          </el-button>
-          <el-button @click="onAddToStatic()" size="small" type="primary">
-            <i class="el-icon-plus"></i>
-            <span>批量添加静态地址</span>
-          </el-button>
+          <el-button
+            @click.native="_initPage"
+            icon="el-icon-refresh"
+            plain
+            size="medium"
+            type="primary"
+          >{{ $t("action.refresh") }}</el-button>
+          <el-button
+            icon="el-icon-plus"
+            plain
+            size="medium"
+            type="primary"
+            v-auth="onAddToStatic"
+          >{{ $t("action.patch_convert") }}</el-button>
         </div>
       </div>
-      <el-table :data="pageList" ref="multipleTable" size="small" stripe>
+      <el-table :data="pageList" ref="multipleTable" size="medium" stripe>
         <el-table-column :selectable="isSelectable" align="center" type="selection" width="50"></el-table-column>
-        <el-table-column align="center" label="序号" type="index"></el-table-column>
-        <el-table-column align="center" label="主机名" prop="hostname"></el-table-column>
-        <el-table-column align="center" label="MAC地址" prop="mac">
-          <template slot-scope="scope">{{scope.row.mac}}</template>
+        <el-table-column :label="$t('phrase.serial')" align="center" type="index"></el-table-column>
+        <el-table-column :label="$t('network.hostname')" align="center" prop="hostname"></el-table-column>
+        <el-table-column :label="$t('sysinfo.mac_addr')" align="center" prop="mac">
+          <template slot-scope="scope">{{ scope.row.mac }}</template>
         </el-table-column>
-        <el-table-column align="center" label="IP地址" prop="ip"></el-table-column>
-        <el-table-column align="center" label="剩余租期" prop="leasetime"></el-table-column>
-        <el-table-column align="center" label="状态">
+        <el-table-column :label="$t('sysinfo.ip_addr')" align="center" prop="ip"></el-table-column>
+        <el-table-column :label="$t('diagnose.remain_lease', {type:$t('time.day')})" align="center" prop="leasetime"></el-table-column>
+        <el-table-column :label="$t('phrase.status')" align="center">
           <template slot-scope="scope">
-            <el-button :loading="true" type="text" v-if="onLoadingStatus"></el-button>
-            <el-button @click="onAddToStatic(scope.row)" type="text" v-else-if="!isStaticDhcp(scope.row)">添加到静态地址</el-button>
-            <el-button :disabled="true" type="text" v-else>已添加到静态地址</el-button>
+            <el-button :loading="true" size="medium" type="text" v-if="onLoadingStatus"></el-button>
+            <el-button
+              size="medium"
+              type="text"
+              v-auth="{ fn: onAddToStatic, params: scope.row }"
+              v-else-if="!isStaticDhcp(scope.row)"
+            >{{ $t("network.addto_static") }}</el-button>
+            <el-button
+              :disabled="true"
+              size="medium"
+              type="text"
+              v-else
+            >{{$t("network.static_areadly")}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -52,32 +68,37 @@
   </div>
 </template>
 <script>
-import pageMixins from '@/mixins/pageMixins'
+import pageMixins from "@/mixins/pageMixins";
 export default {
-  name: 'NetworkClient',
+  name: "NetworkClient",
   data() {
     return {
       MAX_NUM: 300, // 静态地址最大支持数
       dhcpStatic: [],
       onLoadingStatus: true
-    }
+    };
   },
   mixins: [pageMixins],
   computed: {
     staticDhcpMap() {
-      let _staticDhcpMap = {}
+      let _staticDhcpMap = {};
       this.dhcpStatic.forEach(item => {
-        let m = item.ipaddr + '&&' + item.macaddr.toLocaleLowerCase()
-        if (!_staticDhcpMap[m]) _staticDhcpMap[m] = true
-      })
-      return _staticDhcpMap
+        let m = item.ipaddr + "&&" + item.macaddr.toLocaleLowerCase();
+        if (!_staticDhcpMap[m]) _staticDhcpMap[m] = true;
+      });
+      return _staticDhcpMap;
+    },
+    hasConfig() {
+      let _hasConfig = [];
+      this.dhcpStatic.forEach(o => _hasConfig.push(o.ipaddr, o.macaddr));
+      return _hasConfig;
     }
   },
   methods: {
     async _loadList() {
-      let _result = await this.$api.cmd('devSta.get', { module: 'dhcp_lease' })
-      this.getStaticDhcp()
-      return _result.List || []
+      let _result = await this.$api.cmd("devSta.get", { module: "dhcp_lease" });
+      this.getStaticDhcp();
+      return _result.List || [];
     },
     // 获取dhcp静态绑定
     getStaticDhcp() {
@@ -85,68 +106,108 @@ export default {
         this.$api
           .getStaticDhcpTable()
           .then(data => {
-            this.dhcpStatic = data.dhcp_static || []
-            this.onLoadingStatus = false
-            res()
+            this.dhcpStatic = data.dhcp_static || [];
+            this.onLoadingStatus = false;
+            res();
           })
           .catch(() => {
-            this.onLoadingStatus = false
-            res()
-          })
-      })
+            this.onLoadingStatus = false;
+            res();
+          });
+      });
     },
     // 添加至静态绑定
     onAddToStatic(row) {
-      let d = []
+      let d = [];
       if (row) {
-        d.push(this._getMacIp(row))
+        d.push(this._getMacIp(row));
       } else {
-        let selection = this.$refs.multipleTable.selection
+        let selection = this.$refs.multipleTable.selection;
         if (!selection.length) {
-          return this.$message.warning('请选择要添加到静态地址的表项')
+          return this.$message.warning(I18N.t("network.item_static_no_empty"));
         }
-
         selection.forEach(item => {
-          d.push(this._getMacIp(item))
-        })
+          d.push(this._getMacIp(item));
+        });
       }
+      // 校验容量
       if (this.dhcpStatic.length + d.length > this.MAX_NUM) {
-        return this.$message.warning(`最多支持配置 ${this.MAX_NUM} 条静态绑定`)
+        return this.$message.warning(
+          I18N.t("network.static_add_limit", { cnt: this.MAX_NUM })
+        );
       }
-      this._onAdd(d)
+      // 校验已配置的IP MAC
+      if (this.checkHasConfig(d)) {
+        this._onAdd(d);
+      }
+    },
+    checkHasConfig(rows) {
+      let _invaliteArr = [];
+      for (let i = 0; i < rows.length; i++) {
+        if (this.hasConfig.includes(rows[i].ipaddr)) {
+          _invaliteArr.push(rows[i].ipaddr);
+        }
+        if (this.hasConfig.includes(rows[i].macaddr)) {
+          _invaliteArr.push(rows[i].macaddr);
+        }
+      }
+      if (_invaliteArr.length > 0) {
+        let _htmlArr = [
+          `<div class="mt5"><span class="c-warning mlr5">${_invaliteArr.join(',')}</span>${I18N.t('network.static_areadly')}</div>`,
+          `<div class="mt5 mlr5">${I18N.t('network.jump_to_info')}</div>`
+        ];
+        this.$confirm(_htmlArr.join(""), I18N.t("phrase.tip"), {
+            type: 'warning',
+            showClose: false,
+            cancelButtonText: I18N.t('devlist.no_see'),
+            confirmButtonText: I18N.t('devlist.to_see'),
+            closeOnClickModal: false,
+            dangerouslyUseHTMLString: true,
+            customClass: "w500"
+          })
+          .then(ok => {
+            this.$router.push({ query: { tab: '2' } })
+          }, cancel => {});
+        return false;
+      }
+      return true;
     },
     // 添加至静态绑定
     _onAdd(list) {
-      this.$confirm('确认添加到静态地址分配列表中?').then(() => {
+      this.$confirm(I18N.t("network.static_add_confirm")).then(() => {
         this.$api
           .addStaticDhcpTable(list)
           .then(() => {
-            this.dhcpStatic.push(...list)
+            this.dhcpStatic.push(...list);
+            this.$message({
+              message: I18N.t("tip.edit1_success"),
+              type: "success"
+            });
           })
           .finally(() => {
-            this.$refs.multipleTable.clearSelection()
-          })
-      })
+            this.$refs.multipleTable.clearSelection();
+          });
+      });
     },
     // 获取mac-ip数据对象数组
     _getMacIp(item) {
       return {
         macaddr: item.mac,
         ipaddr: item.ip
-      }
+      };
     },
     // 判断是否已经绑定至静态dhcp
     isStaticDhcp(row) {
-      let m = row.ip + '&&' + row.mac.toLocaleLowerCase()
-      if (this.staticDhcpMap[m]) return true
-      return false
+      let m = row.ip + "&&" + row.mac.toLocaleLowerCase();
+      if (this.staticDhcpMap[m]) return true;
+      return false;
     },
     // 是否可勾选
     isSelectable(row) {
-      return !this.isStaticDhcp(row)
+      return !this.isStaticDhcp(row);
     }
   }
-}
+};
 </script>
 <style lang="scss" scoped>
 </style>

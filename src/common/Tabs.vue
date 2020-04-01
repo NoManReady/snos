@@ -37,14 +37,10 @@ export default {
       props: {
         value: this.tabValue
       },
-      class: {
-        'aside-menu': true
-      },
       on: {
         'tab-click': _vm._onTabClick
       }
     }
-    // 查找tab（找不到返回tab路由路径）
     let _tab = this.tabs.find(tab => tab.value === this.tabValue)
     if (!_tab) {
       this.$router.push({ path: this.$route.path })
@@ -59,11 +55,7 @@ export default {
         </el-tab-pane>
       )
     })
-    return (
-      <div class="tabs-component">
-        <el-tabs {..._props}>{_tabs}</el-tabs>
-      </div>
-    )
+    return <el-tabs {..._props}>{_tabs}</el-tabs>
   }
 }
 </script>

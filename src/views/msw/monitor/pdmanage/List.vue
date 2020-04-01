@@ -1,33 +1,41 @@
 <template>
   <div class="port-mac-list">
-    <help-alert title="MAC地址表"></help-alert>
+    <!-- <help-alert title="MAC地址表"></help-alert> -->
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">MAC列表</span>
-        <el-form :model="baseModel" :rules="baseRules" class="fr inline-tip" inline inline-message ref="baseForm" size="mini">
+        <span class="box-header-tit">{{$t('msw.mac.mac_addr')}}</span>
+        <el-form
+          :model="baseModel"
+          :rules="baseRules"
+          class="fr inline-tip view-form"
+          inline
+          inline-message
+          ref="baseForm"
+          size="medium"
+        >
           <el-form-item>
-            <el-select class="w140" v-model="searchType">
-              <el-option label="按MAC查询" value="macaddr"></el-option>
-              <el-option label="按VLAN查询" value="vlanid"></el-option>
-              <el-option label="按端口查询" value="lpid"></el-option>
+            <el-select class="w200" v-model="searchType">
+              <el-option :label="$t('msw.mac.search_by_mac')" value="macaddr"></el-option>
+              <el-option :label="$t('msw.mac.search_by_vlan')" value="vlanid"></el-option>
+              <el-option :label="$t('msw.mac.search_by_port')" value="lpid"></el-option>
               <!-- <el-option label="按MAC地址类型" value="mactype"></el-option> -->
             </el-select>
           </el-form-item>
           <template v-if="searchType==='macaddr'">
             <el-form-item prop="macaddr">
-              <el-input class="w160" placeholder="格式如：00:11:22:33:44:55" v-model="baseModel.macaddr"></el-input>
+              <el-input :placeholder="$t('wan.mac_example')" class="w200" v-model="baseModel.macaddr"></el-input>
             </el-form-item>
           </template>
           <template v-if="searchType==='vlanid'">
             <el-form-item prop="vlanid">
-              <el-input class="w160" placeholder="请输入VLAN ID" v-model="baseModel.vlanid"></el-input>
+              <el-input :placeholder="$t('msw.vlan_no_empty')" class="w170" v-model="baseModel.vlanid"></el-input>
             </el-form-item>
           </template>
           <template v-if="searchType==='lpid'">
             <el-form-item prop="lpid">
-              <el-select class="w160" v-model="baseModel.lpid">
-                <el-option label="全部" value></el-option>
-                <el-option :key="port.lpid" :label="port.interface" :value="port.lpid" v-for="port in allTypePorts"></el-option>
+              <el-select class="w140" v-model="baseModel.lpid">
+                <el-option :label="$t('phrase.all')" value></el-option>
+                <el-option :key="port.lpid" :label="port.ifname" :value="port.lpid" v-for="port in allTypePorts"></el-option>
               </el-select>
             </el-form-item>
           </template>
@@ -41,23 +49,24 @@
             </el-form-item>
           </template>-->
           <el-form-item>
-            <el-button icon="el-icon-search" type="primary" v-auth="_onSearch">搜索</el-button>
+            <el-button icon="el-icon-search" plain type="primary" v-auth="_onSearch">{{$t('phrase.search')}}</el-button>
           </el-form-item>
         </el-form>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持
-          <b class="c-warning mlr5">{{maxLimit/1024}}K</b>条。
+          <i18n path="msw.limit_tip">
+            <b class="c-warning mlr5">{{maxLimit/1024}}K</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="pageList" ref="baseTable" size="small" stripe>
-        <el-table-column align="center" label="序号" prop="order" width="60"></el-table-column>
+      <el-table :data="pageList" ref="baseTable" size="medium" stripe>
+        <el-table-column :label="$t('phrase.serial')" align="center" prop="order" width="60"></el-table-column>
         <el-table-column align="center" label="MAC" prop="m"></el-table-column>
         <el-table-column align="center" label="VLAN ID" prop="v"></el-table-column>
-        <el-table-column align="center" label="端口" prop="i"></el-table-column>
-        <el-table-column align="center" label="类型">
-          <template slot-scope="{row}">{{row.t===0?'静态':(row.t===1?'动态':'过滤')}}</template>
+        <el-table-column :label="$t('msw.port')" align="center" prop="i"></el-table-column>
+        <el-table-column :label="$t('phrase.type')" align="center">
+          <template slot-scope="{row}">{{row.t===0?$t('msw.mac.static'):(row.t===1?$t('msw.mac.dynamic'):$t('msw.mac.filter'))}}</template>
         </el-table-column>
       </el-table>
       <el-pagination
@@ -69,7 +78,6 @@
         @size-change="onSizeChange"
         background
         class="mt20"
-        hide-on-single-page
         layout="total, sizes, prev, pager, next, jumper"
       ></el-pagination>
     </div>
@@ -89,14 +97,14 @@ export default {
       searchType: 'macaddr',
       baseModel: macBase(),
       baseRules: {
-        vlanid: [{ validator: vlanidValidator, message: 'VLAN ID格式错误' }],
-        macaddr: [{ validator: macValidator }]
+        // vlanid: [{ validator: vlanidValidator, message: 'VLAN ID格式错误' }],
+        // macaddr: [{ validator: macValidator }]
       },
       maxLimit: window.APP_CAPACITY_SW.mac.total
     }
   },
   computed: {
-    ...mapGetters('switcher', ['logicPort', 'lagPort']),
+    ...mapGetters('switcher', ['logicPort', 'lagPort', 'piMap']),
     // 所有port（包含聚合口）
     allTypePorts() {
       return [...this.logicPort, ...this.lagPort]
@@ -126,6 +134,7 @@ export default {
           _result.list.map((lis, i) => {
             return {
               ...lis,
+              i: this.piMap[lis.l],
               order: i + 1 + (this.pageModel.index - 1) * this.pageModel.size
             }
           })
@@ -146,8 +155,4 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.port-mac-list {
-}
-</style>
 

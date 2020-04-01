@@ -274,14 +274,14 @@
       color: #BFBFBF;
       border-color: #BFBFBF; }
     .el-step__head.is-success {
-      color: #219653;
-      border-color: #219653; }
+      color: #018903;
+      border-color: #018903; }
     .el-step__head.is-error {
-      color: #F5222D;
-      border-color: #F5222D; }
+      color: #DE321F;
+      border-color: #DE321F; }
     .el-step__head.is-finish {
-      color: #0166FF;
-      border-color: #0166FF; }
+      color: #2B6AFD;
+      border-color: #2B6AFD; }
   .el-step__icon {
     position: relative;
     z-index: 1;
@@ -351,11 +351,11 @@
     .el-step__title.is-wait {
       color: #BFBFBF; }
     .el-step__title.is-success {
-      color: #219653; }
+      color: #018903; }
     .el-step__title.is-error {
-      color: #F5222D; }
+      color: #DE321F; }
     .el-step__title.is-finish {
-      color: #0166FF; }
+      color: #2B6AFD; }
   .el-step__description {
     padding-right: 10%;
     margin-top: -5px;
@@ -367,11 +367,11 @@
     .el-step__description.is-wait {
       color: #BFBFBF; }
     .el-step__description.is-success {
-      color: #219653; }
+      color: #018903; }
     .el-step__description.is-error {
-      color: #F5222D; }
+      color: #DE321F; }
     .el-step__description.is-finish {
-      color: #0166FF; }
+      color: #2B6AFD; }
   .el-step.is-horizontal {
     display: inline-block; }
     .el-step.is-horizontal .el-step__line {

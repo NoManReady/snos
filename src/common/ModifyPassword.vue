@@ -1,11 +1,11 @@
 <template>
   <el-dialog :visible.sync="visible" center width="550px">
-    <span class="c-success fs20" slot="title">密码修改</span>
+    <span class="c-success fs20" slot="title">{{$t('comp.modify_pass')}}</span>
     <password :first-init="true" :show-header="false" @after-change="afterChange" />
   </el-dialog>
 </template>
 <script>
-import Password from '@/views/common/systool/Password'
+import Password from '@/views/common/systool/passsession/Password'
 import bus from '@/utils/bus'
 export default {
   name: 'CommonModifyPassword',

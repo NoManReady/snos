@@ -6,7 +6,7 @@
 <script>
 import { debounce } from '@/utils/utils'
 // import { mapActions, mapGetters } from 'vuex'
-
+import { loadFromLocal } from '@/utils/localStorage'
 export default {
   name: 'App',
   data() {
@@ -23,7 +23,7 @@ export default {
   },
   beforeDestroy() {
     // this.$bus.$off('lang')
-    window.removeEventListener('resize', this.resizeFn, fasle)
+    window.removeEventListener('resize', this.resizeFn, false)
     this.resizeFn = null
   },
   computed: {
@@ -37,11 +37,14 @@ export default {
     debounceResize() {
       return debounce(() => {
         if (document.documentElement.clientWidth <= 768) {
-          this.$store.dispatch('setCollapse', true)
+          this.$store.dispatch('setCollapse', { vale: true, save: false })
         } else if (document.documentElement.clientWidth > 992) {
-          this.$store.dispatch('setCollapse', false)
+          this.$store.dispatch('setCollapse', {
+            value: !!loadFromLocal('APP_ASIDE_CLOSE'),
+            save: true
+          })
         }
-      }, 100)
+      }, 300)
     }
   }
 }
@@ -51,6 +54,7 @@ export default {
 @import './style/layout.scss';
 @import './style/comp/treeselect';
 .app-container {
+  width: 100%;
   height: 100%;
 }
 </style>

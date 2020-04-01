@@ -1,36 +1,37 @@
 <template>
   <div class="diagnose-speed">
-    <help-alert json-key="networkTool" title="网络测速"></help-alert>
+    <help-alert :title="$t('egw.speedtest_by_net')" json-key="networkTool"></help-alert>
     <div class="gauge-box">
       <div class="L-con">
         <div class="aZ-bV">
-          <span class="bV-title">用户信息</span>
+          <span class="bV-title">{{$t('egw.user_info')}}</span>
         </div>
-        <div class="clearfix ellipsis">您的IP地址：{{speedRes.client_ip}}</div>
-        <div class="quote">运营商：{{speedRes.client_isp}}</div>
+        <div class="clearfix ellipsis">{{$t('egw.your_ip_f')}}{{speedRes.client_ip}}</div>
+        <div class="quote">{{$t('egw.operator_f')}}{{speedRes.client_isp}}</div>
       </div>
       <div class="sevinfo-con">
         <div class="aZ-bV">
-          <span class="bV-title">测速点信息</span>
+          <span class="bV-title">{{$t('egw.speedtest_info')}}</span>
         </div>
         <div class="clearfix ellipsis" id="tp_title">
-          当前测速点：
+          {{$t('egw.speedtest_now_f')}}
           <span v-if="speedRes.best_server == 'NA'">
-            <i class="el-icon-loading fs18 c-success"></i>正在获取服务器...
+            <i class="el-icon-loading fs18 c-success"></i>
+            {{$t('egw.getting_service')}}
           </span>
           <div :title="speedRes.best_server" type="text" v-else>{{speedRes.best_server}}</div>
         </div>
       </div>
       <div class="speed-gauge-box">
         <div class="speed-gauge chart_js" id="speed_gauge"></div>
-        <el-form :model="baseModel" class="w450 form-box" label-width="220px" ref="baseForm" status-icon>
-          <el-form-item label="选择测速接口">
-            <el-select class="w110" placeholder="请选择" v-model="baseModel.intf">
+        <el-form :model="baseModel" class="w450 form-box" label-width="220px" ref="baseForm" size="medium" status-icon>
+          <el-form-item :label="$t('egw.select_speedTest')">
+            <el-select :placeholder="$t('action.select')" class="w110" v-model="baseModel.intf">
               <el-option :key="value" :label="key" :value="value" v-for="(key, value) in intfObj"></el-option>
             </el-select>
           </el-form-item>
           <div class="tc">
-            <el-button :loading="btnText === '正在测速...'" @click="onSubmit" class="w160" type="primary">{{btnText}}</el-button>
+            <el-button :loading="btnText === $t('egw.speedtesting')" @click="onSubmit" class="w160" type="primary">{{btnText}}</el-button>
           </div>
         </el-form>
         <div class="current-detail tc fs18" v-html="currentText"></div>
@@ -50,7 +51,7 @@ const TICKVAL = Max / SPLITNUM
 const OPT = {
   series: [
     {
-      name: '网速',
+      name: I18N.t('egw.internet_speed'),
       type: 'gauge',
       z: 3,
       min: 0,
@@ -62,7 +63,11 @@ const OPT = {
         lineStyle: {
           // 属性lineStyle控制线条样式
           width: 25,
-          color: [[0.249, '#91c7ae'], [0.75, '#63869e'], [1, '#c23531']]
+          color: [
+            [0.249, '#91c7ae'],
+            [0.75, '#63869e'],
+            [1, '#c23531']
+          ]
           // color: [[0.25, '#00EFAF'], [0.75, '#2BC5FE'], [1, '#FF3E83']]
         }
       },
@@ -142,7 +147,7 @@ export default {
 
       count: 0,
       chart: null,
-      btnText: '开始测速',
+      btnText: I18N.t('egw.speedtest_start'),
       currentText: ''
     }
   },
@@ -158,13 +163,16 @@ export default {
     speedRes(res) {
       let v = res.status
       if (v === 'running') {
-        this.currentText = '正在获取测速服务器...'
+        this.currentText = I18N.t('egw.getting_speedtest_service')
       } else if (v === 'upload') {
-        this.currentText = '当前上传速度'
+        this.currentText = I18N.t('egw.update_speed_now')
       } else if (v === 'download') {
-        this.currentText = '当前下载速度'
+        this.currentText = I18N.t('egw.download_speed_now')
       } else if (v === 'finish') {
-        this.currentText = `上传=${res.upload}Mbit/s<br/>下载=${res.upload}Mbit/s`
+        this.currentText = I18N.t('egw.speed_real_time', {
+          upload: res.upload,
+          download: res.upload
+        })
       }
     }
   },
@@ -179,7 +187,7 @@ export default {
       this.intfObj = intf
     },
     onSubmit() {
-      this.btnText = '正在测速...'
+      this.btnText = I18N.t('egw.speedtesting')
       this.$api.setSpeedTest(this.baseModel)
 
       setTimeout(() => {
@@ -237,19 +245,19 @@ export default {
         this.speedRes.status === 'finish' ||
         this.speedRes.status === 'error'
       ) {
-        this.btnText = '重新测速'
+        this.btnText = I18N.t('egw.speedtest_sencond')
         this._setGauge(0)
         if (isFirst) {
           // 发现上次测速已结束，设置status空，计算出resMsg为false不显示上次结果
           this.speedRes.status = ''
-          this.btnText = '开始测速'
+          this.btnText = I18N.t('egw.speedtest_start')
         }
       } else {
         if (isFirst && !this.speedRes.status) {
           // 未执行过测速返回还是空数据时
           return
         }
-        this.btnText = '正在测速...'
+        this.btnText = I18N.t('egw.speedtesting')
         let time = this.speedRes.status === 'running' ? 3000 : 1000
         this._parseSpeed(this.speedRes)
 

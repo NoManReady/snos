@@ -57,7 +57,8 @@ export default {
   methods: {
     async _initPage(page) {
       if (this._loadList && typeof this._loadList === 'function') {
-        this.pageModel.allItem = await this._loadList(this._applyQuery())
+        let _list = await this._loadList(this._applyQuery())
+        this.pageModel.allItem = Array.isArray(_list) ? _list : []
         this.onCurrentChange(page || this.pageModel.page)
       }
     },

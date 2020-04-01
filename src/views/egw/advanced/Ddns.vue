@@ -1,37 +1,37 @@
 <template>
   <div class="network-neighbor">
-    <help-alert json-key="exampleJson" title="花生壳动态域名">
-      <div slot="content">查看花生壳动态域名。</div>
+    <help-alert json-key="exampleJson" :title="$t('egw.ddns.dynamic_domain_name')">
+      <div slot="content">{{$t('egw.ddns.search_dynamic_domain_name')}}</div>
     </help-alert>
     <div class="box-header">
       <span class="box-header-tit">
-        花生壳动态域名
+        {{$t('egw.ddns.dynamic_domain_name')}}
         <small></small>
       </span>
     </div>
-    <el-form :model="dnsData" :rules="baseRules" class="w560" label-width="160px" ref="baseForm" status-icon>
-      <el-form-item label="服务接口" prop="wan">
-        <el-select class="w260" placeholder="请选择" v-model="dnsData.wan">
-          <el-option :key="item" :label="item" :value="item" v-for="item in ifaceTypes"></el-option>
+    <el-form :model="dnsData" :rules="baseRules" class="w560" label-width="160px" ref="baseForm" size="medium" status-icon>
+      <el-form-item :label="$t('egw.ddns.service_interface')" prop="wan">
+        <el-select class="w260" :placeholder="$t('action.select')" v-model="dnsData.wan">
+          <el-option :key="item" :label="item.toUpperCase()" :value="item" v-for="item in ifaceTypes"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="用户名" prop="user">
+      <el-form-item :label="$t('egw.user_name')" prop="user">
         <el-input class="w260" v-model="dnsData.user"></el-input>
-        <el-button @click="onReg" type="text">没有账户，注册一个</el-button>
+        <el-button v-if="$store.state.app.lang!=='en'" @click="onReg" type="text">{{$t('egw.ddns.register_new_user')}}</el-button>
       </el-form-item>
-      <el-form-item label="密码" prop="pass">
+      <el-form-item :label="$t('egw.password')" prop="pass">
         <el-input class="w260" type="password" v-model="dnsData.pass"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button class="w120" type="primary" v-auth="onLogin">登录</el-button>
-        <el-button class="w120 ml15" v-auth="onDel">删除</el-button>
+        <el-button class="w120" type="primary" v-auth="onLogin">{{$t('egw.login')}}</el-button>
+        <el-button class="w120 ml15" v-auth="onDel">{{$t('action.delete')}}</el-button>
       </el-form-item>
       <template>
-        <el-form-item label="连接状态">
+        <el-form-item :label="$t('egw.link_status')">
           <span>{{ status }}</span>
           <i class="el-icon-loading f-theme" v-if="dnsData.szStatus === 'get'"></i>
         </el-form-item>
-        <el-form-item label="域名">
+        <el-form-item :label="$t('egw.domain')">
           <div v-if="!dnsData.szHost || dnsData.szHost.length == 0">-</div>
           <div :key="item" v-else v-for="item in dnsData.szHost">{{ item }}</div>
         </el-form-item>
@@ -49,16 +49,16 @@ export default {
       dnsData: {},
       ifaceTypes: [],
       baseRules: {
-        wan: [{ required: true, message: '请选择服务接口' }],
+        wan: [{ required: true, message: this.$t('egw.ddns.select_service_interface') }],
         user: [
-          { required: true, message: '请输入用户名' },
+          { required: true, message:  this.$t('egw.username_is_required') },
           { validator: quoteValidator }
         ],
         pass: [
-          { required: true, message: '请输入密码' },
+          { required: true, message: this.$t('egw.password_is_required')},
           {
             validator: quoteValidator,
-            message: '密码不可包含英文单引号和双引号'
+            message: this.$t('egw.ddns.password_no_allow_tip')
           }
         ]
       }
@@ -67,11 +67,11 @@ export default {
   computed: {
     status() {
       let status = {
-        passerror: '用户名或密码错误',
-        neterror: '网络错误',
-        s: '连接成功',
-        get: '正在连接',
-        f: '连接失败'
+        passerror: this.$t('egw.ddns.pass_error'),
+        neterror: this.$t('egw.ddns.net_error'),
+        s: this.$t('egw.ddns.link_success'),
+        get: this.$t('egw.ddns.linking'),
+        f: this.$t('egw.ddns.link_fail')
       }
       return status[this.dnsData.szStatus] || '-'
     }
@@ -110,7 +110,7 @@ export default {
       )
     },
     onDel() {
-      this.$confirm('是否确认删除？')
+      this.$confirm( this.$t('tip.confirm_delete'))
         .then(() => {
           let setData = {
             user: '',

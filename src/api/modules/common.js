@@ -4,8 +4,8 @@ import * as api from './api'
  * 修改密码
  * @param {旧密码，新密码，过期时间} param0
  */
-export const pwdmodify = ({ password, type }) => {
-  return api.common('pwdmodify', { password, type })
+export const pwdmodify = ({ password, type }, setQuick = false) => {
+  return api.common('pwdmodify', { password, type, setQuick })
 }
 
 /**

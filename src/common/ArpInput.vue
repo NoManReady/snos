@@ -1,7 +1,21 @@
 <template>
-  <el-autocomplete class="component_arp-input" :class="clazz" v-model="val" :valueKey="valueKey" popper-class="arp-popper" :fetch-suggestions="arpFetch" :placeholder="placeholder" @select="onSelect">
-    <i class="el-icon-error el-input__icon clear-icon" slot="suffix" v-show="value" title="清空重选" @click="onClear">
-    </i>
+  <el-autocomplete
+    :class="clazz"
+    :fetch-suggestions="arpFetch"
+    :placeholder="placeholder"
+    :valueKey="valueKey"
+    @select="onSelect"
+    class="component_arp-input"
+    popper-class="arp-popper"
+    v-model="val"
+  >
+    <i
+      :title="$t('comp.clear_select')"
+      @click="onClear"
+      class="el-icon-error el-input__icon clear-icon"
+      slot="suffix"
+      v-show="value"
+    ></i>
     <template slot-scope="scope">
       <slot :item="scope.item">
         <template v-if="valueKey === 'mac'">
@@ -37,7 +51,7 @@ export default {
     },
     filterType: {
       type: String,
-      default: 'all'  // all | lan | wan
+      default: 'all' // all | lan | wan
     }
   },
   data() {
@@ -67,7 +81,9 @@ export default {
     async _loadArpList() {
       let _result = await this.$api.getArpTable()
       if (this.filterType !== 'all') {
-        _result = _result.filter(o => o.device.includes(this.filterType.toLocaleUpperCase()))
+        _result = _result.filter(o =>
+          o.device.includes(this.filterType.toLocaleUpperCase())
+        )
       }
       this.arpList = Object.freeze(
         this.filter(Array.isArray(_result) ? _result : [])

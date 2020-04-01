@@ -7,9 +7,11 @@
   "private": true,
   "scripts": {
     "dev:egw": "webpack-dev-server --inline --progress --env.devType egw --config build/webpack.dev.conf.js",
+    "dev:ehr": "webpack-dev-server --inline --progress --env.devType ehr --config build/webpack.dev.conf.js",
     "dev:eap": "webpack-dev-server --inline --progress --env.devType eap --config build/webpack.dev.conf.js",
     "dev:msw": "webpack-dev-server --inline --progress --env.devType msw --config build/webpack.dev.conf.js",
     "build:egw": "node build/build.js --env.devType egw",
+    "build:ehr": "node build/build.js --env.devType ehr",
     "build:eap": "node build/build.js --env.devType eap",
     "build:msw": "node build/build.js --env.devType msw",
     "build:dll": "webpack --config build/webpack.dll.conf.js --progress"

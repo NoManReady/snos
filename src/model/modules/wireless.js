@@ -28,7 +28,7 @@ export const wirelessFn = (radio = '1,2', fowardType = 'bridge', ssidName = '') 
     // 时间管理模式
     tmMode: 'all',
     tmValue: {
-      tmngtName: '所有时段',
+      tmngtName: I18N.t('phrase.alltime'),
       slot: ''
     },
     // 三层漫游

@@ -1,51 +1,56 @@
 <template>
   <div class="port-aggregation">
-    <help-alert title="端口聚合">
-      <!-- <div slot="content">配置交换机端口端口聚合</div> -->
-    </help-alert>
+    <!-- <help-alert title="端口聚合">
+      <div slot="content">配置交换机端口端口聚合</div>
+    </help-alert>-->
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">全局配置</span>
+        <span class="box-header-tit">{{$t('msw.ap.global_cfg')}}</span>
       </div>
-      <el-form label-width="160px" size="small">
-        <el-form-item label="流量平衡算法：">
-          <el-select class="w200" placeholder="请选择" v-model="load_balance">
-            <el-option :value="0" label="源MAC"></el-option>
-            <el-option :value="1" label="源IP"></el-option>
-            <el-option :value="2" label="源L4端口"></el-option>
-            <el-option :value="3" label="源端口"></el-option>
-            <el-option :value="4" label="目的MAC"></el-option>
-            <el-option :value="5" label="目的IP"></el-option>
-            <el-option :value="6" label="目的L4端口"></el-option>
-            <el-option :value="7" label="源MAC和目的MAC"></el-option>
-            <el-option :value="8" label="源IP和目的IP"></el-option>
-            <el-option :value="9" label="源L4端口和目的L4端口"></el-option>
+      <el-form label-width="160px" size="medium">
+        <el-form-item :label="$t('msw.ap.flow_calc_f')">
+          <el-select :placeholder="$t('msw.select')" class="w300" v-model="load_balance">
+            <el-option :label="$t('msw.ap.source_mac')" :value="0"></el-option>
+            <el-option :label="$t('msw.ap.source_ip')" :value="1"></el-option>
+            <el-option :label="$t('msw.ap.source_l4_port')" :value="2"></el-option>
+            <el-option :label="$t('msw.ap.source_port')" :value="3"></el-option>
+            <el-option :label="$t('msw.ap.dest_mac')" :value="4"></el-option>
+            <el-option :label="$t('msw.ap.dest_ip')" :value="5"></el-option>
+            <el-option :label="$t('msw.ap.dest_l4_ip')" :value="6"></el-option>
+            <el-option :label="$t('msw.ap.source_dest_mac')" :value="7"></el-option>
+            <el-option :label="$t('msw.ap.source_dest_ip')" :value="8"></el-option>
+            <el-option :label="$t('msw.ap.source_dest_l4_port')" :value="9"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="isLoading===1" size="small" type="primary" v-auth="_onSaveGlobalSetting">保存配置</el-button>
+          <el-button :loading="isLoading===1" class="w160" type="primary" v-auth="_onSaveGlobalSetting">{{$t('action.save_edit')}}</el-button>
           <!-- <el-button :loading="isLoading===1" @click.native="_onSaveGlobalSettingDef" size="small" type="primary">恢复默认值</el-button> -->
         </el-form-item>
       </el-form>
     </div>
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">聚合口设置</span>
+        <span class="box-header-tit">{{$t('msw.ap.ap_cfg')}}</span>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{lagMax}}</b>
-          个聚合口，每个聚合成员不超过
-          <b class="c-warning mlr5">{{lagMemberMax}}</b>个。
+          <i18n path="msw.ap.ap_limit_tip">
+            <b class="c-warning mlr5" place="n">{{lagMax}}</b>
+            <b class="c-warning mlr5" place="m">{{lagMemberMax}}</b>
+          </i18n>
         </div>
       </help-alert>
       <div class="card-box">
         <template v-if="aggList.length">
           <div class="card-box--bar">
-            <el-checkbox :indeterminate="isIndeterminate" class="card-box--bar__checker" v-model="checkAll">全选</el-checkbox>
+            <el-checkbox
+              :indeterminate="isIndeterminate"
+              class="card-box--bar__checker"
+              size="medium"
+              v-model="checkAll"
+            >{{$t('msw.ap.all_select')}}</el-checkbox>
           </div>
-          <el-checkbox-group @change="_onCheckedChange" v-model="checkList">
+          <el-checkbox-group @change="_onCheckedChange" size="medium" v-model="checkList">
             <div
               :class="{active:editIndex===index}"
               :key="agg.aggregateport"
@@ -54,7 +59,7 @@
               v-for="(agg,index) in aggList"
             >
               <el-checkbox :label="agg.aggregateport" @click.native.stop class="card-box--item__checker"></el-checkbox>
-              <span class="card-box--item__content">{{agg.interface}}</span>
+              <span class="card-box--item__content">{{agg.ifname}}</span>
               <i @click.stop="_onPatchRemove(agg.aggregateport)" class="card-box--item__close el-icon-close"></i>
               <!-- <i @click="_onEdit(agg,index)" class="card-box--item__edit el-icon-setting"></i> -->
             </div>
@@ -63,37 +68,38 @@
               :loading="isLoading===3"
               @click.native="_onPatchRemove()"
               icon="el-icon-delete"
-              size="small"
-              type="danger"
-            >批量删除</el-button>
+              plain
+              size="medium"
+              type="primary"
+            >{{$t('action.patch_delete')}}</el-button>
           </el-checkbox-group>
         </template>
         <div class="card-box--item" v-else>
-          <span class="card-box--item__content">无聚合口</span>
+          <span class="card-box--item__content">{{$t('msw.ap.empty_ap')}}</span>
         </div>
       </div>
       <div class="edit-box mt20">
-        <el-form :model="baseModel" :rules="baseRules" class label-width="180px" ref="baseForm" size="small">
-          <el-form-item label="聚合端口号：" prop="aggregateport">
+        <el-form :model="baseModel" :rules="baseRules" class label-width="180px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('msw.ap.ap_name_f')" prop="aggregateport">
             <el-input
               :disabled="editIndex>-1"
-              :placeholder="`范围：（1~${this.lagMemberMax}）`"
-              class="w200"
+              :placeholder="$t('msw.range_digit',{range:`1-${this.lagMax}`})"
+              class="w300"
               v-model.number="baseModel.aggregateport"
             ></el-input>
           </el-form-item>
-          <el-form-item required class="inline-message" label="选择端口加入聚合口：" prop="lpid" />
+          <el-form-item :label="$t('msw.ap.ap_port_f')" class="inline-message" prop="lpid" required />
           <port-panel :disableds="disabledPorts" :selecteds.sync="baseModel.lpid" mutilple />
+          <el-form-item class="mt20">
+            <el-button
+              :loading="isLoading===2"
+              class="w160"
+              type="primary"
+              v-auth="_onConfirm"
+            >{{this.editIndex===-1?$t('action.save_edit'):(isLoading===2?$t('action.editing'):$t('action.edit1'))}}</el-button>
+            <el-button @click="_onCancel" class="w160" v-show="this.editIndex!==-1">{{$t('action.cancel')}}</el-button>
+          </el-form-item>
         </el-form>
-        <div class="tc edit-box--footer">
-          <el-button
-            :loading="isLoading===2"
-            size="small"
-            type="primary"
-            v-auth="_onConfirm"
-          >{{this.editIndex===-1?'保存配置':'编辑配置'}}</el-button>
-          <el-button @click="_onCancel" size="small">取 消</el-button>
-        </div>
       </div>
     </div>
   </div>
@@ -108,6 +114,7 @@ import { judgePortAttrMutil } from '@/utils/lag'
 import { aggregate } from '@/model/msw/port'
 import { mapGetters, mapActions } from 'vuex'
 import { awaitOnLine_plus } from '@/utils'
+import { getLpidByAggid, hasContainUplink } from '@/utils/lag'
 export default {
   name: 'port-aggregation',
   components: {
@@ -120,33 +127,34 @@ export default {
       if (value === '') {
         return cb()
       }
-      let _valid = isBetween(value, 1, 8)
+      let _valid = isBetween(value, 1, this.lagMax)
       if (_valid) {
         let _curAggport =
           this.aggList[this.editIndex] &&
           this.aggList[this.editIndex].aggregateport
         if (value !== _curAggport && this.existAggIds.includes(value)) {
-          return cb(`聚合口${value}已存在`)
+          return cb(I18N.t('msw.ap.ap_is_exist', { ap: value }))
         }
         return cb()
       } else {
-        return cb(`请输入有效的数值（范围1~${this.lagMemberMax}）`)
+        return cb(I18N.t('msw.ap.ap_is_invalid', { n: this.lagMax }))
       }
     }
     const portidValidator = (r, v, cb) => {
       if (v.length === 0) {
-        return cb(`请选择需要聚合的端口`)
+        return cb(I18N.t('msw.ap.apport_required'))
       }
-      if (v.length > 8) {
-        return cb(`一个聚合口最多${this.lagMemberMax}个端口成员`)
+      if (v.length > this.lagMemberMax) {
+        return cb(I18N.t('msw.ap.ap_max_member', { n: this.lagMemberMax }))
       }
 
       let _attr = judgePortAttrMutil(v)
 
-      if (_attr.mutil) {
-        return cb(
-          `聚合端口属性必须一致（电口、光口、光电复用口不可以组合配置）`
-        )
+      if (_attr.mutilType) {
+        return cb(I18N.t('msw.ap.ap_rule1'))
+      }
+      if (_attr.mutilSpeed) {
+        return cb(I18N.t('msw.ap.ap_rule2'))
       }
       cb()
     }
@@ -161,7 +169,7 @@ export default {
       baseModel: aggregate(),
       baseRules: {
         aggregateport: [
-          { required: true, message: '请输入聚合口号' },
+          { required: true, message: I18N.t('msw.ap.ap_no_empty') },
           { validator: intValidator },
           { validator: aggValidator }
         ],
@@ -232,11 +240,11 @@ export default {
           .map(lis => {
             let _port =
               this.lagPort.find(
-                p => p.interface === `lag${lis.aggregateport}`
+                p => p.lpid === getLpidByAggid(lis.aggregateport)
               ) || {}
             return {
               ...lis,
-              interface: _port.interface
+              ifname: _port.ifname
             }
           })
       } catch (error) {}
@@ -249,7 +257,7 @@ export default {
           module: 'load_balance',
           data: { load_balance: this.load_balance }
         })
-        this.$message.success('配置成功')
+        this.$message.success(I18N.t('tip.edit1_success'))
         this.def_load_balance = this.load_balance
       } catch (error) {}
       this.isLoading = 0
@@ -263,15 +271,15 @@ export default {
     _onPatchRemove(aggId) {
       let _aggids = aggId ? [aggId] : this.checkList
       let _hasUplink = _aggids.find(agg => {
-        return `lag${agg}` === this.uplink.interface
+        return getLpidByAggid(agg) === this.uplink.lagid
       })
-      let _tip = [`是否确认删除聚合口${_aggids.join(',')}？`]
+      let _tip = [I18N.t('msw.ap.ap_del_confirm', { ap: _aggids.join(',') })]
       if (_hasUplink) {
-        _tip.unshift(`删除的聚合口中包含上联口，删除可能导致WEB无法访问，`)
+        _tip.unshift(I18N.t('msw.ap.ap_has_uplink'))
       }
       this.$confirm(_tip.join(''), {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: I18N.t('action.confirm'),
+        cancelButtonText: I18N.t('action.cancel'),
         type: 'warning'
       }).then(() => {
         this._onPostRemoveAgg(_aggids)
@@ -290,7 +298,7 @@ export default {
         ids.forEach(id => {
           this.aggList = this.aggList.filter(agg => agg.aggregateport !== id)
         })
-        this.fetchPortinfo()
+        await this.fetchPortinfo()
       } catch (error) {}
       this._onReset()
       this.isLoading = 0
@@ -321,48 +329,44 @@ export default {
     _onConfirm() {
       let _isEdit = this.editIndex !== -1
       if (!_isEdit && this.aggList.length === this.lagMax) {
-        this.$alert('已配置最大容量', { type: 'warning' })
+        this.$alert(I18N.t('msw.ap.cfg_over_limit'), { type: 'warning' })
         return
       }
       this.$refs.baseForm.validate(async valid => {
         if (valid) {
           // 移除上联口时提示
+          // 编辑态并且当前编辑的是上联聚合口
           if (
             _isEdit &&
-            `lag${this.baseModel.aggregateport}` === this.uplink.interface
+            getLpidByAggid(this.baseModel.aggregateport) === this.uplink.lagid
           ) {
-            let _hasUplinkId = false
-            for (let _id of this.baseModel.lpid) {
-              if (this.uplink.lpid.includes(_id)) {
-                _hasUplinkId = true
-                break
-              }
-            }
-            if (!_hasUplinkId) {
+            // 原先有，编辑后没有包含说明移除上联口
+            let _hasUplink = hasContainUplink(this.baseModel.lpid)
+            if (!_hasUplink) {
               await this.$confirm(
-                `将上联口移出聚合口${this.baseModel.aggregateport}，可能导致WEB访问不了`,
+                I18N.t('msw.ap.remove_uplink', {
+                  ap: this.baseModel.aggregateport
+                }),
                 {
-                  confirmButtonText: '确定',
-                  cancelButtonText: '取消',
+                  confirmButtonText: I18N.t('action.confirm'),
+                  cancelButtonText: I18N.t('action.cancel'),
                   type: 'warning'
                 }
               )
             }
           }
           this.isLoading = 2
-          let _aggItem = {
+          // 添加ifname，名称前缀lag
+          let _postData = {
             aggregateport: this.baseModel.aggregateport,
-            lpid: [...this.baseModel.lpid],
-            interface: _isEdit
-              ? this.baseModel.interface
-              : `lag${this.baseModel.aggregateport}`
+            lpid: [...this.baseModel.lpid]
           }
           let _promise1 = this.$api.cmd(
             'devConfig.update',
             {
               module: 'aggregate_port',
               data: {
-                data: [_aggItem]
+                data: [_postData]
               }
             },
             { timeout: 0 }
@@ -376,15 +380,21 @@ export default {
             _promise1
           ])
           _promise2
-            .then(() => {
+            .then(async () => {
+              let _aggItem = {
+                ..._postData,
+                ifname: _isEdit
+                  ? this.baseModel.ifname
+                  : `Ag${this.baseModel.aggregateport}`
+              }
               if (!_isEdit) {
                 this.aggList.push(_aggItem)
               } else {
                 this.aggList.splice(this.editIndex, 1, _aggItem)
               }
-              this.$message.success('配置成功')
+              this.$message.success(I18N.t('tip.edit1_success'))
+              await this.fetchPortinfo()
               this._onReset()
-              this.fetchPortinfo()
             })
             .finally(() => {
               this.isLoading = 0
@@ -399,7 +409,3 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.port-aggregation {
-}
-</style>

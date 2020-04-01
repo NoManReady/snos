@@ -1,26 +1,30 @@
 <template>
   <div class="admin">
-    <iframe :src="masterUrl" @load="iframeLoadOk" class="iframe" ref="adminIframe" v-if="showIframe"></iframe>
+    <iframe :src="masterUrl" @load="onIframeLoad" class="iframe" ref="adminIframe" v-if="showIframe"></iframe>
     <template v-else>
       <app-header @select-item="selectItem" v-if="!hideHead"></app-header>
       <div :class="hideHead && 'top0'" class="app-main">
         <app-aside :menus="menus" :p-path="pPath" @select-item="selectItem" v-if="!hideMenu"></app-aside>
         <div :style="contentStyl" class="app-content">
           <!-- <app-breadcrumb class="mb10" v-if="!isHomeOverview" /> -->
-          <router-view :class="{'block': hasBlock}" :key="`${routerId}`"></router-view>
+          <router-view :class="{ block: hasBlock }" :key="`${routerId}`"></router-view>
         </div>
       </div>
       <template v-if="detailShow">
         <dev-config @closed="detailShow = false" v-bind="devConfig"></dev-config>
       </template>
       <transition mode="in-out" name="fade">
-        <common-robot />
+        <common-robot v-if="!isInIframe && isSmb" />
       </transition>
     </template>
   </div>
 </template>
 <script>
-import { loadOnlineVers, loadNetworkNeighbor } from '@/utils/index'
+import {
+  loadOnlineVers,
+  loadNetworkNeighbor,
+  showPppoeTimeout
+} from '@/utils/index'
 import { AppAside, AppHeader } from '@/layout'
 import Top from '@/common/Top'
 import Robot from '@/common/Robot'
@@ -34,7 +38,8 @@ export default {
       routerId: Math.random(),
       detailShow: false,
       devConfig: {},
-      masterUrl: ''
+      masterUrl: getIframeUrl(),
+      iframeOk: true // 判断iframe加载资源和entry页是否正常
     }
   },
   components: {
@@ -48,25 +53,38 @@ export default {
   mounted() {
     let _iframe = this.$refs.adminIframe
     if (_iframe) {
-      if (_iframe.attachEvent) {
-        _iframe.attachEvent('onload', function() {
-          // console.log('Local iframe is now loaded. Attach')
-        })
-      } else {
-        _iframe.onload = function() {
-          // console.log('Local iframe is now loaded.')
-        }
-      }
+      // 资源加载错误处理
+      _iframe.contentWindow.addEventListener(
+        'error',
+        event => {
+          let _name =
+            (event.target &&
+              event.target.nodeName &&
+              event.target.nodeName.toLocaleUpperCase()) ||
+            ''
+          if (_name === 'SCRIPT' || _name === 'LINK') {
+            this.iframeOk = false
+            this.$alert(
+              I18N.t('admin.master_source_err_tip'),
+              I18N.t('admin.master_source_err')
+            )
+          }
+        },
+        true
+      )
     }
   },
   computed: {
+    isSmb() {
+      return !this.$store.getters.isIndustry
+    },
     // 内容模块style
     contentStyl() {
       return this.hideMenu
         ? { left: '0' }
         : this.$store.getters.collapse
         ? { left: '64px' }
-        : { left: '155px' }
+        : { left: '180px' }
     },
     isSlave() {
       return this.$roles().includes('slave')
@@ -74,11 +92,19 @@ export default {
     isMaster() {
       return this.$roles().includes('master')
     },
-    isAlone() {
-      return this.$roles().includes('alone')
+    hasPppoeServer() {
+      return (
+        this.$store.getters.devMode.forwardMode === 'ROUTER' &&
+        this.$roles().includes('pppoe_server')
+      )
+    },
+    isAloneMenu() {
+      return this.$roles().includes('alone') || this.isEhr // ehr当作alone处理菜单
     },
     pPath() {
-      return Object.freeze(this.isMaster ? ['admin'] : ['admin', 'alone'])
+      return Object.freeze(
+        this.isAloneMenu || this.isSlave ? ['admin', 'alone'] : ['admin']
+      )
     },
     aloneMenus() {
       let _deviceMenus =
@@ -89,8 +115,11 @@ export default {
     adminMenus() {
       return this.$store.getters.adminMenus
     },
+    isEhr() {
+      return this.$roles().includes('ehr')
+    },
     menus() {
-      return this.isAlone ? this.aloneMenus : this.adminMenus
+      return this.isAloneMenu ? this.aloneMenus : this.adminMenus
     },
     flatMenus() {
       return flatMenus(this.menus, {}, this.pPath)
@@ -99,10 +128,16 @@ export default {
       return this.$store.getters.childMenus
     },
     isHomeOverview() {
-      return this.$route.path === '/admin/home_overview'
+      return ['/admin/home_overview', '/admin/slave_eg'].includes(
+        this.$route.path
+      )
     },
     hasBlock() {
-      return this.childMenus.menus.length === 0 && !this.isHomeOverview
+      return (
+        this.childMenus.menus.length === 0 &&
+        !this.isHomeOverview &&
+        !this.isAloneMenu
+      )
     },
     PROXY() {
       return window.PROXY || {}
@@ -135,8 +170,16 @@ export default {
     // 从设备嵌入master页面
     showIframe() {
       return (
-        this.isSlave && !this.isInIframe && this.isSupport && this.master.pingOk
+        this.isSlave &&
+        !this.isInIframe &&
+        this.isSupport &&
+        this.master.pingOk &&
+        this.iframeOk &&
+        !this.isEhrMaster
       )
+    },
+    isEhrMaster() {
+      return this.isEhr && this.master.devModel.indexOf('EW') === 0
     },
     master() {
       return this.$store.getters.master || {}
@@ -149,19 +192,19 @@ export default {
     this.$bus.$off('popDevDetail')
   },
   async created() {
+    // 当前为从设备，主设备不可访问时设置目的window
     if (this.isSlave && !this.isInIframe) {
-      await this._checkMasterPingOk()
-      await this._checkSupportVer()
+      if (!this._checkMasterPingOk() || !this._checkSupportVer()) {
+        window.top.$$MASTER_WINDOW = window
+        return
+      }
     }
-    if (this.showIframe) {
-      this.masterUrl = getIframeUrl()
-    }
-    // 设置postMessage目的window
-    if (this.isAlone || (this.isMaster && !window.top.$$MASTER_WINDOW)) {
+    // 非从设备，设置第一个具有header的设备为目的window
+    if (!this.isSlave && !this.hideHead && !window.top.$$MASTER_WINDOW) {
       window.top.$$MASTER_WINDOW = window
     }
     // 延迟检测版本和冲突（刚进入冲突检测可能有误）
-    !this.PROXY.hideHead &&
+    if (!this.hideHead) {
       setTimeout(() => {
         // 检测是否有在线可升级版本
         if (!this.isSlave) {
@@ -171,8 +214,17 @@ export default {
         if (this.isMaster) {
           loadNetworkNeighbor()
         }
+        // pppoe账号到期状态
+        if (this.hasPppoeServer) {
+          showPppoeTimeout()
+        }
       }, 3000)
-    this._onPopDevDetail()
+    }
+    // 顶层监听右侧弹框
+    this.$bus.$on('popDevDetail', ({ devConfig }) => {
+      this.devConfig = devConfig
+      this.detailShow = true
+    })
   },
   watch: {
     '$route.fullPath': {
@@ -183,39 +235,31 @@ export default {
     }
   },
   methods: {
-    async _checkMasterPingOk() {
+    _checkMasterPingOk() {
       if (this.master.pingOk === false) {
-        return this.$confirm(
-          `您当前登录的是从设备，由于主设备无法ping通，无法查看整网信息，将为您展示从设备（本机）的信息。`,
-          `检测到当前网络的主设备无法ping通`,
+        this.$alert(
+          I18N.t('admin.master_ping_err_tip'),
+          I18N.t('admin.master_ping_err'),
           {
-            // type: 'warning',
             showClose: false,
-            cancelButtonText: '知道了，只看从设备',
-            confirmButtonText: '尝试网络自检查看原因',
+            confirmButtonText: I18N.t('admin.view_slave_only'),
             closeOnClickModal: false
           }
-        ).then(
-          _ => {
-            this.$router.push({
-              name: `admin/alone/diagnose/diagnose_network`,
-              query: { start: true }
-            })
-          },
-          _ => {}
         )
+        return false
       }
+      return true
     },
     _checkSupportVer() {
       if (!this.isSupport) {
-        return this.$confirm(
-          `您当前登录的是从设备，由于主设备的版本较旧，无法查看整网信息，将为您展示从设备（本机）的信息。`,
-          `检测到当前网络的主设备版本较旧`,
+        this.$confirm(
+          I18N.t('admin.master_old_err_tip'),
+          I18N.t('admin.master_old_err'),
           {
             // type: 'warning',
             showClose: false,
-            cancelButtonText: '知道了，只看从设备',
-            confirmButtonText: '想看整网信息，去升级主设备',
+            cancelButtonText: I18N.t('admin.view_slave_only'),
+            confirmButtonText: I18N.t('admin.upgrade_master'),
             closeOnClickModal: false
           }
         ).then(
@@ -231,6 +275,21 @@ export default {
           },
           _ => {}
         )
+        return false
+      }
+      return true
+    },
+    onIframeLoad(e, a) {
+      let _iframe = this.$refs.adminIframe
+      if (_iframe) {
+        // 主设备WEB页面根节点异常 (可能服务器异常)
+        if (!_iframe.contentDocument.body.className.includes('rj-body')) {
+          this.iframeOk = false
+          this.$alert(
+            I18N.t('admin.master_unknow_err_tip'),
+            I18N.t('admin.master_unknow_err')
+          )
+        }
       }
     },
     // 设置子路由_
@@ -263,8 +322,9 @@ export default {
           /(\w)(\w+)/,
           (all, a, b) => `${a.toUpperCase()}${b}`
         )
-        let _vm = this.getComponentByName(this.$root, _compName) || this
+        let _vm = this.getComponentByName(this.$parent, _compName) || this
         _vm.routerId = Math.random()
+        _vm.$route.query.tab && (_vm.$route.query.tab = '0')
       } else {
         this.$router.push({
           name: _routeName,
@@ -272,7 +332,6 @@ export default {
         })
       }
     },
-    iframeLoadOk(e, a) {},
     getComponentByName(parent, name) {
       for (let _child of parent.$children) {
         let _name = _child.$options.name
@@ -286,18 +345,18 @@ export default {
         }
       }
       return null
-    },
-    _onPopDevDetail(data) {
-      this.$bus.$on('popDevDetail', ({ devConfig }) => {
-        this.devConfig = devConfig
-        this.detailShow = true
-      })
     }
   }
 }
 </script>
 <style lang="scss" scoped>
 .admin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
   height: 100%;
 
   .top0 {
@@ -305,8 +364,11 @@ export default {
   }
   .iframe {
     width: 100%;
-    height: 99%;
+    height: 100%;
     border: none;
+    // 解决iframe内联元素，导致了div被撑开出现滚动条的问题
+    display: block;
+    // vertical-align: top;
   }
   .iframe-content {
     padding: 0;

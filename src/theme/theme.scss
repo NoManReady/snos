@@ -7,25 +7,27 @@
 /* Transition
 -------------------------- */
 
-$--color-primary: #0166FF;
-$--color-success: #219653;
-$--color-warning: #F2994A;
-$--color-danger: #F5222D;
+$--color-primary: #2B6AFD;
+$--color-success: #018903;
+$--color-warning: #F06F03;
+$--color-danger: #DE321F;
 $--color-text-primary: #262626;
 $--color-text-regular: #595959;
 $--color-text-secondary: #8C8C8C;
 $--color-text-placeholder: #BFBFBF;
-$--border-color-base: #E4E7ED;
+$--border-color-base: #D9D9D9;
 $--border-color-light: #EBEEF5;
 $--border-color-lighter: #F2F6FC;
+$--background-color-base:#F5F5F5;
 
 
-$--all-transition: all .3s cubic-bezier(.645,.045,.355,1) !default;
+$--all-transition: all .3s cubic-bezier(.645, .045, .355, 1) !default;
 $--fade-transition: opacity 300ms cubic-bezier(0.23, 1, 0.32, 1) !default;
 $--fade-linear-transition: opacity 200ms linear !default;
-$--md-fade-transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1) !default;
-$--border-transition-base: border-color .2s cubic-bezier(.645,.045,.355,1) !default;
-$--color-transition-base: color .2s cubic-bezier(.645,.045,.355,1) !default;
+$--md-fade-transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1),
+opacity 300ms cubic-bezier(0.23, 1, 0.32, 1) !default;
+$--border-transition-base: border-color .2s cubic-bezier(.645, .045, .355, 1) !default;
+$--color-transition-base: color .2s cubic-bezier(.645, .045, .355, 1) !default;
 
 /* Color
 -------------------------- */
@@ -35,15 +37,24 @@ $--color-primary: #409EFF !default;
 $--color-white: #FFFFFF !default;
 /// color|1|Background Color|4
 $--color-black: #000000 !default;
-$--color-primary-light-1: mix($--color-white, $--color-primary, 10%) !default; /* 53a8ff */
-$--color-primary-light-2: mix($--color-white, $--color-primary, 20%) !default; /* 66b1ff */
-$--color-primary-light-3: mix($--color-white, $--color-primary, 30%) !default; /* 79bbff */
-$--color-primary-light-4: mix($--color-white, $--color-primary, 40%) !default; /* 8cc5ff */
-$--color-primary-light-5: mix($--color-white, $--color-primary, 50%) !default; /* a0cfff */
-$--color-primary-light-6: mix($--color-white, $--color-primary, 60%) !default; /* b3d8ff */
-$--color-primary-light-7: mix($--color-white, $--color-primary, 70%) !default; /* c6e2ff */
-$--color-primary-light-8: mix($--color-white, $--color-primary, 80%) !default; /* d9ecff */
-$--color-primary-light-9: mix($--color-white, $--color-primary, 90%) !default; /* ecf5ff */
+$--color-primary-light-1: mix($--color-white, $--color-primary, 10%) !default;
+/* 53a8ff */
+$--color-primary-light-2: mix($--color-white, $--color-primary, 20%) !default;
+/* 66b1ff */
+$--color-primary-light-3: mix($--color-white, $--color-primary, 30%) !default;
+/* 79bbff */
+$--color-primary-light-4: mix($--color-white, $--color-primary, 40%) !default;
+/* 8cc5ff */
+$--color-primary-light-5: mix($--color-white, $--color-primary, 50%) !default;
+/* a0cfff */
+$--color-primary-light-6: mix($--color-white, $--color-primary, 60%) !default;
+/* b3d8ff */
+$--color-primary-light-7: mix($--color-white, $--color-primary, 70%) !default;
+/* c6e2ff */
+$--color-primary-light-8: mix($--color-white, $--color-primary, 80%) !default;
+/* d9ecff */
+$--color-primary-light-9: mix($--color-white, $--color-primary, 90%) !default;
+/* ecf5ff */
 /// color|1|Functional Color|1
 $--color-success: #67C23A !default;
 /// color|1|Functional Color|1
@@ -105,9 +116,11 @@ $--border-radius-zero: 0 !default;
 
 // Box-shadow
 /// boxShadow|1|Shadow|1
-$--box-shadow-base: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04) !default;
+$--box-shadow-base: 0 2px 4px rgba(0, 0, 0, .12),
+0 0 6px rgba(0, 0, 0, .04) !default;
 // boxShadow|1|Shadow|1
-$--box-shadow-dark: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .12) !default;
+$--box-shadow-dark: 0 2px 4px rgba(0, 0, 0, .12),
+0 0 6px rgba(0, 0, 0, .12) !default;
 /// boxShadow|1|Shadow|1
 $--box-shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1) !default;
 
@@ -985,16 +998,13 @@ $--md: 992px !default;
 $--lg: 1200px !default;
 $--xl: 1920px !default;
 
-$--breakpoints: (
-  'xs' : (max-width: $--sm - 1),
+$--breakpoints: ('xs' : (max-width: $--sm - 1),
   'sm' : (min-width: $--sm),
   'md' : (min-width: $--md),
   'lg' : (min-width: $--lg),
-  'xl' : (min-width: $--xl)
-);
+  'xl' : (min-width: $--xl));
 
-$--breakpoints-spec: (
-  'xs-only' : (max-width: $--sm - 1),
+$--breakpoints-spec: ('xs-only' : (max-width: $--sm - 1),
   'sm-and-up' : (min-width: $--sm),
   'sm-only': "(min-width: #{$--sm}) and (max-width: #{$--md - 1})",
   'sm-and-down': (max-width: $--md - 1),

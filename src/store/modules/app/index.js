@@ -1,75 +1,78 @@
-import * as types from './constant'
-import { common } from '@/api/modules/api'
-import router from '@/router'
-import { loadFromLocal, saveToLocal } from '@/utils/localStorage'
-import langMap from '@/lang/langMap'
-const browserLanguage = (navigator.language || navigator.browserLanguage).toLowerCase() || 'zh-cn'
+import * as types from "./constant";
+import { loadFromLocal, saveToLocal } from "@/utils/localStorage";
+import { DEF_LANG ,setAcceptLang} from "@/lang/def";
+// import { setLangAsync } from "@/plugins/i18n";
+// import { setLang } from "@/api/modules/system";
 /**
  * 全局布局状态相关
  */
 export default {
   state: {
     // 路由title
-    title: 'EWEB管理系统',
+    title: "", //I18N.t('main_header.web_manage'),
     // 动画效果
-    direction: 'forward',
+    direction: "forward",
     // 全局loading
     loading: false,
     // 语言
-    lang: window.LANG || loadFromLocal(types.APP_LANG) || langMap[browserLanguage],
+    lang: DEF_LANG,
     // 侧边栏是否打开
     collapse: Boolean(loadFromLocal(types.APP_ASIDE_CLOSE))
   },
   actions: {
     title({ commit }, title) {
-      document.title = title
-      commit(types.APP_TITLE, title)
+      document.title = title;
+      commit(types.APP_TITLE, title);
     },
     direction({ commit }, direction) {
-      commit(types.APP_DIRECTION, direction)
+      commit(types.APP_DIRECTION, direction);
     },
     loading({ commit }, loading = true) {
-      commit(types.APP_LOADING, loading)
+      commit(types.APP_LOADING, loading);
     },
-    setLang({ commit }, lang = 'zh') {
-      window.I18N.locale = lang
-      saveToLocal(types.APP_LANG, lang)
-      commit(types.APP_LANG, lang)
+    async setLang({ commit }, lang = "zh_cn") {
+      // await setLangAsync(lang);
+      // await setLang(lang);
+      setAcceptLang(lang,DEF_LANG)
+      commit(types.APP_LANG, lang);
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
     },
-    setCollapse({ commit }, collpse = true) {
-      saveToLocal(types.APP_ASIDE_CLOSE, collpse)
-      commit(types.APP_ASIDE_CLOSE, collpse)
+    setCollapse({ commit }, { value = true, save = true }) {
+      save && saveToLocal(types.APP_ASIDE_CLOSE, value);
+      commit(types.APP_ASIDE_CLOSE, value);
     }
   },
   mutations: {
     [types.APP_TITLE](state, payload) {
-      state.title = payload
+      state.title = payload;
     },
     [types.APP_DIRECTION](state, payload) {
-      state.direction = payload
+      state.direction = payload;
     },
     [types.APP_LOADING](state, payload) {
-      state.loading = payload
+      state.loading = payload;
     },
     [types.APP_LANG](state, payload) {
-      state.lang = payload
+      state.lang = payload;
     },
     [types.APP_ASIDE_CLOSE](state, payload) {
-      state.collapse = payload
+      state.collapse = payload;
     }
   },
   getters: {
     loading(state) {
-      return state.loading
+      return state.loading;
     },
     direction(state) {
-      return state.direction
+      return state.direction;
     },
     lang(state) {
-      return state.lang
+      return state.lang;
     },
     collapse(state) {
-      return state.collapse
+      return state.collapse;
     }
   }
-}
+};

@@ -1,69 +1,63 @@
 <template>
   <div class="aut-user">
-    <help-alert json-key="exampleJson" title="在线认证用户"></help-alert>
+    <help-alert json-key="exampleJson" :title="$t('egw.auth.auth_user_online')"></help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          认证配置
+          {{$t('egw.auth.auth_config')}}
           <small></small>
         </span>
       </div>
-      <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm">
-        <el-form-item label="下线检测模式">
+      <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+        <el-form-item :label="$t('egw.auth.style_by_offline')">
           <el-checkbox-group class="hide" v-model="baseModel.flowDetectEn">
-            <el-checkbox false-label="0" label="开启" true-label="1"></el-checkbox>
+            <el-checkbox false-label="0" :label="$t('phrase.enable')" true-label="1"></el-checkbox>
           </el-checkbox-group>
-          <div class="flow-detect">
-            <el-form-item label prop="flowDetectTime" v-if="baseModel.flowDetectEn != '0'">
-              <el-input class="w100" size="mini" v-model="baseModel.flowDetectTime"></el-input>
-              <span>(5-65535)分钟内无流量，用户将被强制下线</span>
-            </el-form-item>
-          </div>
+          <el-form-item label prop="flowDetectTime" v-if="baseModel.flowDetectEn != '0'">
+            <el-input class="w90" v-model="baseModel.flowDetectTime"></el-input>
+            <span>{{$t('egw.auth.mandatory_offline_tip')}}</span>
+          </el-form-item>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="onSaveLoading" class="w200" type="primary" v-auth="setAppAuth">保存配置</el-button>
+          <el-button :loading="onSaveLoading" class="w160" type="primary" v-auth="setAppAuth">{{$t('action.save_edit')}}</el-button>
         </el-form-item>
       </el-form>
     </div>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          在线用户
+          {{$t('egw.online_user')}}
           <small></small>
         </span>
         <div class="fr">
-          <el-form size="small">
-            <el-select class="w150" size="small" v-model="searchKey">
-              <el-option label="根据IP查询" value="ip"></el-option>
-              <el-option label="根据MAC查询" value="mac"></el-option>
-              <el-option label="根据用户名查询" value="userName"></el-option>
-            </el-select>
-            <el-input class="w150" size="small" v-model="search"></el-input>
-            <el-button @click="onSearchOnlineUser" size="small" type="primary">搜索</el-button>
-            <el-button @click="onRefresh" size="small" type="primary">
-              <i class="el-icon-refresh"></i>
-              <span>刷新</span>
-            </el-button>
-            <el-button icon="el-icon-delete" size="small" type="primary" v-auth="onDelUser">批量删除</el-button>
-          </el-form>
+          <el-select class="w300" size="medium" v-model="searchKey">
+            <el-option :label="$t('egw.auth.search_by_ip')" value="ip"></el-option>
+            <el-option :label="$t('egw.auth.search_by_mac')" value="mac"></el-option>
+            <el-option :label="$t('egw.auth.search_by_username')" value="userName"></el-option>
+          </el-select>
+          <el-input class="w200 mr5 verm" clearable :placeholder="$t('egw.auth.search_wright')" size="medium" v-model="search">
+            <el-button @click.native="onSearchOnlineUser" icon="el-icon-search" slot="append"></el-button>
+          </el-input>
+          <el-button @click="onRefresh" icon="el-icon-refresh" plain size="medium" type="primary">{{$t('action.refresh')}}</el-button>
+          <el-button icon="el-icon-delete" plain size="medium" type="primary" v-auth="onDelUser">{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
-      <el-table :data="pageList" ref="userTable" row-key="mac" size="small" tooltip-effect="dark">
+      <el-table :data="pageList" ref="userTable" row-key="mac" size="medium" stripe>
         <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column align="center" label="用户名" prop="userName"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.user_name')" prop="userName"></el-table-column>
         <el-table-column align="center" label="IP" prop="ip"></el-table-column>
-        <el-table-column align="center" label="MAC地址" prop="mac"></el-table-column>
-        <el-table-column align="center" label="上线时间" prop="time"></el-table-column>
-        <el-table-column align="center" label="在线时长(s)" prop="timeUsed"></el-table-column>
-        <el-table-column align="center" label="认证方式" prop="auth_type">
+        <el-table-column align="center" :label="$t('egw.mac')" prop="mac"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.auth.inline_time')" prop="time"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.auth.online_times')" prop="timeUsed"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.auth.auth_type')" prop="auth_type">
           <template slot-scope="scope">
             <span>{{_getAuthMapName(scope.row.auth_type)}}</span>
           </template>
         </el-table-column>
-        <el-table-column :formatter="getStatus" align="center" label="状态" prop="status"></el-table-column>
-        <el-table-column align="center" label="操作" width="100px">
+        <el-table-column :formatter="getStatus" align="center" :label="$t('phrase.status')" prop="status"></el-table-column>
+        <el-table-column align="center" :label="$t('action.ope')" width="100px">
           <template slot-scope="scope">
-            <el-button type="text" v-auth="{fn:onDelUser,params:scope.row}">删除</el-button>
+            <el-button size="medium" type="text" v-auth="{fn:onDelUser,params:scope.row}">{{$t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -88,8 +82,8 @@ export default {
   name: 'AuthUser',
   data() {
     const detectTimeValidate = (r, v, cb) => {
-      if (!intValidate(v)) return cb(new Error('请输入整数'))
-      if (!isBetween(v, 5, 65535)) return cb(new Error('范围为5-65535'))
+      if (!intValidate(v)) return cb(new Error(this.$t('egw.auth.enter_integer_required')))
+      if (!isBetween(v, 5, 65535)) return cb(new Error(this.$t('egw.port_limit_tip')))
       return cb()
     }
     return {
@@ -103,16 +97,16 @@ export default {
       },
       baseRules: {
         flowDetectTime: [
-          { required: true, message: '请输入分钟数' },
+          { required: true, message: this.$t('egw.auth.enter_minutes_required') },
           { validator: detectTimeValidate }
         ]
       },
       authMaps: Object.freeze({
-        wx2: '微信连wifi',
-        wifidog: '短信/一键认证',
-        user_pwd_auth: '账号密码',
-        qrcode_active_auth: '访客扫码',
-        qrcode_passive_auth: '授权访客'
+        wx2: this.$t('egw.auth.wifi_link_wechat'),
+        wifidog: this.$t('egw.auth.sms_one_click_authentication'),
+        user_pwd_auth: this.$t('egw.password'),
+        qrcode_active_auth: this.$t('egw.auth.qrcode_active_auth'),
+        qrcode_passive_auth: this.$t('egw.auth.qrcode_passive_auth')
       })
     }
   },
@@ -141,7 +135,7 @@ export default {
             .setAppAuth(this.baseModel)
             .then(d => {
               this.$message({
-                message: '配置成功',
+                message: this.$t('tip.edit1_success'),
                 type: 'success'
               })
             })
@@ -162,7 +156,7 @@ export default {
       this._initPage()
     },
     getStatus() {
-      return '在线'
+      return this.$t('phrase.online')
     },
     onDelUser(item) {
       let _items = this.$refs.userTable.selection
@@ -170,9 +164,9 @@ export default {
         _items = [item]
       }
       if (!_items.length) {
-        return this.$message.warning('请选择要删除的列表项')
+        return this.$message.warning(this.$t('tip.select_del_item'))
       }
-      this.$confirm('是否确认删除?').then(() => {
+      this.$confirm(this.$t('tip.confirm_delete')).then(() => {
         let data = _items.map(ite => {
           return {
             ip: ite.ip,
@@ -189,7 +183,7 @@ export default {
               this.removeList(_index)
             }
           })
-          this.$message('配置成功')
+          this.$message( this.$t('tip.edit1_success'))
         })
       })
     }
@@ -197,11 +191,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-// .aut-user {
-//   .flow-detect {
-//     position: absolute;
-//     left: 80px;
-//     top: 0;
-//   }
-// }
+.aut-user {
+  .verm {
+    vertical-align: middle;
+  }
+}
 </style>

@@ -1,33 +1,56 @@
 <template>
   <div class="diagnose-dhcp-svr">
-    <help-alert json-key="estDhcpClientJson" title="地址服务器">
-      <div slot="content">开启DHCP服务器后，可以为网络中的设备分配IP地址，方便登录不同的设备。该功能主要用于临时调试，因此开启30分钟后会自动关闭服务器。</div>
+    <help-alert
+      json-key="estDhcpClientJson"
+      :title="$t('diagnose.addr_server')"
+    >
+      <div slot="content">{{ $t("diagnose.addr_server_tip") }}</div>
     </help-alert>
     <div class="box">
-      <el-form label-width="160px">
-        <el-form-item label="DHCP服务器开关">
-          <el-switch :value="status" @change="onChange" active-value="on" inactive-value="off"></el-switch>
+      <el-form label-width="160px" size="medium">
+        <el-form-item :label="$t('diagnose.dhcp_ser_status')">
+          <el-switch
+            :value="status"
+            @change="onChange"
+            active-value="on"
+            inactive-value="off"
+          ></el-switch>
         </el-form-item>
       </el-form>
-      <template v-if="status==='on'">
+      <template v-if="status === 'on'">
         <div class="box-header">
           <span class="box-header-tit">
-            地址列表
+            {{ $t("diagnose.addr_list") }}
             <small></small>
           </span>
           <div class="fr">
-            <el-button @click.native="_initPage" size="small" type="primary">
-              <i class="el-icon-refresh"></i>
-              <span>刷新</span>
-            </el-button>
+            <el-button
+              @click.native="_initPage"
+              icon="el-icon-refresh"
+              size="medium"
+              type="primary"
+              >{{ $t("action.refresh") }}</el-button
+            >
           </div>
         </div>
-        <el-table :data="pageList" ref="multipleTable" size="small" stripe>
+        <el-table :data="pageList" ref="multipleTable" size="medium" stripe>
           <!-- <el-table-column prop="hostname" label="主机名" align="center">
           </el-table-column>-->
-          <el-table-column align="center" label="IP地址" prop="ip"></el-table-column>
-          <el-table-column align="center" label="MAC地址" prop="mac"></el-table-column>
-          <el-table-column align="center" label="剩余租期" prop="leasetime"></el-table-column>
+          <el-table-column
+            align="center"
+            :label="$t('sysinfo.ip_addr')"
+            prop="ip"
+          ></el-table-column>
+          <el-table-column
+            align="center"
+            :label="$t('sysinfo.mac_addr')"
+            prop="mac"
+          ></el-table-column>
+          <el-table-column
+            align="center"
+            :label="$t('diagnose.remain_lease', {type:$t('time.minute')})"
+            prop="leasetime"
+          ></el-table-column>
         </el-table>
         <el-pagination
           :current-page.sync="pageModel.pageIndex"
@@ -45,55 +68,60 @@
   </div>
 </template>
 <script>
-import pageMixins from '@/mixins/pageMixins'
-let time = null
+import pageMixins from "@/mixins/pageMixins";
+let time = null;
 export default {
-  name: 'DiagnoseDhcpSvr',
+  name: "DiagnoseDhcpSvr",
   data() {
     return {
-      status: 'off'
-    }
+      status: "off"
+    };
   },
   mixins: [pageMixins],
   beforeDestroy() {
-    clearTimeout(time)
-    time = null
+    clearTimeout(time);
+    time = null;
   },
   async created() {
-    await this._loadStatus(true)
-    this._initPage()
+    await this._loadStatus(true);
+    this._initPage();
   },
   methods: {
     _loadList() {
-      if (this.status === 'on') {
-        return this._loadDhcpLease()
+      if (this.status === "on") {
+        return this._loadDhcpLease();
       }
-      return []
+      return [];
     },
     async _loadStatus(isInit = false, isSilence = false) {
       let _svr = await this.$api.cmd(
-        'devSta.get',
-        { module: 'dhcp_svr' },
+        "devSta.get",
+        { module: "dhcp_svr" },
         { isSilence }
-      )
-      this.status = _svr.status
+      );
+      this.status = _svr.status;
 
       if (isInit || time) {
         time = setTimeout(() => {
-          this._loadStatus(false, true)
-        }, 30000)
+          this._loadStatus(false, true);
+        }, 30000);
       }
     },
     async _loadDhcpLease() {
-      let _result = await this.$api.cmd('devSta.get', { module: 'dhcp_lease' })
-      return _result.List || []
+      let _result = await this.$api.cmd("devSta.get", { module: "dhcp_lease" });
+      return _result.List || [];
     },
     async onChange(v) {
-      await this.$confirm(`确认${v === 'on' ? '开启' : '关闭'}DHCP服务器?`)
+      await this.$confirm(
+        I18N.t("diagnose.dhcp_serv_confirm", {
+          status:
+            v === "on" ? I18N.t("phrase.enable") : I18N.t("phrase.disable")
+        })
+      );
       let _res = await this.$api.cmd(
-        'devSta.set',
+        "devSta.set",
         {
-          module: 'dhcp_svr',
+          module: "dhcp_svr",
           async: true,
           data: {
             status: v
@@ -102,18 +130,18 @@ export default {
         {
           timeout: 60000
         }
-      )
-      if (_res.code === '0') {
-        this.status = v
-      } else if (_res.code === '2') {
-        this.$message.error('开启失败，网络中已存在DHCP服务器')
+      );
+      if (_res.code === "0") {
+        this.status = v;
+      } else if (_res.code === "2") {
+        this.$message.error(I18N.t("diagnose.enable_err"));
       }
-      if (this.status === 'on') {
-        this._initPage()
+      if (this.status === "on") {
+        this._initPage();
       }
     }
   }
-}
+};
 </script>
 <style lang="scss" scoped>
 </style>

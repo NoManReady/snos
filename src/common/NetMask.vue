@@ -48,7 +48,6 @@ export default {
       let results = []
       if (this.type === 'ip') {
         results = this.sourceData || [
-          { value: '255.255.255.255' },
           { value: '255.255.255.0' },
           { value: '255.255.0.0' },
           { value: '255.0.0.0' }

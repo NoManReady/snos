@@ -2,18 +2,13 @@
   <div class="box">
     <div class="box-header">
       <span class="box-header-tit">
-        运营商设置
+        {{$t('egw.set_operator')}}
         <small></small>
       </span>
     </div>
-    <help-alert
-      :closable="false"
-      class="mb15"
-      title="开启地址库选路并设置正确的出口运营商后，数据流将按运营商地址库自动选路，达到如电信数据走电信、联通数据走联通的效果，避免跨运营商访问，实现更快速的网络访问。如果两个出口属于同一运营商，不建议开启地址库选路。"
-      type="info"
-    ></help-alert>
-    <el-form :class="formClass" :label-position="labelPos" :model="isp" class="web-form" label-width="160px" ref="ispForm">
-      <el-form-item label="开启地址库选路">
+    <help-alert :closable="false" :title="$t('egw.open_isp_tip')" class="mb15" type="info"></help-alert>
+    <el-form :class="formClass" :label-position="labelPos" :model="isp" label-width="160px" ref="ispForm" size="medium">
+      <el-form-item :label="$t('egw.open_isp')">
         <el-switch active-value="1" inactive-value="0" v-model="isp.enable"></el-switch>
       </el-form-item>
       <el-form-item
@@ -30,14 +25,14 @@
     </el-form>
     <div class="box-header">
       <span class="box-header-tit">
-        多链路负载模式设置
+        {{$t('egw.multilink_load_mode')}}
         <small></small>
       </span>
     </div>
-    <help-alert :closable="false" class="mb15" title="流量先根据地址库选路的情况进行选路，剩余的流量根据负载模式进行分配。" type="info">
+    <help-alert :closable="false" :title="$t('egw.flow_by_isp')" class="mb15" type="info">
       <template slot="content">
-        <div class="mtb10">1、均衡模式：流量按WAN口的权重值比例分配，比如WAN口和WAN1的权重分别设置为3和2，则流量给WAN分配60%,WAN1分配40%。</div>
-        <div>2、主备模式：主接口工作正常时，流量全部走主接口；主接口发生故障时，流量自动切换到备接口。多个主/备接口时，需设置权重(同均衡模式说明)。</div>
+        <div class="mtb10">{{$t('egw.balance_model_tip')}}</div>
+        <div>{{$t('egw.active_backup_tip')}}</div>
       </template>
     </help-alert>
     <el-form
@@ -48,22 +43,27 @@
       class="web-form w500"
       label-width="160px"
       ref="weightForm"
+      size="medium"
     >
       <!-- <el-form-item label="开启多链路负载均衡">
         <el-switch v-model="weight.enable" active-value="1" inactive-value="0"></el-switch>
       </el-form-item>-->
-      <el-form-item label="负载模式" prop="mode">
+      <el-form-item :label="$t('egw.traffic_pattern')" prop="mode">
         <el-select :disabled="weight.enable === '0'" class="w300" v-model="weight.mode">
-          <el-option label="均衡" value="weight"></el-option>
-          <el-option label="主备" value="master"></el-option>
+          <el-option :label="$t('egw.balance')" value="weight"></el-option>
+          <el-option :label="$t('egw.active_backup')" value="master"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="均衡策略" prop="policy">
+      <el-form-item
+        :label="$t('egw.balanced_strategy')"
+        :style="$store.state.app.lang==='en'?{'margin-bottom':'30px'}:{}"
+        prop="policy"
+      >
         <el-select class="w300" v-model="weight.policy">
-          <el-option label="基于连接进行均衡" value="session"></el-option>
-          <el-option label="基于源IP进行均衡" value="sip"></el-option>
+          <el-option :label="$t('egw.balanced_by_link')" value="session"></el-option>
+          <el-option :label="$t('egw.balanced_by_originator_ip')" value="sip"></el-option>
         </el-select>
-        <div class="el-form-item__error c-warning" v-if="weight.policy === 'session'">若出现网银业务访问失败，请选择“基于源IP进行均衡”</div>
+        <div class="el-form-item__error c-warning" v-if="weight.policy === 'session'">{{$t('egw.balanced_by_originator_ip_tip')}}</div>
       </el-form-item>
       <!-- <el-form-item label="主接口" prop="intf" v-if="weight.mode === 'master'">
         <el-select class="w300" v-model="weight.intf">
@@ -79,12 +79,13 @@
         <el-form-item :key="`master_list_${i}`" v-for="(o, i) in weight.master_list.slice(0, switchValue)">
           <el-form-item :label="`WAN${i===0 ? '' : i }`" :prop="`master_list[${i}].m`" :rules="getMasterValidator(weight.enable)">
             <el-select :disabled="weight.enable==='0'" class="w120" v-model="o.m">
-              <el-option label="设为主接口" value="1"></el-option>
-              <el-option label="设为备接口" value="0"></el-option>
+              <el-option :label="$t('egw.interface_main_set')" value="1"></el-option>
+              <el-option :label="$t('egw.interface_second_set')" value="0"></el-option>
             </el-select>
           </el-form-item>
           <span>
-            <i class="c-danger mlr5">*</i>权重
+            <i class="c-danger mlr5">*</i>
+            {{$t('egw.weight')}}
           </span>
           <el-form-item :prop="`master_list[${i}].w`" :rules="getPositiveValidator(weight.enable)" label>
             <el-input :disabled="weight.enable==='0'" class="w120" v-model="o.w"></el-input>
@@ -93,7 +94,7 @@
       </template>
       <el-form-item
         :key="`weight_list_${i}`"
-        :label="`WAN${i===0 ? '' : i} 权重`"
+        :label="`WAN${i===0 ? '' : i} `+ $t('egw.weight')"
         :prop="`weight_list[${i}].w`"
         :rules="getPositiveValidator(weight.enable)"
         v-else
@@ -128,24 +129,24 @@ export default {
       weight: modelFn.wanWeightFn(),
       selectItems: [
         {
-          k: '电信',
-          v: '电信'
+          k: this.$t('egw.telecom'),
+          v: this.$t('egw.telecom')
         },
         {
-          k: '联通',
-          v: '联通'
+          k: this.$t('egw.unicom'),
+          v: this.$t('egw.unicom')
         },
         {
-          k: '移动',
-          v: '移动'
+          k: this.$t('egw.mobile'),
+          v: this.$t('egw.mobile')
         },
         {
-          k: '教育网',
-          v: '教育网'
+          k: this.$t('egw.maze'),
+          v: this.$t('egw.maze')
         },
         {
-          k: '其它',
-          v: '其它'
+          k: this.$t('egw.other'),
+          v: this.$t('egw.other')
         }
       ]
     }
@@ -224,7 +225,7 @@ export default {
         if (!this.isp.isp_list[i]) {
           this.isp.isp_list.push({
             ifname: `wan${i === 0 ? '' : i}`,
-            isp: '其它'
+            isp: this.$t('egw.other')
           })
         }
         // 补齐负载模式-均衡，默认"1"
@@ -292,19 +293,19 @@ export default {
     },
     getIspValidator(enable) {
       const ispCheck = (rule, value, cb) => {
-        if (value === '其它') {
+        if (value === this.$t('egw.other')) {
           return cb()
         }
         let _list = this.isp.isp_list
           .slice(0, this.switchValue)
-          .filter(o => o.isp !== '其它')
+          .filter(o => o.isp !== this.$t('egw.other'))
           .map(o => o.isp)
 
         if (
           _list.length >= 2 &&
           _list.indexOf(value) !== _list.lastIndexOf(value)
         ) {
-          cb('请选择不同的运营商')
+          cb(this.$t('egw.select_diffrent_operator'))
         } else {
           cb()
         }
@@ -324,9 +325,9 @@ export default {
         let _mlist = this.weight.master_list.slice(0, this.switchValue)
         let _flag = _mlist.reduce((a, b) => a + +b.m, 0)
         if (_flag === 0) {
-          cb('请至少设置一个主接口')
+          cb(this.$t('egw.select_more_interface_main'))
         } else if (_flag === _mlist.length) {
-          cb('请至少设置一个备接口')
+          cb(this.$t('egw.select_more_interface_second'))
         } else {
           cb()
         }
@@ -346,12 +347,16 @@ export default {
         return []
       } else {
         return [
-          { required: true, message: '请输入权重值', whitespace: true },
+          {
+            required: true,
+            message: this.$t('egw.weight_is_require'),
+            whitespace: true
+          },
           {
             validator: rangeValidator,
             min: 1,
             max: 100000,
-            message: '权重值范围1~100000'
+            message: this.$t('egw.weight_range')
           }
         ]
       }

@@ -1,84 +1,78 @@
 <template>
   <div class="home-userflow">
     <el-popover placement="bottom-end" ref="searchPopover" trigger="click" v-model="showSearch" width="400">
-      <el-form :model="query" label-width="90px" ref="form">
-        <el-form-item label="IP地址" size="small">
+      <el-form :model="query" label-width="90px" ref="form" size="medium">
+        <el-form-item :label="$t('egw.ip')">
           <el-input class="w260" v-model="query.userIp"></el-input>
         </el-form-item>
-        <el-form-item label="MAC地址" size="small">
+        <el-form-item :label="$t('egw.mac')">
           <el-input class="w260" v-model="query.mac"></el-input>
         </el-form-item>
-        <el-form-item label="名称" size="small">
+        <el-form-item :label="$t('egw.account')">
           <el-input class="w260" v-model="query.hostName"></el-input>
         </el-form-item>
-        <el-form-item label="接入类型" size="small">
+        <el-form-item :label="$t('egw.enter_type')">
           <el-select class="w260" v-model="query.connectType">
-            <el-option label="所有类型" value></el-option>
-            <el-option label="有线" value="wire"></el-option>
-            <el-option label="无线" value="wireless"></el-option>
-            <el-option label="未知" value="unknow"></el-option>
+            <el-option :label="$t('egw.all_type')" value></el-option>
+            <el-option :label="$t('egw.wire')" value="wire"></el-option>
+            <el-option :label="$t('egw.wireless')" value="wireless"></el-option>
+            <el-option :label="$t('egw.unknow')" value="unknow"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button @click="onSearchList()" type="primary">搜索</el-button>
-          <el-button @click="showSearch=false">取消</el-button>
+          <el-button @click="onSearchList" class="w120" type="primary">{{$t('phrase.search')}}</el-button>
+          <el-button @click="showSearch=false" class="w120">{{$t('action.cancel')}}</el-button>
         </el-form-item>
       </el-form>
     </el-popover>
-    <help-alert json-key="userOnlineJson" title="在线用户">
+    <help-alert :title="$t('egw.online_user')" json-key="userOnlineJson">
       <div slot="content">
         <p>
-          查看接入到本设备的终端（或主机）的连接信息，接入类型包含
-          <span class="c-warning">有线</span>、
-          <span class="c-warning">无线</span> 和
-          <span class="c-warning">未知</span>。
+          {{$t('egw.read_link_info_tip')}}
+          <span class="c-warning">{{$t('egw.wire')}}</span>{{$t('symbol.comma')}}
+          <span class="c-warning">{{$t('egw.wireless')}}</span>
+          {{$t('egw.and')}}
+          <span class="c-warning">{{$t('egw.unknow')}}</span>{{$t('symbol.period')}}
         </p>
-        <p>有线：可以识别出自组网里的EAP设备。</p>
-        <p>无线：可以识别出关联在自组网里EAP下的无线终端。</p>
-        <p>未知：除以上类型外其他终端都属于未知，可能是关联在其他AP的无线设备或是直连在内网的有线设备。</p>
+        <p>{{$t('egw.wire_tip')}}</p>
+        <p>{{$t('egw.wireless_tip')}}</p>
+        <p>{{$t('egw.unknow_tip')}}</p>
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          在线用户
+          {{$t('egw.online_user')}}
           <small></small>
         </span>
         <div class="fr">
-          <el-form size="small">
-            <!-- <el-input size="small" class="w220" clearable v-model="filter" placeholder="根据IP地址查找用户">
-              <el-button slot="append" icon="el-icon-search" @click.native="_initPage" size="small"></el-button>
-            </el-input>-->
-            <el-button @click="onRefresh" size="small" type="primary">
-              <i class="el-icon-refresh"></i>
-              <span>刷新</span>
-            </el-button>
-            <el-button size="small" type="primary" v-popover:searchPopover>
-              <span>高级搜索</span>
-            </el-button>
-          </el-form>
+          <!-- <el-input size="medium" class="w220" clearable v-model="filter" placeholder="根据IP地址查找用户">
+              <el-button slot="append" icon="el-icon-search" @click.native="_initPage"></el-button>
+          </el-input>-->
+          <el-button @click="onRefresh" icon="el-icon-refresh" plain size="medium" type="primary">{{$t('action.refresh')}}</el-button>
+          <el-button icon="el-icon-search" plain size="medium" type="primary" v-popover:searchPopover>{{$t('egw.search_advance')}}</el-button>
         </div>
       </div>
-      <el-table :data="pageList" class="has-banner" size="small" stripe>
-        <el-table-column align="center" label="IP地址" prop="userIp" width="130">
+      <el-table :data="pageList" class="has-banner" size="medium" stripe>
+        <el-table-column :label="$t('egw.account')" align="center" prop="hostName">
           <template slot-scope="{row}">
             <div class="banner-wrap">
-              {{ row.userIp }}
+              {{ row.hostName || '--'}}
               <div class="banner" v-if="currentIp===row.userIp">
-                <span>自己</span>
+                <span>{{$t('egw.self')}}</span>
               </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="MAC地址" prop="mac"></el-table-column>
-        <el-table-column label="名称" prop="hostName"></el-table-column>
-        <el-table-column label="接入类型">
+        <el-table-column :label="$t('egw.ip')" align="center" prop="userIp" width="130"></el-table-column>
+        <el-table-column :label="$t('egw.mac')" align="center" prop="mac"></el-table-column>
+        <el-table-column :label="$t('egw.enter_type')" align="center">
           <template slot-scope="{row}">
             <!-- <el-tag size="mini" v-if="row.userIp===currentIp">我</el-tag> -->
-            <el-tag size="mini" type="success" v-if="row.connectType==='wire'">有线</el-tag>
-            <el-tag size="mini" type="success" v-else-if="row.connectType==='wireless'">无线</el-tag>
-            <el-tag size="mini" type="info" v-else-if="row.connectType==='unknow'">未知</el-tag>
-            <el-tag size="mini" type="warning" v-else>未知</el-tag>
+            <el-tag size="mini" type="success" v-if="row.connectType==='wire'">{{$t('egw.wire')}}</el-tag>
+            <el-tag size="mini" type="success" v-else-if="row.connectType==='wireless'">{{$t('egw.wireless')}}</el-tag>
+            <el-tag size="mini" type="info" v-else-if="row.connectType==='unknow'">{{$t('egw.unknow')}}</el-tag>
+            <el-tag size="mini" type="warning" v-else>{[{{$t('egw.unknow')}}]}</el-tag>
           </template>
         </el-table-column>
         <!-- <el-table-column label="实时流量">
@@ -90,26 +84,26 @@
             <span v-else title="无线接入的用户才有此信息">--</span>
           </template>
         </el-table-column>-->
-        <el-table-column label="当前速率" min-width="110">
+        <el-table-column :label="$t('egw.speed_now')" align="left" min-width="110" v-if="!isEhr">
           <div slot-scope="scope">
-            <p>上行:{{ (scope.row.flowUp||0) | rateTrans }}bps</p>
-            <p>下行:{{ (scope.row.flowDown||0) | rateTrans }}bps</p>
+            <p>{{$t('egw.up')}}{{ (scope.row.flowUp||0) | rateTrans }}bps</p>
+            <p>{{$t('egw.down')}}{{ (scope.row.flowDown||0) | rateTrans }}bps</p>
           </div>
         </el-table-column>
-        <el-table-column label="无线信息">
+        <el-table-column :label="$t('egw.wireless_info')">
           <template slot-scope="{row}">
             <div v-if="row.connectType==='wireless'">
-              <p>信道：{{row.channel}}</p>
-              <p>信号强度：{{row.rssi}}</p>
-              <p>在线时间：{{ row.activeTime|formatTime }}</p>
-              <p>协商速率：{{ row.rxrate }}</p>
+              <p>{{$t('egw.channel')}}{{row.channel}}</p>
+              <p>{{$t('egw.rscp')}}{{row.rssi}}</p>
+              <p>{{$t('egw.online_times')}}{{ row.activeTime|formatTime }}</p>
+              <p>{{$t('egw.negotiation_rate')}}{{ row.rxrate }}</p>
             </div>
-            <span title="无线接入的用户才有此信息" v-else>--</span>
+            <span :title="$t('egw.info_by_link')" v-else>--</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="访问控制" width="80">
+        <el-table-column :label="$t('egw.acl')" align="center" width="80">
           <template slot-scope="scope">
-            <el-button @click.native="_onGoTimeLimit(scope.row)" type="text">前往</el-button>
+            <el-button @click.native="_onGoTimeLimit(scope.row)" size="medium" type="text">{{$t('egw.item')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -155,6 +149,11 @@ export default {
   filters: {
     rateTrans,
     formatTime
+  },
+  computed: {
+    isEhr() {
+      return this.$roles().includes('ehr')
+    }
   },
   methods: {
     // 加载用户流量

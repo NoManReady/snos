@@ -1,45 +1,65 @@
 <template>
   <div class="vpn-user-pool">
-    <help-alert json-key="vpnPoolJson" title="地址池管理">
+    <help-alert :title="$t('egw.pool.addr_zone_manage')" json-key="vpnPoolJson">
       <div slot="content">
-        被使用的IP地址池，不能执行
-        <span class="c-warning">删除</span>操作。
+        <i18n path="egw.pool.addr_zone_is_used">
+          <span class="c-warning">{{$t('action.delete')}}</span>
+        </i18n>
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          地址池列表
+          {{$t('egw.pool.addr_zone_tab')}}
           <small></small>
         </span>
         <div class="fr">
           <el-button
             :disabled="poolList.length>=MAX_NUM||isLoading"
             icon="el-icon-plus"
-            size="small"
+            plain
+            size="medium"
             type="primary"
             v-auth="_onAdd"
-          >新增</el-button>
-          <el-button :disabled="isLoading" icon="el-icon-delete" size="small" type="primary" v-auth="_onDel">批量删除</el-button>
+          >{{$t('action.add')}}</el-button>
+          <el-button
+            :disabled="isLoading"
+            icon="el-icon-delete"
+            plain
+            size="medium"
+            type="primary"
+            v-auth="_onDel"
+          >{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
       <div class="box-content">
         <help-alert :show-icon="false" title>
           <div slot="content">
-            最大支持配置
-            <b class="c-warning mlr5">{{MAX_NUM}}</b>个地址池。
+            <i18n path="tip.max_limit_f">
+                <b class="c-warning mlr5">{{MAX_NUM}}</b>
+            </i18n>
           </div>
         </help-alert>
-        <el-table :data="poolList" ref="baseTable" size="mini" stripe>
+        <el-table :data="poolList" ref="baseTable" size="medium" stripe>
           <el-table-column :selectable="row => row.active !== '1'" type="selection" width="55"></el-table-column>
-          <el-table-column align="center" label="地址池名称" prop="ippool_name"></el-table-column>
-          <el-table-column align="center" label="IP地址范围" prop="ipRange">
+          <el-table-column :label="$t('egw.pool.addr_zone_name')" align="center" prop="ippool_name"></el-table-column>
+          <el-table-column :label="$t('egw.ip_limit')" align="center" prop="ipRange">
             <template slot-scope="{row}">{{`${row.first_addr}-${row.end_addr}`}}</template>
           </el-table-column>
-          <el-table-column align="center" label="操作">
+          <el-table-column :label="$t('action.ope')" align="center">
             <template slot-scope="scope">
-              <el-button :disabled="isLoading" type="text" v-auth="{fn:_onEdit,params:scope.$index}">修改</el-button>
-              <el-button :disabled="isLoading || scope.row.active !== '0'" type="text" v-auth="{fn:_onDel,params:scope.row}">删除</el-button>
+              <el-button
+                :disabled="isLoading"
+                size="medium"
+                type="text"
+                v-auth="{fn:_onEdit,params:scope.$index}"
+              >{{$t('action.edit')}}</el-button>
+              <el-button
+                :disabled="isLoading || scope.row.active !== '0'"
+                size="medium"
+                type="text"
+                v-auth="{fn:_onDel,params:scope.row}"
+              >{{$t('action.delete')}}</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -54,16 +74,16 @@
         label-width="120px"
         ref="baseForm"
       >
-        <el-form-item label="地址池名称" placeholder="名称为1-28个字符" prop="ippool_name">
+        <el-form-item :label="$t('egw.pool.addr_zone_name')" :placeholder="$t('egw.rule_name_length_tip')" prop="ippool_name">
           <el-input :disabled="editIndex !== -1" class="w300" v-model="baseModel.ippool_name"></el-input>
         </el-form-item>
-        <el-form-item label="IP地址范围" prop="ipRange">
-          <el-input class="w300" placeholder="范围格式：1.1.1.1-1.1.1.100" v-model="baseModel.ipRange"></el-input>
+        <el-form-item :label="$t('egw.ip_limit')" prop="ipRange">
+          <el-input class="w300" placeholder="1.1.1.2-1.1.1.100" v-model="baseModel.ipRange"></el-input>
         </el-form-item>
       </el-form>
       <span class="dialog-footer" slot="footer">
-        <el-button @click="baseModalShow = false">取 消</el-button>
-        <el-button @click="_onModalConfirm" type="primary">确 定</el-button>
+        <el-button @click="baseModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+        <el-button @click="_onModalConfirm" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -89,7 +109,7 @@ export default {
       return this.editIndex === -1
     },
     modalTitle() {
-      return this.isAddPool ? '添加地址池' : '编辑地址池'
+      return this.isAddPool ? I18N.t('action.add') : I18N.t('action.edit')
     }
   },
   watch: {
@@ -126,12 +146,12 @@ export default {
         _items = [item]
       }
       if (!_items.length) {
-        this.$alert('请选择要删除的项目', {
+        this.$alert(I18N.t('tip.select_del_item'), {
           type: 'warning'
         })
         return
       }
-      this.$confirm('是否确认删除?', '提示', {
+      this.$confirm(I18N.t('tip.confirm_delete'), I18N.t('phrase.tip'), {
         type: 'warning'
       }).then(() => {
         this.isLoading = true
@@ -143,7 +163,7 @@ export default {
               this.poolList.splice(_index, 1)
             })
             this.$message({
-              message: '删除成功',
+              message: I18N.t('tip.del_success'),
               type: 'success'
             })
           })
@@ -188,7 +208,7 @@ export default {
             this.poolList.splice(this.editIndex, 1, _poolData)
           }
           this.$message({
-            message: '配置成功',
+            message: I18N.t('tip.edit1_success'),
             type: 'success'
           })
         })
@@ -202,5 +222,3 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-</style>

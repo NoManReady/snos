@@ -1,81 +1,84 @@
 <template>
   <div class="network-wan">
-    <help-alert json-key="wanJson" title="WAN设置">
-      <div slot="content">上网配置页面</div>
+    <help-alert :title="$t('network.wan_cfg')" json-key="wanJson">
+      <div slot="content">{{ $t("network.net_cfg_page") }}</div>
     </help-alert>
     <div class="pos-r" v-show="network.wan.length">
       <div class="mb20" v-if="showMultWan">
         <el-radio-group v-model="switchValue">
-          <template v-for="item in wanMaps">
-            <el-radio :key="item.label" :label="item.label" border>{{item.text}}</el-radio>
-          </template>
+          <el-radio-button :key="item.label" :label="item.label" border size="medium" v-for="item in wanMaps">{{item.text}}</el-radio-button>
         </el-radio-group>
       </div>
-      <el-tabs type="card" v-model="activeTab">
+      <el-tabs :class="{'hide-header': network.wan.length === 1}" type="card" v-model="activeTab">
         <el-tab-pane
           :key="index"
           :label="_getWanNum(index).toUpperCase()"
           :name="_getWanNum(index)"
-          v-for="(wan,index) in network.wan"
+          v-for="(wan, index) in network.wan"
         >
           <wan
-            :data="_getWanModel(wan,index)"
+            :data="_getWanModel(wan, index)"
+            :form-class="isMobile ? '' : 'w500'"
             :is-quick="false"
             :lan="network.lan"
-            :other-wans="_getOtherWans(network.wan,index)"
-            form-class="w500"
+            :other-wans="_getOtherWans(network.wan, index)"
+            :showMultWan="showMultWan"
             label-pos="right"
             ref="baseWanRef"
             type="select"
           >
-            <div slot-scope="{baseModel}" v-if="baseModel.proto==='dhcp'||baseModel.proto==='pppoe'">
-              <el-form-item label="IP地址">
+            <div slot-scope="{ baseModel }" v-if="baseModel.proto === 'dhcp' || baseModel.proto === 'pppoe'">
+              <el-form-item :label="$t('sysinfo.ip_addr')">
                 <label
                   class="c-info"
                   v-if="baseModel.ipaddr"
-                >{{_getInfoCompare(originProtos[index]!=baseModel.proto||!baseModel.ipaddr,baseModel.ipaddr)}}</label>
+                >{{ _getInfoCompare(originProtos[index] != baseModel.proto || !baseModel.ipaddr, baseModel.ipaddr) }}</label>
                 <label v-else>
                   <i class="el-icon-loading fs16"></i>
                 </label>
               </el-form-item>
-              <el-form-item label="子网掩码">
+              <el-form-item :label="$t('sysinfo.mask')">
                 <label
                   class="c-info"
-                >{{_getInfoCompare(originProtos[index]!=baseModel.proto||!baseModel.netmask,baseModel.netmask)}}</label>
+                >{{ _getInfoCompare(originProtos[index] != baseModel.proto || !baseModel.netmask, baseModel.netmask) }}</label>
               </el-form-item>
-              <el-form-item label="网关">
+              <el-form-item :label="$t('sysinfo.gateway_addr')">
                 <label
                   class="c-info"
-                >{{_getInfoCompare(originProtos[index]!=baseModel.proto||!baseModel.gateway,baseModel.gateway)}}</label>
+                >{{ _getInfoCompare(originProtos[index] != baseModel.proto || !baseModel.gateway, baseModel.gateway) }}</label>
               </el-form-item>
-              <el-form-item label="DNS服务器">
-                <label class="c-info">{{_getInfoCompare(originProtos[index]!=baseModel.proto||!baseModel.dns,baseModel.dns)}}</label>
+              <el-form-item :label="$t('sysinfo.dns_addr')">
+                <label
+                  class="c-info"
+                >{{ _getInfoCompare(originProtos[index] != baseModel.proto || !baseModel.dns, baseModel.dns) }}</label>
               </el-form-item>
             </div>
           </wan>
         </el-tab-pane>
-        <el-tab-pane label="运营商/负载设置" name="isp" v-if="network.wan.length>=2">
+        <el-tab-pane :label="$t('network.isp_cfg')" name="isp" v-if="network.wan.length >= 2">
           <isp :switch-value="+switchValue" label-pos="right" ref="ispRef"></isp>
         </el-tab-pane>
       </el-tabs>
-      <el-form>
-        <el-form-item label-width="160px">
-          <el-button class="w200" type="primary" v-auth="onSubmit">提交</el-button>
+      <el-form :label-width="isMobile ? '105px' : '160px'">
+        <el-form-item>
+          <el-button class="w160" size="medium" type="primary" v-auth="onSubmit">{{ $t("action.save") }}</el-button>
         </el-form-item>
       </el-form>
     </div>
   </div>
 </template>
 <script>
-import Wan from '#/Wan'
+import Wan from './components/Wan'
 import Isp from '@/views/egw/Isp'
 import { deepClone, getRandomMac } from '@/utils/utils'
 import { sleep } from '@/utils'
 import { getType } from '@/utils/utils'
+import { isAuth } from '@/directives/auth'
 export default {
   name: 'NetworkWan',
   data() {
     return {
+      isMobile: !!ISMOBILE,
       timer: true,
       network: {
         wan: []
@@ -83,6 +86,7 @@ export default {
       staticWans: Object.freeze([]),
       activeTab: 'wan',
       switchValue: '1',
+      unwatch: false,
       originWans: Object.freeze([]),
       wanPreDatas: Object.freeze([])
     }
@@ -100,10 +104,10 @@ export default {
     },
     wanMaps() {
       return [
-        { label: '1', text: '单线路' },
-        { label: '2', text: '双线路' },
-        { label: '3', text: '三线路' },
-        { label: '4', text: '四线路' }
+        { label: '1', text: I18N.t('network.single_line') },
+        { label: '2', text: I18N.t('network.double_line') },
+        { label: '3', text: I18N.t('network.three_line') },
+        { label: '4', text: I18N.t('network.four_line') }
       ].slice(0, this.supportWanNum)
     },
     isEgw() {
@@ -146,19 +150,31 @@ export default {
       //   }
       // })
     },
-    switchValue(v) {
-      let _newIndex = parseInt(v)
-      this._syncWanData()
-      let _newWans = deepClone(this.network.wan).slice(0, _newIndex)
-      while (_newWans.length < _newIndex) {
-        _newWans.push(this.wanPreDatas[_newWans.length])
-      }
-      this.network.wan = _newWans
-      this.$set(this.network, 'wanNum', v)
+    switchValue(v, ov) {
+      !this.unwatch &&
+        isAuth().then(
+          _ => {
+            let _newIndex = parseInt(v)
+            this._syncWanData()
+            let _newWans = deepClone(this.network.wan).slice(0, _newIndex)
+            while (_newWans.length < _newIndex) {
+              _newWans.push(this.wanPreDatas[_newWans.length])
+            }
+            this.network.wan = _newWans
+            this.$set(this.network, 'wanNum', v)
 
-      this.$nextTick(() => {
-        this.activeTab = this._getWanNum(_newIndex - 1)
-      })
+            this.$nextTick(() => {
+              this.activeTab = this._getWanNum(_newIndex - 1)
+            })
+          },
+          _ => {
+            this.unwatch = true
+            this.switchValue = ov
+            this.$nextTick(_ => {
+              this.unwatch = false
+            })
+          }
+        )
     }
   },
   methods: {
@@ -236,8 +252,9 @@ export default {
         _model.username = baseModel.username
         delete _model.vlanid
       }
-      if (this.isEgw) {
+      if (this.showMultWan) {
         _model.metric = (+baseModel.metric || 0) + ''
+        _model.special_line = (+baseModel.special_line || 0) + ''
       }
       return _model
     },
@@ -328,12 +345,12 @@ export default {
               this.originWans = Object.freeze(deepClone(this.network.wan || []))
             }
             this.$message({
-              message: '设置成功',
+              message: I18N.t('tip.edit1_success'),
               type: 'success'
             })
           })
           .catch(([{ tab, index }]) => {
-            this.$message.warning('配置参数校验不通过，请按提示修改。')
+            this.$message.warning(I18N.t('network.cfg_valid_err'))
             this.activeTab = tab
             if (tab !== 'isp') {
               this.$refs.baseWanRef[index].easyConf = false
@@ -378,3 +395,10 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+.el-tabs.hide-header {
+  .el-tabs__header {
+    display: none;
+  }
+}
+</style>

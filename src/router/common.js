@@ -1,5 +1,6 @@
 import store from '@/store'
 import { log } from '@/utils'
+import router from '@/router'
 
 const Err404 = () =>
   import('@/views/common/404')
@@ -98,13 +99,21 @@ export const getAllRoutes = () => {
       path: '*',
       name: 'redirect',
       redirect: () => {
-        // 初始进入且自动登录INITPATH
-        if (window.INITPATH) {
-          // 待修改：这个initpath如果不存在就会死循环
-          return INITPATH
+        let _initpath = ISMOBILE ? 'm/main' : window.INITPATH
+        if (window.PROXY.hideHead !== 'true') {
+          if (!window.APP_ROLES.includes('slave') && window.APP_NETWORK_ID.networkId === '0') {
+            _initpath = ISMOBILE ? 'm/quick' : 'quickmacc'
+          }
+          if (!window.APP_ROLES.includes('master') && window.APP_ROLES.includes("egw")) {
+            _initpath = "admin/alone"
+          }
+          if (!_initpath && window.APP_ROLES.includes('ehr')) {
+            _initpath = "admin/alone"
+          }
         }
-        if (window.APP_ROLES.includes('slave') && window.APP_ROLES.includes("egw")) {
-          return "admin/alone"
+        // 判断是否存在initpath
+        if (_initpath && router.getMatchedComponents({ name: _initpath }).length > 0) {
+          return _initpath
         }
         log(getFirstLeaf(store.getters.menus))
         return getFirstLeaf(store.getters.menus)

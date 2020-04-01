@@ -3,33 +3,39 @@
     :element-loading-text="loadingText"
     class="backup-tab"
     element-loading-background="rgba(0, 0, 0, .1)"
-    element-loading-custom-class="eweb-loading"
     element-loading-spinner="el-icon-loading"
     v-loading.fullscreen="loading"
   >
-    <help-alert json-key="backupJson" title="备份与导出">
+    <help-alert :title="$t('systool.back_and_import')" json-key="backupJson">
       <div slot="content">
-        <p class="mt10">如果您导入的配置文件版本与现有版本差距过大，有可能导致配置信息丢失。</p>
-        <p class>
-          导入配置前建议先
-          <span @click="onToRecover" class="c-success pointer">恢复出厂</span>再导入配置！导入配置信息后，设备将自动重启。
-        </p>
+        <p class="mt10">{{ $t("systool.back_diff_tip") }}</p>
+        <i18n path="systool.back_export_tip" tag="p">
+          <span @click="onToRecover" class="c-success pointer">
+            {{
+            $t("systool.reset")
+            }}
+          </span>
+        </i18n>
       </div>
     </help-alert>
     <div class="box-header">
-      <span class="box-header-tit">备份配置信息</span>
+      <span class="box-header-tit">{{ $t("systool.back_cfg_info") }}</span>
     </div>
-    <el-form label-width="120px">
-      <el-form-item label="备份配置">
-        <el-button @click.native="onBackup" size="small w100" type="primary">备份</el-button>
+    <el-form label-width="160px" size="medium">
+      <el-form-item :label="$t('systool.back_cfg')">
+        <el-button @click.native="onBackup" class="w120" type="primary">
+          {{
+          $t("systool.backup")
+          }}
+        </el-button>
       </el-form-item>
     </el-form>
 
     <div class="box-header">
-      <span class="box-header-tit">导入配置信息</span>
+      <span class="box-header-tit">{{ $t("systool.export_cfg_info") }}</span>
     </div>
-    <el-form label-width="120px" ref="baseForm">
-      <el-form-item class="vm" label="文件路径">
+    <el-form label-width="160px" ref="baseForm" size="medium">
+      <el-form-item :label="$t('systool.file_path')" class="vm">
         <el-upload
           :accept="accept"
           :action="actionUrl"
@@ -47,10 +53,19 @@
           ref="baseUpload"
         >
           <div slot="trigger">
-            <el-input :value="file.name" class="w200" placeholder="请选择配置包" readonly size="small"></el-input>
-            <el-button size="small w100" type="primary">浏览</el-button>
+            <el-input :placeholder="$t('systool.select_bin')" :value="file.name" class="w200" readonly></el-input>
+            <el-button class="w120" plain type="primary">
+              {{
+              $t("systool.view")
+              }}
+            </el-button>
           </div>
-          <el-button :disabled="!file.name" @click.native.stop="onSubmit" class="ml5 w100" size="small" type="primary">导入</el-button>
+          <el-button
+            :disabled="!file.name"
+            @click.native.stop="onSubmit"
+            class="ml5 w120"
+            type="primary"
+          >{{ $t("systool.import") }}</el-button>
         </el-upload>
       </el-form-item>
     </el-form>
@@ -66,7 +81,7 @@ export default {
   data() {
     return {
       loading: false,
-      loadingText: '上传中...',
+      loadingText: I18N.t('systool.uploading'),
       accept: '.gz',
       baseModel: {},
       file: {},
@@ -101,7 +116,7 @@ export default {
       this.loading = false
       this.file = {}
       if (res.code === 0) {
-        awaitOnLine(30000, '配置恢复中...').then(() => {
+        awaitOnLine(30000, I18N.t('systool.restoreing')).then(() => {
           window.top.location.reload()
         })
       } else {
@@ -109,7 +124,7 @@ export default {
           showClose: true,
           type: 'error',
           duration: 5000,
-          message: '请上传正确的配置包'
+          message: I18N.t('systool.require_valid_bin')
         })
       }
     },
@@ -122,7 +137,7 @@ export default {
         showClose: true,
         type: 'error',
         duration: 0,
-        message: '文件上传失败，请重新上传'
+        message: I18N.t('systool.file_upgrade_fail')
       })
     },
     // 上传文件前
@@ -135,19 +150,25 @@ export default {
       if (e.percent) {
         let _persent = e.percent.toFixed(0)
         if (_persent < 100) {
-          this.loadingText = `上传中（${e.percent.toFixed(0)}%）`
+          this.loadingText = I18N.t('systool.upload_per', {
+            n: e.percent.toFixed(0)
+          })
         } else {
-          this.loadingText = `上传成功`
+          this.loadingText = I18N.t('systool.upload_success')
         }
       }
     },
     // 上传文件至服务器
     onSubmit() {
-      this.$confirm('确定导入配置并重启设备？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'info'
-      }).then(() => {
+      this.$confirm(
+        I18N.t('systool.back_import_confirm'),
+        I18N.t('phrase.tip'),
+        {
+          confirmButtonText: I18N.t('action.confirm'),
+          cancelButtonText: I18N.t('action.cancel'),
+          type: 'info'
+        }
+      ).then(() => {
         this.loading = true
         this.$refs.baseUpload.submit()
       })
@@ -161,14 +182,12 @@ export default {
       formSubmit(_backupUrl, { method: 'backupConfig' })
     },
     onToRecover() {
-      if (this.$roles().includes('alone')) {
-        this.$parent.tabValue = '1'
-      } else {
-        this.$router.push({ name: 'admin/alone/systool/recover' })
-      }
+      this.$router.push({
+        name: 'admin/alone/systool/systool_recover',
+        query: { tab: '1' }
+      })
     }
   }
 }
 </script>
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

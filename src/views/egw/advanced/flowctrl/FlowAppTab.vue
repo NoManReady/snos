@@ -1,92 +1,93 @@
 <template>
   <div class="advanced-flowapp-tab">
-    <help-alert json-key="flowAppJson" title="应用流控">
+    <help-alert json-key="flowAppJson" :title="$t('egw.flowctrl.application_flow_control')">
       <div slot="content">
-        <strong class="c-warning">注意！修改配置后，请点击“保存配置”按钮，才会下发配置到设备生效！</strong>
+        <strong class="c-warning">{{$t('egw.flowctrl.set_config_success_by_save_tip')}}</strong>
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          应用流控列表
+          {{$t('egw.flowctrl.application_flow_control_tab')}}
           <small></small>
         </span>
         <div class="fr">
           <el-button @click.native="onEdit(-1)" size="small" type="primary">
             <i class="el-icon-plus"></i>
-            <span>新增</span>
+            <span>{{$t('action.add')}}</span>
           </el-button>
           <el-button @click.native="onBatchDel" size="small" type="primary">
             <i class="el-icon-delete"></i>
-            <span>批量删除</span>
+            <span>{{$t('action.patch_delete')}}</span>
           </el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{MAX_NUM}}</b>条策略。
+          <i18n path="egw.limit_num_tip">
+              <b class="c-warning mlr5">{{MAX_NUM}}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="strategy.list" ref="multipleTable" size="small" stripe>
+      <el-table :data="strategy.list" ref="multipleTable" size="medium" stripe>
         <el-table-column align="center" type="selection" width="50"></el-table-column>
-        <el-table-column align="center" label="流控名称" prop="comment"></el-table-column>
-        <el-table-column align="center" label="应用名称" prop="appName"></el-table-column>
-        <el-table-column align="center" label="上行带宽" min-width="140px">
+        <el-table-column align="center" :label="$t('egw.flowctrl.name_flow_control')" prop="comment"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.flowctrl.app_name')" prop="appName"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.up_rate')" min-width="140px">
           <template slot-scope="scope">
-            <div>保证 {{scope.row.upRateG}} Kbps</div>
-            <div>最大 {{scope.row.upRate}} Kbps</div>
+            <div>{{$t('egw.flowctrl.ensure')}} {{scope.row.upRateG}} Kbps</div>
+            <div>{{$t('egw.flowctrl.bigest')}} {{scope.row.upRate}} Kbps</div>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="下行带宽" min-width="140px">
+        <el-table-column align="center" :label="$t('egw.down_rate')" min-width="140px">
           <template slot-scope="scope">
-            <div>保证 {{scope.row.downRateG}} Kbps</div>
-            <div>最大 {{scope.row.downRate}} Kbps</div>
+            <div>{{$t('egw.flowctrl.ensure')}} {{scope.row.downRateG}} Kbps</div>
+            <div>{{$t('egw.flowctrl.bigest')}} {{scope.row.downRate}} Kbps</div>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="状态" prop="enable">
+        <el-table-column align="center" :label="$t('phrase.status')" prop="enable">
           <template slot-scope="scope">
             <div @click="toggleStatus(scope.row,scope.$index)" class="toggle-status pointer">
               <span class="c-success" v-if="scope.row.enable==='on'">
-                启用
+                {{$t('phrase.enable')}}
                 <i class="el-icon-circle-check"></i>
               </span>
               <span class="c-danger" v-else>
-                关闭
+                {{$t('phrase.disable')}}
                 <i class="el-icon-remove"></i>
               </span>
             </div>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="匹配顺序" v-if="strategy.list.length > 1">
+        <el-table-column align="center" :label="$t('egw.matching_order')" v-if="strategy.list.length > 1">
           <template slot-scope="scope">
-            <span @click="onMoveUp(scope.$index)" class="pointer c-success pr10" title="上移" v-if="scope.$index > 0">
+            <span @click="onMoveUp(scope.$index)" class="pointer c-success pr10" :title="$t('egw.move_up')" v-if="scope.$index > 0">
               <i class="el-icon-sort-up"></i>
             </span>
             <span
               @click="onMoveDown(scope.$index)"
               class="pointer c-success"
-              title="下移"
+              :title="$t('egw.move_down')"
               v-if="scope.$index < strategy.list.length-1"
             >
               <i class="el-icon-sort-down"></i>
             </span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作" min-width="100px">
+        <el-table-column align="center" :label="$t('action.ope')" min-width="100px">
           <template slot-scope="scope">
-            <el-button @click.native="onEdit(scope.$index, scope.row)" type="text">修改</el-button>
-            <el-button @click.native="onDel(scope.$index)" type="text">删除</el-button>
+            <el-button @click.native="onEdit(scope.$index, scope.row)" size="medium" type="text">{{$t('action.edit')}}</el-button>
+            <el-button @click.native="onDel(scope.$index)" size="medium" type="text">{{$t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
       <!-- strategy编辑 -->
       <el-dialog :model="baseModel" :title="modalTitle" :visible.sync="strategyModalShow" width="600px">
-        <el-form :inline="true" :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm">
-          <el-form-item label="流控名称" prop="comment">
+        <el-form :inline="true" :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('egw.flowctrl.name_flow_control')" prop="comment">
             <el-input class="w320" v-model="baseModel.comment"></el-input>
           </el-form-item>
-          <el-form-item label="选择应用" prop="appName">
+          <el-form-item :label="$t('egw.flowctrl.select_application')" prop="appName">
             <treeselect
               :multiple="false"
               :options="appTree"
@@ -96,33 +97,33 @@
               v-model="baseModel.appName"
             />
           </el-form-item>
-          <el-form-item label="上行带宽">
-            <el-form-item label="保证" label-width="54px" prop="upRateG">
+          <el-form-item :label="$t('egw.up_rate')">
+            <el-form-item :label="$t('egw.flowctrl.ensure')" label-width="54px" prop="upRateG">
               <el-input @change="onValidateField('upRate')" class="w100" v-model="baseModel.upRateG"></el-input>
             </el-form-item>
-            <el-form-item label="最大" label-width="54px" prop="upRate">
+            <el-form-item :label="$t('egw.flowctrl.bigest')" label-width="54px" prop="upRate">
               <el-input @change="onValidateField('upRateG')" class="w100" v-model="baseModel.upRate"></el-input>Kbps
             </el-form-item>
           </el-form-item>
-          <el-form-item label="下行带宽">
-            <el-form-item label="保证" label-width="54px" prop="downRateG">
+          <el-form-item :label="$t('egw.down_rate')">
+            <el-form-item :label="$t('egw.flowctrl.ensure')" label-width="54px" prop="downRateG">
               <el-input @change="onValidateField('downRate')" class="w100" v-model="baseModel.downRateG"></el-input>
             </el-form-item>
-            <el-form-item label="最大" label-width="54px" prop="downRate">
+            <el-form-item :label="$t('egw.flowctrl.bigest')" label-width="54px" prop="downRate">
               <el-input @change="onValidateField('downRateG')" class="w100" v-model="baseModel.downRate"></el-input>Kbps
             </el-form-item>
           </el-form-item>
-          <el-form-item label="状态" prop="enable">
+          <el-form-item :label="$t('phrase.status')" prop="enable">
             <el-switch active-value="on" inactive-value="off" v-model="baseModel.enable"></el-switch>
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click="strategyModalShow = false">取 消</el-button>
-          <el-button @click="onModalConfirm" type="primary">确 定</el-button>
+          <el-button @click="strategyModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button @click="onModalConfirm" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
       <div class="tc mt20">
-        <el-button class="w200" type="primary" v-auth="onSubmit">保存配置</el-button>
+        <el-button class="w160" size="medium" type="primary" v-auth="onSubmit">{{$t('action.save_edit')}}</el-button>
       </div>
     </div>
   </div>
@@ -141,7 +142,7 @@ export default {
         cb()
       }
       if (!isBetween(val, 1, 10000000)) {
-        cb(new Error('范围1~10000000'))
+        cb(new Error(this.$t('egw.flowctrl.band_range')))
       }
       cb()
     }
@@ -153,29 +154,29 @@ export default {
       let m = this.baseModel
       if (isUp) {
         if (m.upRate && m.upRateG && m.upRate - m.upRateG < 0) {
-          cb(new Error(rule.message || '数据错误'))
+          cb(new Error(rule.message || this.$t('egw.error_data')))
         }
       } else {
         if (m.downRate && m.downRateG && m.downRate - m.downRateG < 0) {
-          cb(new Error(rule.message || '数据错误'))
+          cb(new Error(rule.message || this.$t('egw.error_data')))
         }
       }
       cb()
     }
     const _getRules = isG => {
       return [
-        { required: true, message: isG ? '请输入保证带宽' : '请输入最大带宽' },
-        { validator: intValidator, message: '请输入正整数' },
+        { required: true, message: isG ? this.$t('egw.flowctrl.enter_ensure_rate') : this.$t('egw.flowctrl.enter_bigest_rate') },
+        { validator: intValidator, message: this.$t('egw.enter_positive_integer') },
         { validator: _flowValidator },
         {
           validator: _bandCompare,
-          message: isG ? '请小于最大带宽' : '请大于保证带宽'
+          message: isG ? this.$t('egw.flowctrl.less_then_bigest_rate') : this.$t('egw.flowctrl.more_then_bigest_rate')
         }
       ]
     }
     const _sameNameValidate = (r, v, cb) => {
       if (v != this.curEdit.name && this.nameMap[v])
-        return cb(new Error('规则名称已存在'))
+        return cb(new Error( this.$t('egw.rule_name_is_duplication') ))
       cb()
     }
     // const _oneAppValidator = (r, v, cb) => {
@@ -198,7 +199,7 @@ export default {
       baseModel: model.flowappFn(),
       baseRules: {
         appName: [
-          { required: true, message: '请选择应用' }
+          { required: true, message: this.$t('egw.flowctrl.select_application') }
           // { validator: _oneAppValidator }
         ],
         upRate: _getRules(false),
@@ -206,8 +207,8 @@ export default {
         downRate: _getRules(false),
         downRateG: _getRules(true),
         comment: [
-          { required: true, message: '请输入规则名称' },
-          { range: true, min: 1, max: 28, message: '规则名称为1-28个字符' },
+          { required: true, message: this.$t('egw.enter_rule_name') },
+          { range: true, min: 1, max: 28, message: this.$t('egw.rule_name_length_tip') },
           { validator: _sameNameValidate },
           { validator: quoteValidator }
         ]
@@ -261,29 +262,29 @@ export default {
     onEdit(index, item = {}) {
       let isAdd = index < 0
       if (isAdd && this.strategy.list.length >= this.MAX_NUM)
-        return this.$message.warning(`最多支持添加 ${this.MAX_NUM} 条策略`)
+        return this.$message.warning( this.$t('egw.limit_num_tip3',{num: this.MAX_NUM}) )
       this.curEdit = {
         idx: index,
         name: item ? item.comment : ''
       }
-      this.modalTitle = isAdd ? '添加' : '编辑'
+      this.modalTitle = isAdd ? this.$t('action.add'): this.$t('action.edit')
       this.strategyModalShow = true
       this.baseModel = Object.assign(model.flowappFn(), item)
       this._clearValidate()
     },
     // 删除策略
     onDel(index) {
-      this.$confirm('是否确认删除？').then(_ => {
+      this.$confirm( this.$t('tip.confirm_delete')).then(_ => {
         this.strategy.list.splice(index, 1)
       })
     },
     onBatchDel() {
       let selection = this.$refs.multipleTable.selection
       if (!selection.length) {
-        return this.$message.warning('请选择要删除的列表项')
+        return this.$message.warning(this.$t('tip.select_del_item'))
       }
 
-      this.$confirm('是否确认删除？')
+      this.$confirm(this.$t('tip.confirm_delete'))
         .then(() => {
           selection = selection.map(item => item.comment)
           let _data = this.strategy.list.filter(item => {
@@ -335,14 +336,14 @@ export default {
     // 保存配置
     onSubmit() {
       if (this.originListString === JSON.stringify(this.strategy.list)) {
-        return this.$message('配置未修改')
+        return this.$message(this.$t('egw.config_is_no_edit'))
       }
       let _list = [].concat(this.strategy.list).reverse()
       this.$api.setFlowApp({ list: _list }).then(() => {
         this.originListString = JSON.stringify(this.strategy.list)
         this.$message({
           type: 'success',
-          message: '设置成功'
+          message: this.$t('tip.edit1_success')
         })
       })
     }

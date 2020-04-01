@@ -3,14 +3,18 @@ import * as api from './api'
 /**
  * 获取ap列表版本信息
  */
-export const getAplist = query => {
-  return api.cmd('devSta.get', { module: 'ap_list', data: query })
+export const getAplist = (query = {}) => {
+  let _params = { module: 'ap_list' }
+  if (Object.keys(query).length > 0) {
+    _params.data = query
+  }
+  return api.cmd('devSta.get', _params, { noParse: true })
 }
 /**
  * 获取ap列表版本信息精简版
  */
 export const getAplistLite = query => {
-  return api.cmd('devSta.get', { module: 'ap_list_lite', data: query })
+  return api.cmd('devSta.get', { module: 'ap_list_lite', data: query }, { noParse: true })
 }
 /**
  * 升级ap列表
@@ -86,8 +90,8 @@ export const getStaListLite = query => {
 export const getMacBwList = (isSilence = false) => {
   return api.cmd(
     'acConfig.get', {
-      module: 'wirelessMacFilter'
-    }, { isSilence }
+    module: 'wirelessMacFilter'
+  }, { isSilence }
   )
 }
 
@@ -97,9 +101,9 @@ export const getMacBwList = (isSilence = false) => {
 export const addMacBwList = (data, isSilence = false) => {
   return api.cmd(
     'acConfig.add', {
-      module: 'wirelessMacFilter',
-      data
-    }, { isSilence }
+    module: 'wirelessMacFilter',
+    data
+  }, { isSilence }
   )
 }
 
@@ -109,9 +113,9 @@ export const addMacBwList = (data, isSilence = false) => {
 export const updateMacBwList = (data, isSilence = false) => {
   return api.cmd(
     'acConfig.update', {
-      module: 'wirelessMacFilter',
-      data
-    }, { isSilence }
+    module: 'wirelessMacFilter',
+    data
+  }, { isSilence }
   )
 }
 
@@ -121,9 +125,9 @@ export const updateMacBwList = (data, isSilence = false) => {
 export const delMacBwList = (data, isSilence = false) => {
   return api.cmd(
     'acConfig.del', {
-      module: 'wirelessMacFilter',
-      data
-    }, { isSilence }
+    module: 'wirelessMacFilter',
+    data
+  }, { isSilence }
   )
 }
 
@@ -133,9 +137,9 @@ export const delMacBwList = (data, isSilence = false) => {
 export const setMacBwList = params => {
   return api.cmd(
     'acConfig.set', {
-      module: 'wirelessMacFilter',
-      data: params
-    }
+    module: 'wirelessMacFilter',
+    data: params
+  }
   )
 }
 /**
@@ -158,7 +162,7 @@ export const getCapWireless = (auth = {}) => {
  * 设置radio信息
  */
 export const setRadio = (data, auth = {}) => {
-  return api.cmd('devConfig.set', {
+  return api.cmd('devConfig.update', {
     module: 'radio',
     data,
     ...auth

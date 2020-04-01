@@ -1,49 +1,50 @@
 <template>
   <div class="component-overview-ifaceinfo">
-    <help-alert json-key="vlanPortJson" title="端口VLAN" type="info">
+    <help-alert :title="$t('network.port_vlan')" json-key="vlanPortJson" type="info">
       <div class="h30" slot="content">
-        请先在
-        <a @click="$parent.tabValue='0'" class="c-success pointer" href="javascript:void();">LAN设置</a> 里增加VLAN，然后在本页面里设置基于VLAN的端口配置。
+        <i18n path="network.vlan_port_tip">
+          <a @click="$parent.tabValue = '0'" class="c-success pointer" href="javascript:void();">{{ $t("network.lan_cfg") }}</a>
+        </i18n>
       </div>
     </help-alert>
     <div class="box-header">
-      <span class="box-header-tit">端口VLAN</span>
+      <span class="box-header-tit">{{ $t("network.port_vlan") }}</span>
     </div>
     <div class="component-overview-ifaceinfo-port tc" v-show="portStatus.length">
       <div class="port-wrap-container">
         <div class="port-wrap vm">
           <i class="rjucd-upport vm on"></i>
-          <span class="vm">已连接</span>
+          <span class="vm">{{ $t("phrase.connection") }}</span>
         </div>
         <div class="port-wrap vm ml20">
           <i class="rjucd-upport vm off"></i>
-          <span class="vm">未连接</span>
+          <span class="vm">{{ $t("phrase.disconnection") }}</span>
         </div>
       </div>
       <el-row :gutter="10" class="mt15" justify="star" type="flex">
         <el-col class="mw w90"></el-col>
-        <el-col :key="k" :lg="spanLg" :sm="spanSm" :xs="spanXs" class="mw" v-for="(p,k) in portStatus">
+        <el-col :key="k" :lg="spanLg" :sm="spanSm" :xs="spanXs" class="mw" v-for="(p, k) in portStatus">
           <el-popover :key="p.portId" @after-leave="_onPopHide" placement="top" popper-class="pop-class" trigger="click">
             <div>
               <!-- <p>{{`${p.name} ${p.name === 'LAN' ? p.portId - 1 : ''}`}}</p> -->
-              <p>速率：{{p.speed==='auto'?'自动':(p.speed||0)+'M'}}</p>
-              <template v-if="p.poe_direct!=='none'">
-                <p>POE：{{p.poe_enable==='0'?'未启用':'启用'}}({{p.poe_direct==='in'?'受电':'供电'}})</p>
+              <p>{{ $t("network.speed_f") }}{{ p.speed === "auto" ? $t("phrase.auto") : (p.speed || 0) + "M" }}</p>
+              <template v-if="p.poe_direct !== 'none'">
+                <p>POE：{{ p.poe_enable === "0" ? $t("network.disable"): $t("network.enable") }}({{ p.poe_direct === "in" ? $t("network.receive_power") : $t("network.supply_power") }})</p>
               </template>
               <p class="w180">
-                描述：
+                {{ $t("network.desc_f") }}
                 <span v-show="isEditDes">
                   <el-input class="w100 lh" ref="portDes" size="mini" v-model="curPortDes"></el-input>
-                  <i @click="_onSavePortDes(p.portId - 1)" class="pointer c-success">保存</i>
+                  <i @click="_onSavePortDes(p.portId - 1)" class="pointer c-success">{{ $t("action.save") }}</i>
                 </span>
                 <span @click="_onEditPortDes(p.portId - 1)" class="c-success pointer" v-show="!isEditDes">
-                  <label class="pointer">{{ (portInfo[p.portId - 1] || {}).des || ''}}</label>
+                  <label class="pointer">{{ (portInfo[p.portId - 1] || {}).des || "" }}</label>
                   <i class="el-icon-edit"></i>
                 </span>
               </p>
             </div>
             <port :port="p" class="component-overview-ifaceinfo-port-item" slot="reference">
-              <strong class="c-success" slot="bottom" slot-scope="{port}">端口 {{port.portId - 1}}</strong>
+              <strong class="c-success" slot="bottom" slot-scope="{ port }">{{ $t("esw.dhcp.port_tip", { p: port.portId - 1 }) }}</strong>
             </port>
           </el-popover>
         </el-col>
@@ -58,22 +59,22 @@
       >
         <el-col class="mw w90">
           <el-popover :key="i" placement="top" trigger="hover">
-            <p>备注：{{vlanMap[vlan.vlanid] && vlanMap[vlan.vlanid].desc || "-"}}</p>
-            <div slot="reference">{{vlan.vlanid === '233' ? '默认VLAN' : `VLAN ${vlan.vlanid}`}}</div>
+            <p>{{ $t("phrase.remark_f") }}{{ (vlanMap[vlan.vlanid] && vlanMap[vlan.vlanid].desc) || "-" }}</p>
+            <div slot="reference">{{ vlan.vlanid === "233" ? $t("network.def_vlan") : `VLAN ${vlan.vlanid}` }}</div>
           </el-popover>
         </el-col>
         <el-col :key="idx" :lg="spanLg" :sm="spanSm" :xs="spanXs" class="mw" v-for="idx in portStatus.length">
           <el-select
-            :class="typeMap[vlan.port[idx-1]].clazz"
+            :class="typeMap[vlan.port[idx - 1]].clazz"
             :disabled="vlan.vlanid === '233' && idx === 1"
+            :placeholder="$t('action.select')"
             @change="_onChange"
             class="w90"
-            placeholder="请选择"
             size="mini"
-            v-model="vlan.port[idx-1]"
+            v-model="vlan.port[idx - 1]"
           >
             <el-option
-              :disabled="_isDisabled(vlan, idx-1, key)"
+              :disabled="_isDisabled(vlan, idx - 1, key)"
               :key="key"
               :label="type.html"
               :value="key"
@@ -85,7 +86,7 @@
       <el-row :gutter="10" class="mt15" justify="star" type="flex">
         <el-col class="w90"></el-col>
         <el-col :lg="spanLg" :sm="spanSm" :xs="spanXs">
-          <el-button type="success" v-auth="_save" v-show="isChanged">保存配置</el-button>
+          <el-button class="w160" type="primary" v-auth="_save" v-show="isChanged">{{ $t("action.save") }}</el-button>
         </el-col>
       </el-row>
     </div>
@@ -94,7 +95,6 @@
 <script>
 import { hostnameRegexp, lengthValidate } from '@/utils/rulesUtils'
 import Port from '@/common/Port'
-import { Row, Col } from 'element-ui'
 let timer = null
 const UNTAG = '-1',
   TAG = '1',
@@ -132,7 +132,7 @@ export default {
           clazz: 'warning'
         },
         [NONE]: {
-          html: '不加入',
+          html: I18N.t('network.no_join'),
           clazz: 'none'
         }
       },
@@ -170,9 +170,7 @@ export default {
     }
   },
   components: {
-    Port,
-    [Row.name]: Row,
-    [Col.name]: Col
+    Port
   },
   async created() {
     await this._loadPortVlan()
@@ -182,8 +180,8 @@ export default {
   },
   methods: {
     async _loadPortVlan() {
-      let _res = await this.$api.getVlanPort()
-      this.portVlan = (_res.list || []).sort((a, b) => {
+      this.originalData = await this.$api.getVlanPort()
+      this.portVlan = (this.originalData.list || []).sort((a, b) => {
         // 按vlanid大小排序，默认VLAN放第一个
         if (a.vlanid === '233') {
           return -1
@@ -236,24 +234,20 @@ export default {
     },
     _onChange() {
       this.isChanged = true
-      this.$message.info('修改配置后请点击【保存配置】生效')
+      this.$message.info(I18N.t('network.vlan_save_tip'))
     },
     _save() {
-      let _data = {
-        list: this.portVlan
-      }
-      this.$api.setVlanPort(_data).then(_ => {
+      this.originalData.list = this.portVlan
+      this.$api.setVlanPort(this.originalData).then(_ => {
         this.isChanged = false
-        this.$message.success('保存配置成功')
+        this.$message.success(I18N.t('tip.edit1_success'))
       })
     },
     _onSavePortDes(portId) {
       if (!hostnameRegexp.test(this.curPortDes)) {
-        return this.$message.warning(
-          '请输入中文,英文字母，数字，下划线，-，#或@'
-        )
+        return this.$message.warning(I18N.t('network.portname_rule'))
       } else if (!lengthValidate(this.curPortDes, 0, 28)) {
-        return this.$message.warning('端口描述不能超过28个字符，中文占3个字符')
+        return this.$message.warning(I18N.t('network.portname_len_rule'))
       }
 
       let _tmp = this.portInfo[portId]

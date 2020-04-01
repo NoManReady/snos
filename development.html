@@ -3,12 +3,29 @@
 
 <head>
   <meta charset="utf-8">
-  <!-- <meta name="viewport" content="width=device-width,initial-scale=1.0"> -->
-  <title>EWEB管理系统</title>
-  <link href="/static/loading.css" type="text/css" rel="stylesheet"></link>
+  <title>Ruijie</title>
+  <link href="/static/loading.css" type="text/css" rel="stylesheet">
+  </link>
 </head>
 
 <body class="rj-body">
+  <script>
+    var ISMOBILE = navigator.userAgent.toLocaleLowerCase().indexOf(" mobile") !== -1;
+    ; (function () {
+      if (ISMOBILE) {
+        var _mobileMeta = document.createElement('meta')
+        _mobileMeta.id = 'mobileMeta'
+        _mobileMeta.name = 'viewport'
+        _mobileMeta.content = 'width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';
+        document.head.appendChild(_mobileMeta);
+        document.body.className = 'rj-body app-mobile';
+      } else {
+        var _meta = document.getElementById("mobileMeta")
+        _meta && document.head.removeChild(_meta);
+        document.body.className = 'rj-body';
+      }
+    })()
+  </script>
   <div eweb-loader class='loader'>
     <div class='loader_overlay'></div>
     <div class='loader_cogs'>

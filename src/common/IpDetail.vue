@@ -1,20 +1,20 @@
 <template>
   <div>
-      <div v-if="!row.ip_group">
-        <p v-for="ip of row.ip_slots" :key="ip">{{ip}}</p>
-      </div>
-      <template v-else>
-        <span v-if="ipGroups.length">
-          {{_getIpgroupName(row.ip_group)}}
-          <el-tooltip placement="right">
-            <i class="el-icon-info fs14 f-theme"></i>
-            <div slot="content">
-              <p v-for="ip of _getIpgroupIp(row.ip_group)" :key="ip">{{ip}}</p>
-            </div>
-          </el-tooltip>
-        </span>
-        <i class="el-icon-loading fs14 f-theme" v-else></i>
-      </template>
+    <div v-if="!row.ip_group">
+      <p :key="ip" v-for="ip of row.ip_slots">{{ip}}</p>
+    </div>
+    <template v-else>
+      <span v-if="ipGroups.length">
+        {{_getIpgroupName(row.ip_group)}}
+        <el-tooltip placement="right">
+          <i class="el-icon-info fs14 f-theme"></i>
+          <div slot="content">
+            <p :key="ip" v-for="ip of _getIpgroupIp(row.ip_group)">{{ip}}</p>
+          </div>
+        </el-tooltip>
+      </span>
+      <i class="el-icon-loading fs14 f-theme" v-else></i>
+    </template>
   </div>
 </template>
 <script>

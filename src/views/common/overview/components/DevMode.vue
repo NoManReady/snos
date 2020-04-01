@@ -1,64 +1,96 @@
 <template>
   <div>
-    <el-popover @show="onSwitchShow" placement="left" ref="devModePopover" trigger="click" width="340">
-      <el-form :model="baseModel" label-width="120px" size="mini">
+    <el-popover @show="onSwitchShow" placement="top" ref="devModePopover" trigger="click" width="340">
+      <el-form :model="baseModel" label-width="120px" size="small">
         <div class="mb20 c-info">
-          <strong class="vm w45 vt">说明：</strong>
+          <strong class="vm w45 vt">{{ $t("phrase.explain_f") }}</strong>
           <ol class="ml40 ol-num">
-            <li class="mt5">模式切换后，设备IP可能发生改变。</li>
-            <li class="mt5">修改终端地址，让终端Ping通设备。</li>
-            <li class="mt5">浏览器输入新地址重新访问WEB系统。</li>
-            <li class="mt5">系统根据工作模式呈现不同的菜单项。</li>
-            <li class="mt5 c-danger">工作模式切换会恢复出厂并重启设备。</li>
+            <li class="mt5">{{ $t("overview.dev_mode_tip1") }}</li>
+            <li class="mt5">{{ $t("overview.dev_mode_tip2") }}</li>
+            <li class="mt5">{{ $t("overview.dev_mode_tip3") }}</li>
+            <li class="mt5">{{ $t("overview.dev_mode_tip4") }}</li>
+            <li class="mt5 c-danger">{{ $t("overview.dev_mode_tip5") }}</li>
           </ol>
         </div>
-        <el-form-item label="工作模式">
-          <el-select class="w100" placeholder="请选择" v-model="baseModel.forwardMode">
+        <el-form-item :label="$t('sysinfo.dev_mode')">
+          <el-select :placeholder="$t('action.select')" class="w100" v-model="baseModel.forwardMode">
             <el-option :key="k" :label="v" :value="k" v-for="(v, k) in modeMap"></el-option>
           </el-select>
-          <el-tooltip placement="top">
+          <el-tooltip effect="light" placement="right">
             <div slot="content">
               <ol class="ml20 ol-num">
-                <li class="mt5" v-if="modeMap.ROUTER">路由模式，Nat路由转发。</li>
-                <li class="mt5" v-if="modeMap.AC">AC模式，Bridge桥转发。</li>
-                <li class="mt5" v-if="modeMap.AP">AP模式，Bridge桥转发。</li>
+                <li class="mt5" v-if="modeMap.ROUTER">{{ $t("overview.dev_mode_tip6") }}</li>
+                <li class="mt5" v-if="modeMap.AC">{{ $t("overview.dev_mode_tip7") }}</li>
+                <li class="mt5" v-if="modeMap.AP">{{ $t("overview.dev_mode_tip8") }}</li>
               </ol>
             </div>
             <i class="rjucd-help fs20 vm c-info"></i>
           </el-tooltip>
         </el-form-item>
-        <el-form-item label="自组网发现">
+        <el-form-item :label="$t('overview.net_discovery')">
           <el-switch
-            :disabled="baseModel.forwardMode === 'AC'"
+            :disabled="baseModel.forwardMode === 'AC' || (baseModel.autoJoin === 'false' && hasRjTag)"
             active-value="true"
             inactive-value="false"
             v-model="baseModel.autoJoin"
           ></el-switch>
-          <el-tooltip placement="bottom">
+          <el-tooltip effect="light" placement="right">
             <div slot="content">
               <ol class="ml20 ol-num">
-                <li class="mt5">开启自组网发现，首页会显示自组网角色。</li>
-                <li class="mt5">关闭自组网发现，单台设备独立模式。</li>
-                <li class="mt5" v-if="modeMap.AC">AC模式下，设备默认开启自组网发现。</li>
+                <li class="mt5">{{ $t("overview.net_discovery_tip1") }}</li>
+                <li class="mt5">{{ $t("overview.net_discovery_tip2") }}</li>
+                <li class="mt5" v-if="modeMap.AC">{{ $t("overview.net_discovery_tip3") }}</li>
               </ol>
             </div>
             <i class="rjucd-help fs20 vm c-info"></i>
           </el-tooltip>
+          <el-tooltip effect="light" placement="right" v-if="isEgRouter && (hasRjTag || baseModel.autoJoin === 'true')">
+            <div slot="content">
+              <template v-if="hasRjTag">
+                <p>{{ $t("overview.rj43_exist") }}</p>
+                <i18n path="overview.rj43_tip" tag="p" v-if="baseModel.autoJoin === 'true'">
+                  <span class="c-warning" place="tip1">{{ $t("overview.rj43_tip1") }}</span>
+                  <a @click="_onToDhcpOpiton" class="c-success pointer">{{ $t("overview.rj43_tip2") }}</a>
+                  <span class="c-warning">{{ $t("overview.rj43_tip3") }}</span>
+                </i18n>
+                <i18n path="overview.rj43_tip4" tag="p" v-else>
+                  <a @click="_onToDhcpOpiton" class="c-success pointer">{{ $t("overview.rj43_tip2") }}</a>
+                </i18n>
+              </template>
+              <template v-else>
+                <p>{{ $t("overview.rj43_tip5") }}</p>
+                <i18n path="overview.rj43_tip6" tag="path">
+                  <a @click="_onToDhcpOpiton" class="c-success pointer">{{ $t("overview.rj43_tip2") }}</a>
+                </i18n>
+              </template>
+            </div>
+            <span class="c-warning" v-if="hasConfig">
+              <i class="el-icon-warning fs18 vm"></i>
+              <strong class="vm">{{ $t("phrase.warn") }}</strong>
+            </span>
+            <span class="c-info" v-else>
+              <i class="el-icon-info fs18 vm"></i>
+              <strong class="vm">{{ $t("phrase.tip") }}</strong>
+            </span>
+          </el-tooltip>
         </el-form-item>
-        <el-form-item label="AC功能开关" v-show="baseModel.autoJoin === 'true' && baseModel.forwardMode === 'ROUTER'">
+        <el-form-item
+          :label="$t('overview.ac_status')"
+          v-show=" baseModel.autoJoin === 'true' && baseModel.forwardMode === 'ROUTER' "
+        >
           <el-switch active-value="true" inactive-value="false" v-model="baseModel.acEnable"></el-switch>
-          <el-tooltip placement="bottom">
+          <el-tooltip effect="light" placement="right">
             <div slot="content">
               <ol class="ml20 ol-num">
-                <li class="mt5">默认开启，设备具备虚拟AC功能，管理下联设备。</li>
-                <li class="mt5">关闭时，设备需通过自组网选举为AC才能管理下联设备。</li>
+                <li class="mt5">{{ $t("overview.ac_tip1") }}</li>
+                <li class="mt5">{{ $t("overview.ac_tip2") }}</li>
               </ol>
             </div>
             <i class="rjucd-help fs20 vm c-info"></i>
           </el-tooltip>
         </el-form-item>
-        <el-form-item label>
-          <el-button @click.native="onSetDevMode" size="small" type="primary">切换模式</el-button>
+        <el-form-item>
+          <el-button @click.native="onSetDevMode" type="primary">{{ $t("overview.switch_mode") }}</el-button>
         </el-form-item>
       </el-form>
       <slot slot="reference"></slot>
@@ -72,28 +104,37 @@ export default {
   data() {
     return {
       modeMap: {
-        ROUTER: '路由模式',
-        AC: 'AC模式',
-        AP: 'AP模式'
+        ROUTER: I18N.t('overview.route_mode'),
+        AC: I18N.t('overview.ac_mode'),
+        AP: I18N.t('overview.ap_mode')
       },
       baseModel: {
         forwardMode: 'ROUTER', // ROUTER|AC|AP转发面：转发模式
         autoJoin: 'true', // 管理面：是否组网
         acEnable: 'true' // 管理面：是否指定为master
-      }
+      },
+      hasRjTag: false
     }
   },
   created() {
     if (this.isEg) {
       delete this.modeMap.AP
+    } else if (this.isEac) {
+      delete this.modeMap.ROUTER
     } else {
       // EGW和EAP去掉AC模式
       delete this.modeMap.AC
+    }
+    if (this.isEgRouter) {
+      this._loadOption43()
     }
   },
   computed: {
     devMode() {
       return this.$store.getters.devMode || {}
+    },
+    isEac() {
+      return this.$roles().includes('eac')
     },
     // EAP设备或者AP模式
     isEap() {
@@ -102,13 +143,28 @@ export default {
     // 不带无线功能
     isEg() {
       return this.$store.getters.capacity.dev_type === 'egw'
+    },
+    isEgRouter() {
+      return this.$dev() === 'egw' && this.baseModel.forwardMode === 'ROUTER'
+    },
+    hasConfig() {
+      return (
+        this.hasRjTag &&
+        this.baseModel.autoJoin === 'true' &&
+        this.baseModel.forwardMode === 'ROUTER'
+      )
     }
   },
   watch: {
     'baseModel.forwardMode'(v, ov) {
       if (!this.isOpenPop) {
         if (v === 'ROUTER' || v === 'AC') {
-          this.baseModel.autoJoin = 'true'
+          if (v === 'ROUTER' && this.hasRjTag) {
+            this.baseModel.autoJoin = 'false'
+          } else {
+            this.baseModel.autoJoin = 'true'
+          }
+
           if (this.isEap) {
             this.baseModel.acEnable = 'false'
           } else {
@@ -133,6 +189,18 @@ export default {
     }
   },
   methods: {
+    async _loadOption43() {
+      let _res = await this.$api.getDhcpOption()
+      let _o = _res.option.find(o => o.id === '43')
+      let option43 = _o ? _o.value : ''
+      this.hasRjTag = option43.indexOf('#RJ#') === 0
+    },
+    _onToDhcpOpiton() {
+      this.$router.push({
+        name: 'admin/alone/network/network_lan',
+        query: { tab: '3' }
+      })
+    },
     // popover-show事件
     onSwitchShow() {
       this.isOpenPop = true // 标识用来不触发watch的联动
@@ -144,6 +212,13 @@ export default {
       })
     },
     async onSetDevMode() {
+      if (this.hasConfig) {
+        return this.$message.warning(
+          I18N.t('overview.mode_switch_tip'),
+          I18N.t('overview.cfg_conflict_tip'),
+          5000
+        )
+      }
       // 区别提示，开启关闭自组网开关不需要重启，其他需要重启。
       let _changMode = this.baseModel.forwardMode !== this.devMode.forwardMode
       if (
@@ -153,15 +228,15 @@ export default {
       ) {
         await this.$confirm(
           _changMode
-            ? '工作模式切换会恢复出厂并重启设备，确认切换？'
-            : '确认修改配置？'
+            ? I18N.t('overview.mode_switch_confirm')
+            : I18N.t('overview.modify_cfg_confirm')
         )
 
         this.$api.setDevMode(this.baseModel)
 
         let _msg = _changMode
-          ? '模式已切换，请等设备重启恢复网络后，重新登录WEB系统。'
-          : '配置已修改，稍后将自动刷新页面。'
+          ? I18N.t('overview.mode_switch_success_tip')
+          : I18N.t('overview.cfg_fresh_tip')
         awaitOnLine(10000, _msg).then(() => {
           window.top.location.reload()
         })
@@ -169,20 +244,20 @@ export default {
           dangerouslyUseHTMLString: true,
           message: `<ol class="ml20 ol-num">
                       <li class="mt5">
-                        模式切换后，设备IP可能会发生改变。
+                        ${I18N.t('overview.dev_mode_tip1')}
                       </li>
                       <li class="mt5">
-                        修改终端地址，让终端与设备能够相通。
+                        ${I18N.t('overview.dev_mode_tip2')}
                       </li>
                       <li class="mt5">
-                        浏览器输入设备的地址重新访问WEB系统。
+                        ${I18N.t('overview.dev_mode_tip3')}
                       </li>
                     </ol>`,
           center: true,
           duration: 0
         })
       } else {
-        this.$message.info('模式未修改')
+        this.$message.info(I18N.t('overview.cfg_no_modify'))
         this.$refs.devModePopover.showPopper = false
       }
     }
@@ -190,4 +265,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.vm {
+  vertical-align: middle !important;
+}
 </style>

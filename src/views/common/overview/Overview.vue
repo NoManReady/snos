@@ -2,55 +2,48 @@
   <div class="home-overview">
     <el-row :gutter="10" class="tc">
       <!-- 当前登录设备 -->
-      <el-col :lg="isMsw?12:8" :md="isMsw?12:10" :span="24">
+      <el-col :lg="9" :md="11" :span="24">
         <cur-dev-info class="auto-height" ref="CurDevInfo" />
       </el-col>
       <!-- 无线信息 -->
-      <el-col :lg="16" :md="14" :span="24" v-if="showWifiInfo">
-        <wifi-info class="auto-height" />
+      <el-col :lg="15" :md="13" :span="24">
+        <net-view class="auto-height" v-if="isMsw" />
+        <wifi-info class="auto-height" v-else />
       </el-col>
+    </el-row>
+
+    <el-row :gutter="10" class="tc" v-if="!isMsw">
       <!-- 整网拓扑 -->
-      <el-col :lg="isMsw?12:24" :md="isMsw?12:10" :span="24">
-        <net-view class="auto-height" />
+      <el-col>
+        <net-view />
       </el-col>
     </el-row>
   </div>
 </template>
 <script>
-import CurDevInfo from './components/CurDevInfo'
-import NetView from './components/NetView'
-import WifiInfo from './components/WifiInfo'
-import { Col, Row } from 'element-ui'
+import CurDevInfo from '@/views/common/overview/components/CurDevInfo'
+import NetView from '@/views/common/overview/components/NetView'
+import WifiInfo from '@/views/common/overview/components/WifiInfo'
 export default {
   name: 'Overview',
   data() {
     return {}
   },
   components: {
-    [Col.name]: Col,
-    [Row.name]: Row,
     CurDevInfo,
     NetView,
     WifiInfo
   },
   computed: {
-    // 判断msw
     isMsw() {
       return this.$roles().includes('msw')
-    },
-    // 显示无线信息
-    showWifiInfo() {
-      return (
-        !this.isMsw &&
-        (this.$roles().includes('master') || this.$roles().includes('ewr'))
-      )
     }
   }
 }
 </script>
 <style lang="scss" scope>
 .home-overview {
-  min-width: 380px;
+  // min-width: 380px;
   .auto-height {
     height: auto;
   }

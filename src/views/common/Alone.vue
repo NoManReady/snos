@@ -2,14 +2,13 @@
   <div class="device-setting">
     <div class="block inner-info" v-if="childMenus.menus.length">
       <el-row align="middle" class="device-info" type="flex">
-        <el-col :md="22" :span="21" :xs="20">
+        <el-col :md="20" :span="20" :xs="18">
           <dev-info />
         </el-col>
-        <el-col :md="2" :span="3" :xs="4" class="tr">
-          <device-tool :alone="true" :timer="true" />
+        <el-col :md="4" :span="4" :xs="6" class="tr">
+          <device-tool />
         </el-col>
       </el-row>
-      <!-- <affix :offset="{top:40,bottom:40}" relative-element-selector=".app"> -->
       <app-aside
         :menus="childMenus.menus"
         :p-path="childMenus.path"
@@ -18,7 +17,6 @@
         mode="horizontal"
         trigger="hover"
       ></app-aside>
-      <!-- </affix> -->
     </div>
     <div :style="contentStyl" class="block">
       <router-view :key="`${routerId}`"></router-view>
@@ -28,7 +26,6 @@
 </template>
 <script>
 import { AppAside } from '@/layout'
-import { Row, Col } from 'element-ui'
 import Top from '@/common/Top'
 import DevInfo from '@/views/common/overview/components/DevInfo'
 import DeviceTool from './DeviceTool'
@@ -43,9 +40,7 @@ export default {
     AppAside,
     DevInfo,
     [DeviceTool.name]: DeviceTool,
-    [Top.name]: Top,
-    [Row.name]: Row,
-    [Col.name]: Col
+    [Top.name]: Top
   },
   computed: {
     // 内容模块style

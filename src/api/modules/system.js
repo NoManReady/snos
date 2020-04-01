@@ -8,6 +8,13 @@ export const getVersion = version => {
 }
 
 /**
+ * 配置语言
+ */
+export const setLang=lang=>{
+  return api.system('setLang', {lang})
+}
+
+/**
  * 获取设备同步时间
  * @param {配置时间：时间戳} time
  */
@@ -73,4 +80,12 @@ export const restoreConfig = (path) => {
  */
 export const delRestoreConfig = (path) => {
   return api.system('delRestoreConfig', path)
+}
+/**
+ * 获取pppoe到期是状态
+ */
+export const getPppoeTimeout = () => {
+  return api.cmd('devSta.get', {
+    module: 'pppoeserver_user_timeout'
+  })
 }

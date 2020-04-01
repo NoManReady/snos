@@ -2,6 +2,7 @@
 @import './_mixins.scss';
 
 .rj-body {
+  color: $--color-text-primary;
   .web-form {
     &--tip {
       position: absolute;
@@ -28,7 +29,7 @@
     position: absolute;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(218, 245, 243, .7);
+    // background: rgba(218, 245, 243, .7);
     border-radius: 8px;
     text-align: center;
     padding: 10px;
@@ -69,6 +70,19 @@
   }
 }
 
+.el-message-box__btns {
+  .el-button {
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+  }
+}
+
+.el-message-box__input {
+  .el-input__inner {
+    height: 36px !important;
+    line-height: 36px !important;
+  }
+}
 
 .inline-error {
   color: lighten($--color-info, 3%);
@@ -190,10 +204,12 @@
   tr td {
     padding: 0;
   }
+
   .banner-wrap {
     position: relative;
     height: 60px;
     line-height: 60px;
+
     .banner {
       position: absolute;
       top: 6px;
@@ -206,6 +222,124 @@
       line-height: 1.5;
       width: 60px;
       text-align: center;
+    }
+  }
+}
+
+.custom-collapse {
+  .el-collapse-item__wrap {
+    overflow: visible !important;
+  }
+}
+
+html[lang="en"] * {
+
+  .el-notification__content,
+  .el-popover,
+  .el-collapse-item__content {
+    text-align: start !important;
+  }
+}
+
+// 手机端页面对element-UI组件定制，基本高度行搞放大1.5～2倍
+body.app-mobile {
+  background-color: #fff;
+  font-size: 16px;
+  [class^="rjucd-"],
+  [class*=" rjucd-"]  {
+    font-size: 30px;
+  }
+  .m-box {
+    background-color: $app-bg-color;
+  }
+  .el-message {
+    min-width: 95% !important;
+
+    &__content {
+      line-height: 1.5 !important;
+    }
+  }
+  .el-message-box,
+  .el-dialog {
+    width: 95% !important;
+  }
+  .el-form:not(.unset-mobile) {
+    width: auto !important;
+
+    .el-form-item {
+      &__label {
+        width: 105px !important;
+      }
+
+      &__content {
+        margin-left: 105px !important;
+      }
+    }
+  }
+  .el-form {
+    font-size: 16px;
+    &.el-form--label-top .el-form-item__label {
+      width: 100% !important;
+      padding-bottom: 0;
+      font-size: 16px;
+    }
+    .el-form-item__content{
+      font-size: 16px;
+    }
+  }
+  .el-button.el-button {
+    &--medium {
+      width: 100%;
+      height: 50px;
+    }
+  }
+  .el-input--medium {
+    font-size: 16px;
+    .el-input__inner {
+      height: 50px !important;
+      line-height: 50px !important;
+    }
+  }
+  .el-switch {
+    height: 30px;
+    line-height: 30px;
+    .el-switch__core {
+      height: 30px;
+      width: 60px !important;
+      border-radius: 15px;
+      &:after{
+        width: 26px;
+        height: 26px;
+      }
+    }
+    &.is-checked {
+      .el-switch__core:after {
+        margin-left: -28px;
+      }
+    }
+  }
+  .el-checkbox .el-checkbox {
+    &__label {
+      padding-left: 8px;
+      font-size: 16px;
+    }
+    &__inner {
+      width: 20px;
+      height: 20px;
+      &:after {
+        height: 11px;
+        left: 8px;
+      }
+    }
+  }
+  .el-radio-group {
+    width: 100%;
+    .el-radio-button {
+      width: 33.33%;
+      &__inner {
+        width: 100%;
+        line-height: 1.6;
+      }
     }
   }
 }

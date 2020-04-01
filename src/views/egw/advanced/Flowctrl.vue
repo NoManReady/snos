@@ -1,8 +1,8 @@
 <template>
   <div class="advanced-flowctrl">
     <el-tabs v-model="tabValue" @tab-click="_onTabClick">
-      <el-tab-pane name="0" label="智能流控"></el-tab-pane>
-      <el-tab-pane v-if="switchOn" name="1" label="自定义策略"></el-tab-pane>
+      <el-tab-pane name="0" :label="$t('egw.flowctrl.smart_flow_control')"></el-tab-pane>
+      <el-tab-pane v-if="switchOn" name="1" :label="$t('egw.flowctrl.coustom_strategy')"></el-tab-pane>
       <!-- <el-tab-pane v-if="switchOn" name="2" label="应用流控"></el-tab-pane> -->
     </el-tabs>
     <flow-tabs @smart-change='onSmartChange' :type="tabValue" :smart-data='smartFlow' :key="randomId"></flow-tabs>

@@ -1,71 +1,82 @@
 <template>
   <div class="security-arp">
-    <help-alert :json-key="showMacFilter ? 'arpJson' : 'arpJsonLite'" title="ARP列表页面">
+    <help-alert :json-key="showMacFilter ? 'arpJson' : 'arpJsonLite'" :title="$t('arp.list')">
       <div slot="content">
-        <p class="mt10">设备学习连接在设备各接口上的网络设备IP与MAC对应表。可以对ARP列表表项进行绑定和过滤操作。</p>
-        <p class="mt10">
-          您可以在
-          <a @click="onToPag('admin/alone/security/security_arpbind')" class="c-success pointer">“MAC绑定”</a>页面进行批量删除解绑操作。
-          <span v-if="showMacFilter">
-            您可以在
-            <a @click="onToPag('admin/alone/security/security_macfilter')" class="c-success pointer">“MAC过滤”</a>页面进行批量删除规则操作。
-          </span>
-        </p>
+        <p class="mt10 mb10">{{ $t("arp.arp_tip") }}</p>
+        <i18n path="arp.arp_help" tag="p">
+          <a @click="onToPag('admin/alone/security/security_arpbind')" class="c-success pointer">{{ $t("arp.mac_bind") }}</a>
+          <i18n path="arp.arp_help1" tag="span">
+            <a @click="onToPag('admin/alone/security/security_macfilter')" class="c-success pointer">{{ $t("arp.mac_filter") }}</a>
+          </i18n>
+        </i18n>
       </div>
       <div slot="collapseFoot">
-        <h3>注意：</h3>
-        <p v-if="showMacFilter">ARP列表中，已绑定或者已过滤的表项，无法被选中进行批量绑定或者批量过滤的操作。</p>
-        <p v-else>ARP列表中，已绑定的表项，无法被选中进行批量绑定操作。</p>
+        <h3>{{ $t("phrase.notice_f") }}</h3>
+        <p v-if="showMacFilter">{{ $t("arp.arp_bind_tip1") }}</p>
+        <p v-else>{{ $t("arp.arp_bind_tip2") }}</p>
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          ARP列表
+          {{ $t("arp.list") }}
           <small></small>
         </span>
         <div class="fr">
-          <el-input class="w220 mr10" clearable placeholder="根据IP/MAC地址查找" size="small" v-model="filter">
-            <el-button @click.native="_initPage()" icon="el-icon-search" size="small" slot="append"></el-button>
+          <el-input :placeholder="$t('arp.search_by_ipmac')" class="w240 mr10" clearable size="medium" v-model="filter">
+            <el-button @click.native="_initPage" icon="el-icon-search" size="medium" slot="append"></el-button>
           </el-input>
-          <el-button @click.native="_onRefresh" size="small" type="primary">
-            <i class="el-icon-refresh"></i>
-            <span>刷新</span>
+          <el-button
+            @click.native="_onRefresh"
+            icon="el-icon-refresh"
+            plain
+            size="medium"
+            type="primary"
+          >{{ $t("action.refresh") }}</el-button>
+          <el-button plain size="medium" type="primary" v-auth="onAdd">
+            {{
+            $t("arp.patch_bind")
+            }}
           </el-button>
-          <el-button size="small" type="primary" v-auth="onAdd">
-            <span>批量绑定</span>
-          </el-button>
-          <el-button size="small" type="primary" v-auth="onAddFilter" v-if="showMacFilter">
-            <span>批量过滤</span>
-          </el-button>
+          <el-button plain size="medium" type="primary" v-auth="onAddFilter" v-if="showMacFilter">{{ $t("arp.patch_filter") }}</el-button>
         </div>
       </div>
-      <el-table :data="pageList" ref="baseTable" row-key="`${ip}_${mac}`" size="small" stripe>
+      <el-table :data="pageList" ref="baseTable" row-key="`${ip}_${mac}`" size="medium" stripe>
         <el-table-column :selectable="isSelectable" align="center" type="selection" width="50"></el-table-column>
-        <el-table-column align="center" label="序号" type="index"></el-table-column>
-        <el-table-column align="center" label="IP地址" min-width="120px" prop="ip"></el-table-column>
-        <el-table-column align="center" label="MAC地址" min-width="120px" prop="mac"></el-table-column>
-        <el-table-column align="center" label="状态" min-width="160px">
+        <el-table-column :label="$t('phrase.serial')" align="center" type="index"></el-table-column>
+        <el-table-column :label="$t('sysinfo.ip_addr')" align="center" min-width="120px" prop="ip"></el-table-column>
+        <el-table-column :label="$t('sysinfo.mac_addr')" align="center" min-width="120px" prop="mac"></el-table-column>
+        <el-table-column :label="$t('phrase.status')" align="center" min-width="160px">
           <template slot-scope="scope">
             <div class="w70 inline">
-              <el-button :loading="true" type="text" v-if="isLoadMacBind"></el-button>
+              <el-button :loading="true" size="medium" type="text" v-if="isLoadMacBind"></el-button>
               <el-button
-                title="添加到MAC绑定列表"
+                :title="$t('arp.add_to_bind')"
+                size="medium"
                 type="text"
-                v-auth="{fn:onAdd,params:scope.row}"
+                v-auth="{ fn: onAdd, params: scope.row }"
                 v-else-if="!isStaticArp(scope.row)"
-              >MAC绑定</el-button>
-              <el-button :disabled="true" type="text" v-else>已绑定</el-button>
+              >{{ $t("arp.mac_bind") }}</el-button>
+              <el-button :disabled="true" size="medium" type="text" v-else>
+                {{
+                $t("arp.had_bind")
+                }}
+              </el-button>
             </div>
             <div class="w70 inline" v-if="showMacFilter">
-              <el-button :loading="true" type="text" v-if="isLoadMacFilter"></el-button>
+              <el-button :loading="true" size="medium" type="text" v-if="isLoadMacFilter"></el-button>
               <el-button
-                title="添加到MAC过滤规则"
+                :title="$t('arp.add_to_filter')"
+                size="medium"
                 type="text"
-                v-auth="{fn:onAddFilter,params:scope.row}"
+                v-auth="{ fn: onAddFilter, params: scope.row }"
                 v-else-if="!isMacFilter(scope.row)"
-              >MAC过滤</el-button>
-              <el-button :disabled="true" type="text" v-else>已过滤</el-button>
+              >{{ $t("arp.mac_filter") }}</el-button>
+              <el-button :disabled="true" size="medium" type="text" v-else>
+                {{
+                $t("arp.has_filter")
+                }}
+              </el-button>
             </div>
           </template>
         </el-table-column>
@@ -110,7 +121,10 @@ export default {
       return this.arpFilterList.map(item => item.mac.toLocaleUpperCase()) || []
     },
     showMacFilter() {
-      return this.$store.getters.roles.includes('egEnable')
+      return (
+        this.$store.getters.roles.includes('egEnable') &&
+        !this.$roles().includes('ehr')
+      )
     }
   },
   methods: {
@@ -155,20 +169,24 @@ export default {
       } else {
         _items = this.$refs.baseTable.selection
         if (_items.length === 0) {
-          return this.$message.warning('请选择要执行IP-MAC绑定的列表项')
+          return this.$message.warning(I18N.t('arp.select_ip_mac_bind'))
         }
       }
       _items = _items.filter(ite => !this.isStaticArp(ite))
       if (_items.length === 0) {
-        return this.$message.warning('IP-MAC已绑定')
+        return this.$message.warning(I18N.t('arp.ip_mac_binded'))
       }
       let _leftNum = this.arpStaticMax - this.arpStaticList.length
       if (_items.length > _leftNum) {
         return this.$message.warning(
-          `最大支持绑定${this.arpStaticMax}个，已绑定${this.arpStaticList.length}，可再绑定${_leftNum}个`
+          I18N.t('arp.bind_limit', {
+            max: this.arpStaticMax,
+            has: this.arpStaticList.length,
+            stay: _leftNum
+          })
         )
       }
-      this.$confirm('确认添加到MAC绑定列表中?').then(() => {
+      this.$confirm(I18N.t('arp.bind_confirm')).then(() => {
         let _addList = _items.map(item => ({
           macaddr: item.mac,
           ipaddr: item.ip
@@ -186,20 +204,24 @@ export default {
       } else {
         _items = this.$refs.baseTable.selection
         if (_items.length === 0) {
-          return this.$message.warning('请选择要添加到MAC过滤规则的列表项')
+          return this.$message.warning(I18N.t('arp.select_mac_filter'))
         }
       }
       _items = _items.filter(ite => !this.isMacFilter(ite))
       if (_items.length === 0) {
-        return this.$message.warning('MAC已过滤')
+        return this.$message.warning(I18N.t('arp.has_filter'))
       }
       let _leftNum = this.arpFilterMax - this.arpFilterList.length
       if (_items.length > _leftNum) {
         return this.$message.warning(
-          `最大支持绑定${this.arpFilterMax}个，已绑定${this.arpFilterList.length}，可再绑定${_leftNum}个`
+          I18N.t('arp.bind_limit', {
+            max: this.arpFilterMax,
+            has: this.arpFilterList.length,
+            stay: _leftNum
+          })
         )
       }
-      this.$confirm('确认添加到MAC过滤规则中?').then(() => {
+      this.$confirm(I18N.t('arp.filter_confirm')).then(() => {
         let _addList = _items.map(item => ({
           mac: item.mac,
           comment: item.ip

@@ -1,17 +1,22 @@
 <template>
   <div class="port-mac-base">
-    <help-alert title="MAC基础配置"></help-alert>
+    <!-- <help-alert title="MAC基础配置"></help-alert> -->
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">MAC老化时间</span>
+        <span class="box-header-tit">{{$t('msw.mac.mac_agetime')}}</span>
       </div>
-      <el-form :model="baseModel" :rules="baseRules" label-width="180px" ref="baseForm" size="small">
-        <el-form-item label="老化时间：" prop="mac_agetime">
-          <el-input class="w200" placeholder="老化时间范围:10~630" v-model.number="baseModel.mac_agetime"></el-input>
-          <label class="c-info">(范围:10~630，单位:秒，0表示不老化)</label>
+      <el-form :model="baseModel" :rules="baseRules" label-width="180px" ref="baseForm" size="medium">
+        <el-form-item :label="$t('msw.mac.agetime_f')" prop="mac_agetime">
+          <el-input :placeholder="$t('msw.mac.agetime_range')" class="w300" v-model.number="baseModel.mac_agetime"></el-input>
+          <label class="c-info">{{$t('msw.mac.agetime_tip')}}</label>
         </el-form-item>
         <el-form-item>
-          <el-button :loading="isLoading" @click.native="_setConfig" size="small" type="primary">保存配置</el-button>
+          <el-button
+            :loading="isLoading"
+            @click.native="_setConfig"
+            class="w160"
+            type="primary"
+          >{{isLoading?$t('action.editing'):$t('action.save_edit')}}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -28,7 +33,7 @@ export default {
         return cb()
       }
       if (v !== 0 && !isBetween(v, 10, 630)) {
-        return cb(new Error('老化时间范围:10~630'))
+        return cb(new Error(I18N.t('msw.mac.agetime_range')))
       }
       cb()
     }
@@ -39,7 +44,7 @@ export default {
       },
       baseRules: {
         mac_agetime: [
-          { required: true, message: '请输入MAC老化时间' },
+          { required: true, message: I18N.t('msw.mac.agetime_no_empty') },
           { validator: intValidator },
           { validator: rangeValidator }
         ]
@@ -69,7 +74,7 @@ export default {
               module: 'mac_agetime',
               data: this.baseModel
             })
-            this.$message.success('配置成功')
+            this.$message.success(I18N.t('tip.edit1_success'))
           } catch (error) {}
           this.isLoading = false
         }
@@ -78,8 +83,4 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.port-mac-base {
-}
-</style>
 

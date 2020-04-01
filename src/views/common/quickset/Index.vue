@@ -1,5 +1,5 @@
 <script>
-import First from '#/Wan'
+import First from '@/views/common/network/components/Wan'
 import Wifi from '@/views/common/wireless/components/Wifi'
 const _moduleMap = {
   network: First,

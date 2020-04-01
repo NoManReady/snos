@@ -5,6 +5,7 @@ import {
 import {
   getQuene
 } from '@/utils/menus'
+import { common } from '@/api/modules/api'
 /**
  * 全局布局状态相关
  */
@@ -25,15 +26,23 @@ export default {
     // 组网角色
     deviceRole: '',
     // 是否默认密码
-    isDefaultPass: true,
+    isDefaultPass: '',
     // 设备模式
-    devMode: {}
+    devMode: {},
+    // 是否行业版
+    isIndustry: false,
+    userName: window.APP_USERNAME
   },
   actions: {
     setMenus({
       commit
     }, menus) {
       commit(types.APP_MENUS, getQuene(menus))
+    },
+    setUsreName({
+      commit
+    }, username) {
+      commit(types.APP_USERNAME, username)
     },
     setRoles({
       commit
@@ -70,9 +79,13 @@ export default {
     }, path) {
       commit(types.APP_DEFAULT_PATH, path)
     },
-    setIsDefaultPass({
-      commit
-    }, isDefaultPass) {
+    getIsDefaultPass({ commit }) {
+      return common('isDefPass', null, { isSilence: true }).then(d => {
+        commit(types.APP_DEFAULT_PASS, d.isDef)
+        return d.isDef
+      })
+    },
+    setIsDefaultPass({ commit }, isDefaultPass) {
       commit(types.APP_DEFAULT_PASS, isDefaultPass)
     }
   },
@@ -82,6 +95,9 @@ export default {
     },
     [types.APP_ROLES](state, payload) {
       state.roles = Object.freeze(payload)
+    },
+    [types.APP_USERNAME](state, payload) {
+      state.userName = payload
     },
     [types.APP_DEVICE_ROLE](state, payload) {
       state.deviceRole = payload
@@ -111,6 +127,9 @@ export default {
     },
     capacity(state) {
       return state.capacity
+    },
+    isIndustry(state) {
+      return state.capacity.product_type === 'industry'
     },
     menus(state) {
       return state.menus
@@ -183,6 +202,9 @@ export default {
     },
     isDefaultPass(state, getters) {
       return state.isDefaultPass
+    },
+    userName(state) {
+      return state.userName
     }
   }
 }

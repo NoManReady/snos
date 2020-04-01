@@ -4,7 +4,7 @@
       <div slot="content"></div>
     </help-alert>
     <div class="box">
-      <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="small">
+      <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
         <el-form-item label="SNMP开关：" prop="enable">
           <el-switch @change="_onEnableChange" active-value="1" inactive-value="0" v-model="baseModel.enable"></el-switch>
         </el-form-item>
@@ -16,17 +16,17 @@
             </el-select>
           </el-form-item>
           <el-form-item label="识别码：" prop="community" v-if="baseModel.version==='0'">
-            <el-input :placeholder="'字符：（1~20）'" class="w260" v-model="baseModel.community"></el-input>
+            <el-input :placeholder="'字符：（1-20）'" class="w260" v-model="baseModel.community"></el-input>
           </el-form-item>
           <template v-else>
             <el-form-item label="用户名：" prop="user">
-              <el-input :placeholder="'字符：（1~30）'" class="w260" v-model="baseModel.user"></el-input>
+              <el-input :placeholder="'字符：（1-30）'" class="w260" v-model="baseModel.user"></el-input>
             </el-form-item>
             <el-form-item label="认证密码：" prop="authpasswd">
-              <el-input :placeholder="'字符：（8~32）'" class="w260" v-model="baseModel.authpasswd"></el-input>
+              <el-input :placeholder="'字符：（8-32）'" class="w260" v-model="baseModel.authpasswd"></el-input>
             </el-form-item>
             <el-form-item label="加密密码：" prop="encpasswd">
-              <el-input :placeholder="'字符：（8~64）'" class="w260" v-model="baseModel.encpasswd"></el-input>
+              <el-input :placeholder="'字符：（8-64）'" class="w260" v-model="baseModel.encpasswd"></el-input>
             </el-form-item>
           </template>
           <el-form-item label="主机IP集：" prop="hostips">
@@ -43,7 +43,7 @@
             </template>
           </el-form-item>
           <el-form-item class="mt20">
-            <el-button @click.native="_onSaveConf" size="small" type="primary">保存配置</el-button>
+            <el-button @click.native="_onSaveConf" class="w160" size="medium" type="primary">保存配置</el-button>
           </el-form-item>
         </template>
       </el-form>

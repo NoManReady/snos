@@ -5,7 +5,7 @@ export const path = {
 // 生成序列
 export const getQuene = (list, par_q, par_p = []) => {
   if (!list || !list.length) {
-    return null
+    return []
   }
   let cur_q = 1
   return list.map(lis => {

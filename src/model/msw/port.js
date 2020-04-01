@@ -12,8 +12,7 @@ export const base = () => {
 export const aggregate = () => {
   return {
     lpid: [],
-    aggregateport: '',
-    interface: ''
+    aggregateport: ''
   }
 }
 
@@ -35,7 +34,6 @@ export const phy = () => {
     mtu: 1500,
     media_type: 1,
     media_flag: 0,
-    interface: '',
     description: '',
     portid: []
   }
@@ -54,7 +52,7 @@ export const portVlan = () => {
     mode: 1,
     untagvlan: '',
     permitvlan: '1-4094',
-    pvid: '',
+    pvid: '1',
     portid: []
   }
 }
@@ -66,6 +64,20 @@ export const macBase = () => {
     macaddr: '',
     vlanid: '',
     lpid: ''
+  }
+}
+// 三层端口
+export const L3interface = () => {
+  return {
+    "iftype":"svi",
+    "proto":"static",
+    "ifname":"",
+    "ipaddr":"",
+    "netmask":"255.255.255.0",
+    "vlanid":"",
+    "macaddr":"",
+    "lpid": "",
+    "aggregateport": ""
   }
 }
 

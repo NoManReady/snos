@@ -15,6 +15,7 @@ module.exports = {
   PING: '""',
   KEY: '"RjYkhwzx$2018!"',
   INIT_IP: '"10.44.77.254"',
+  LANG_DIR: JSON.stringify(yargs.argv.env.devType),
   THEME: JSON.stringify(theme),
   STATIC_PATH: JSON.stringify(`/luci-static/${theme}`),
   VIEWS_PATH: JSON.stringify(viewsPath)

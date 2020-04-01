@@ -1,44 +1,44 @@
 <template>
-  <div class="block overview-wifi-info mb10">
-    <div :class="{'pointer': !disableClick}" @click="_onToWifiSetting('2')" class="box-header" v-if="headerStyle=='title'">
-      <span class="box-header-tit">无线信息</span>
+  <div :class="{'block': headerStyle !== 'title'}" class="overview-wifi-info mb10" v-loading="!isLoaded">
+    <div :class="{ pointer: !disableClick }" @click="_onToWifiSetting('2')" class="box-header" v-if="headerStyle === 'title'">
+      <span class="box-header-tit">{{ $t("overview.wireless_info") }}</span>
     </div>
-    <el-row align="middle" class="mb10" justify="center" type="flex" v-else>
-      <el-col class="c-info tl">无线信息</el-col>
+    <el-row align="middle" justify="center" type="flex" v-else>
+      <el-col class="c-info tl">{{ $t("overview.wireless_info") }}</el-col>
       <el-col class="tr">
-        <el-button @click="_onToWifiSetting('2')" type="text">配置></el-button>
+        <el-button @click="_onToWifiSetting('2')" type="text">{{ $t("action.config") }}></el-button>
       </el-col>
     </el-row>
     <el-row align="center" class="wifi-info">
-      <el-col :lg="11" :md="24" :span="11" :xs="24">
+      <el-col :lg="11" :md="isEg ? 24 : 11" :span="11" :xs="24">
         <el-row align="center" class="tc auto-margin" justify="center" type="flex">
           <el-col :lg="2" :span="3">
-            <div :class="{'pointer': !disableClick}" @click="_onToWifiSetting('0')">
+            <div :class="{ pointer: !disableClick }" @click="_onToWifiSetting('0')">
               <i class="rjucd-wifi c-success"></i>
             </div>
           </el-col>
           <el-col :lg="22" :span="21">
             <div class="view-item">
-              <label class="title">无线网络：</label>
-              <div class="content word-break">{{ !!masterWifi ? masterWifi.ssidName : '-'}}</div>
+              <label class="title">{{ $t("overview.wireless_net_f") }}</label>
+              <div class="content word-break">{{ !!masterWifi ? masterWifi.ssidName : "-" }}</div>
             </div>
             <div class="view-item">
-              <label class="title">是否加密：</label>
-              <div class="content">{{isEncry(masterWifi)}}</div>
+              <label class="title">{{ $t("overview.encrypt_or_not_f") }}</label>
+              <div class="content">{{ isEncry(masterWifi) }}</div>
             </div>
           </el-col>
         </el-row>
       </el-col>
-      <el-col :lg="13" :md="24" :span="13" :xs="24">
+      <el-col :lg="13" :md="isEg ? 24 : 13" :span="13" :xs="24">
         <el-row align="center" class="tc auto-margin" justify="center" type="flex">
           <el-col :lg="2" :span="3">
-            <div :class="{'pointer': !disableClick}" @click="_onToWifiSetting('1')">
+            <div :class="{ pointer: !disableClick }" @click="_onToWifiSetting('1')">
               <i :class="editVistor.enable === 'true' ? 'c-success' : 'c-info'" class="rjucd-wifi"></i>
             </div>
           </el-col>
           <el-col :lg="22" :span="21">
             <div class="view-item">
-              <label class="title">访客Wi-Fi：</label>
+              <label class="title">{{ $t("overview.guest_wifi_f") }}</label>
               <div class="content">
                 <label class="vm" v-popover:vistorSsidPopover>
                   <label
@@ -46,13 +46,20 @@
                     class="pointer mr10 word-break"
                     v-if="editable && vistorSsid.enable === 'true'"
                   >
-                    <a class="c-success" href="javascript:;">{{ !!vistorSsid ? vistorSsid.ssidName : '-'}}</a>
+                    <a class="c-success" href="javascript:;">
+                      {{
+                      !!vistorSsid ? vistorSsid.ssidName : "-"
+                      }}
+                    </a>
                     <i class="el-icon-edit fs16 c-success ml5"></i>
                   </label>
-                  <label class="word-break" v-else-if="vistorSsid.enable === 'true'">{{ !!vistorSsid ? vistorSsid.ssidName : '-'}}</label>
+                  <label
+                    class="word-break"
+                    v-else-if="vistorSsid.enable === 'true'"
+                  >{{ !!vistorSsid ? vistorSsid.ssidName : "-" }}</label>
                   <el-switch
                     :disabled="!editable"
-                    :title="!editable && '从AP或公寓WiFi不可编辑' "
+                    :title="!editable && $t('overview.slave_wifi_notedit')"
                     active-value="true"
                     inactive-value="false"
                     v-model="editVistor.enable"
@@ -61,8 +68,8 @@
               </div>
             </div>
             <div class="view-item">
-              <label class="title">是否加密：</label>
-              <div class="content">{{isEncry(vistorSsid)}}</div>
+              <label class="title">{{ $t("overview.encrypt_or_not_f") }}</label>
+              <div class="content">{{ isEncry(vistorSsid) }}</div>
             </div>
           </el-col>
         </el-row>
@@ -70,9 +77,9 @@
     </el-row>
 
     <el-popover :value="vistorSsidPopover" placement="top" ref="vistorSsidPopover" trigger="manual" width="260">
-      <el-form :model="editVistor" :rules="baseRules" @submit.native.prevent ref="baseForm" size="mini">
+      <el-form :model="editVistor" :rules="baseRules" @submit.native.prevent ref="baseForm" size="small">
         <el-form-item prop="ssidName">
-          <p class="tc fs15">编辑访客Wi-Fi名称</p>
+          <p class="tc fs15">{{ $t("overview.edit_guest_wifi") }}</p>
           <el-input
             :title="editVistor.ssidName"
             @keydown.enter.native="_onVistorSubmit"
@@ -82,17 +89,21 @@
         </el-form-item>
       </el-form>
       <div class="tc">
-        <el-button @click="vistorSsidPopover = false" size="mini" type="text">取消</el-button>
-        <el-button :loading="false" @click="_onVistorSubmit" size="mini" type="primary">确定</el-button>
+        <el-button @click="vistorSsidPopover = false" plain size="small">
+          {{
+          $t("action.cancel")
+          }}
+        </el-button>
+        <el-button :loading="false" @click="_onVistorSubmit" size="small" type="primary">{{ $t("action.confirm") }}</el-button>
       </div>
     </el-popover>
   </div>
 </template>
 <script>
 import { wirelessFn } from '@/model/modules/wireless'
-import { Col, Row } from 'element-ui'
 import { isAuth } from '@/directives/auth'
 import { ssidNameValidator, wifiNameValidator } from '@/utils/rules'
+import { existValidate } from '@/utils/rulesUtils'
 import wifiMixins from '@/views/common/wireless/components/wifiMixins'
 export default {
   name: 'WifiInfo',
@@ -108,18 +119,14 @@ export default {
   },
   data() {
     const ssidNameUniValidator = (rule, value, cb) => {
-      if (this.includeChinese) {
-        return cb()
-      }
-      if (
-        this.ssidNames.includes(value) &&
-        this.vistorSsid.ssidName !== value
-      ) {
-        cb(new Error(`已存在该名称：${value}`))
+      if (existValidate(this.ssidNames, value, this.vistorSsid.ssidName)) {
+        return cb(new Error(I18N.t('overview.wifi_is_exist', { name: value })))
       }
       cb()
     }
     return {
+      loadWifi: true,
+      isSilence: true,
       ignoreEnable: true,
       ssidList: [],
       isDisable: false,
@@ -137,7 +144,11 @@ export default {
       },
       baseRules: {
         ssidName: [
-          { required: true, message: '请输入Wi-Fi名称', whitespace: true },
+          {
+            required: true,
+            message: I18N.t('overview.wifi_no_empty'),
+            whitespace: true
+          },
           { validator: wifiNameValidator },
           { validator: ssidNameValidator, size: 32 },
           { validator: ssidNameUniValidator }
@@ -146,10 +157,6 @@ export default {
     }
   },
   mixins: [wifiMixins],
-  components: {
-    [Col.name]: Col,
-    [Row.name]: Row
-  },
   computed: {
     ssidNames() {
       return this.ssidList.map(o => o.ssidName)
@@ -159,6 +166,9 @@ export default {
     },
     masterWifi() {
       return this.ssidList.find(ssid => ssid.wlanId === '1')
+    },
+    isEg() {
+      return this.$roles().includes('egw')
     }
   },
   watch: {
@@ -188,13 +198,13 @@ export default {
         if (v === 'true') {
           if (this.isDisable) {
             return this.$confirm(
-              `当前Wi-Fi已达8个，请先去删除一个才能开启访客Wi-Fi。`,
-              '提示',
+              I18N.t('overview.wifi_limit_tip'),
+              I18N.t('phrase.tip'),
               {
                 type: 'warning',
                 showClose: false,
-                cancelButtonText: '暂不开启',
-                confirmButtonText: '去删除Wi-Fi',
+                cancelButtonText: I18N.t('overview.unopened_now'),
+                confirmButtonText: I18N.t('overview.delete_wifi'),
                 closeOnClickModal: false,
                 dangerouslyUseHTMLString: true
               }
@@ -210,7 +220,7 @@ export default {
             this.vistorSsidPopover = true
           }
         } else if (this.vistorSsid.enable === 'true') {
-          this.$confirm('是否关闭访问Wi-Fi？').then(
+          this.$confirm(I18N.t('overview.close_wifi_confirm')).then(
             _ => {
               this._onVistorSubmit()
             },
@@ -242,17 +252,30 @@ export default {
   methods: {
     // 跳转至无线管理列表
     _onToWifiSetting(tab) {
-      !this.disableClick &&
+      let _initpath =
+        this.headerStyle === 'row'
+          ? 'admin/wifi/wifi_setting'
+          : 'admin/alone/wifi/wifi_setting'
+      if (
+        !this.disableClick &&
+        this.$router.getMatchedComponents({ name: _initpath }).length > 0
+      ) {
+        if (this.$roles().includes('ehr') && tab === '2') {
+          // 家用去掉Wi-Fi列表页面，跳转到无线网络配置页面
+          tab = '0'
+        }
         this.$router.push({
-          name:
-            this.headerStyle === 'row'
-              ? 'admin/wifi/wifi_setting'
-              : 'admin/alone/network/wifi_setting',
+          name: _initpath,
           query: { tab: tab }
         })
+      }
     },
     isEncry(wifi) {
-      return wifi ? (wifi.encryptionMode === 'open' ? '否' : '是') : '-'
+      return wifi
+        ? wifi.encryptionMode === 'open'
+          ? I18N.t('phrase.no')
+          : I18N.t('phrase.yes')
+        : '-'
     },
     async _onVistorSubmit(e) {
       this.$refs.baseForm.validate(valid => {

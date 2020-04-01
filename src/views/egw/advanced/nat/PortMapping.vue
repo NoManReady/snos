@@ -1,43 +1,38 @@
 <template>
   <div class="advanced-nat">
-    <help-alert json-key="natJson" title="端口映射"></help-alert>
+    <help-alert json-key="natJson" :title="$t('egw.nat.portmap')"></help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          端口映射列表
+          {{$t('egw.nat.portmap_tab')}}
           <small></small>
         </span>
         <div class="fr">
-          <el-button @click.native="onEdit(-1)" size="small" type="primary">
-            <i class="el-icon-plus"></i>
-            <span>新增</span>
-          </el-button>
-          <el-button @click.native="onDel()" size="small" type="primary">
-            <i class="el-icon-delete"></i>
-            <span>批量删除</span>
-          </el-button>
+          <el-button icon="el-icon-plus" plain size="medium" type="primary" v-auth="{fn:onEdit,params:-1}">{{$t('action.add')}}</el-button>
+          <el-button icon="el-icon-delete" plain size="medium" type="primary" v-auth="onDel">{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{MAX_NUM}}</b>条规则。
+          <i18n path="egw.limit_num_tip">
+              <b class="c-warning mlr5">{{MAX_NUM}}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="pageList" ref="multipleTable" row-key="`${ruleName}_${destPort}`" size="small" stripe>
+      <el-table :data="pageList" ref="multipleTable" row-key="`${ruleName}_${destPort}`" size="medium" stripe>
         <el-table-column align="center" type="selection" width="50"></el-table-column>
-        <el-table-column align="center" label="规则名称" prop="ruleName"></el-table-column>
-        <el-table-column align="center" label="服务协议" prop="proto">
+        <el-table-column align="center" :label="$t('egw.nat.rule_name')" prop="ruleName"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.nat.service_agreement')" prop="proto">
           <template slot-scope="scope">{{scope.row.proto.toUpperCase()}}</template>
         </el-table-column>
-        <el-table-column align="center" label="外部服务器IP" prop="srcIp"></el-table-column>
-        <el-table-column align="center" label="外部端口" prop="srcPort"></el-table-column>
-        <el-table-column align="center" label="内部服务器IP" prop="destIp"></el-table-column>
-        <el-table-column align="center" label="内部端口" prop="destPort"></el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column align="center" :label="$t('egw.nat.external_server_ip')" prop="srcIp"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.nat.external_port')" prop="srcPort"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.nat.inside_service_ip')" prop="destIp"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.nat.inside_port')" prop="destPort"></el-table-column>
+        <el-table-column align="center" :label="$t('action.ope')">
           <template slot-scope="scope">
-            <el-button @click.native="onEdit(scope.$index, scope.row)" type="text">修改</el-button>
-            <el-button @click.native="onDel([scope.row.ruleName])" type="text">删除</el-button>
+            <el-button @click.native="onEdit(scope.$index, scope.row)" size="medium" type="text">{{$t('action.edit')}}</el-button>
+            <el-button @click.native="onDel([scope.row.ruleName])" size="medium" type="text">{{$t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -55,50 +50,50 @@
 
       <!-- 编辑对话框 -->
       <el-dialog :title="modalTitle" :visible.sync="isModalShow" @open="_clearValidate" width="500px">
-        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" status-icon>
-          <el-form-item label="规则名称" prop="ruleName">
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('egw.nat.rule_name')" prop="ruleName">
             <el-input class="w260" v-model="baseModel.ruleName"></el-input>
           </el-form-item>
-          <el-form-item label="服务协议" prop="proto">
+          <el-form-item :label="$t('egw.nat.service_agreement')" prop="proto">
             <el-select @change="onProtoChange" class="w260" v-model="baseModel.proto">
               <el-option label="UDP" value="udp"></el-option>
               <el-option label="TCP" value="tcp"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="外部服务器IP" prop="srcIp">
+          <el-form-item :label="$t('egw.nat.external_server_ip')" prop="srcIp">
             <arp-input
               :dataSource="wanArr"
               @input="_onValidateField('srcPort')"
               class="w260"
-              placeholder="默认用外网口IP地址"
+              :placeholder="$t('egw.nat.default_inter_ip')"
               v-model="baseModel.srcIp"
             ></arp-input>
           </el-form-item>
-          <el-form-item label="外部端口/范围" prop="srcPort">
-            <el-input @input="onInputSrcPort" class="w260" placeholder="格式：X或X-X (X范围：1-65535)" v-model="baseModel.srcPort"></el-input>
+          <el-form-item :label="$t('egw.nat.external_port_limit')" prop="srcPort">
+            <el-input @input="onInputSrcPort" class="w260" :placeholder="$t('egw.nat.external_port_limit_tip')" v-model="baseModel.srcPort"></el-input>
           </el-form-item>
-          <el-form-item label="内部服务器IP" prop="destIp">
+          <el-form-item :label="$t('egw.nat.inside_service_ip')" prop="destIp">
             <arp-input
               @input="_onValidateField('srcPort')"
               class="w260"
               filterType="LAN"
-              placeholder="输入或从ARP列表中选择IP"
+              :placeholder="$t('egw.nat.enter_ip_or_by_arp')"
               v-model="baseModel.destIp"
             ></arp-input>
           </el-form-item>
-          <el-form-item label="内部端口/范围" prop="destPort">
+          <el-form-item :label="$t('egw.nat.inside_port_limit')" prop="destPort">
             <el-input
               :disabled="rangePort"
-              :title="rangePort ? '原因：外部端口是端口范围时，内部端口须与外部端口范围保持一致' : ''"
+              :title="rangePort ? $t('egw.nat.same_port_range_reson') : ''"
               class="w260"
-              placeholder="格式：X或X-X (X范围：1-65535)"
+              :placeholder="$t('egw.nat.external_port_limit_tip')"
               v-model="baseModel.destPort"
             ></el-input>
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click="isModalShow = false">取 消</el-button>
-          <el-button @click="onSubmitForm()" type="primary">确 定</el-button>
+          <el-button @click="isModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button @click="onSubmitForm()" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -124,7 +119,7 @@ export default {
   data() {
     const isIporNetSeg = (rule, val, cb) => {
       if (!!val && !isIp(val) && !isNetSeg(val)) {
-        return cb(new Error('请输入有效的IP或网段'))
+        return cb(new Error(this.$t('egw.enter_valid_ip_or_network')))
       }
       cb()
     }
@@ -133,10 +128,10 @@ export default {
         return cb()
       }
       if (this.netList.length === 0) {
-        return cb(new Error('WAN口无IP，推荐配置为空'))
+        return cb(new Error(this.$t('egw.nat.empty_config_with_no_ip')))
       }
       if (!isIpInNet(val, this.netList)) {
-        return cb(new Error('外部IP与WAN口IP不在同一网段'))
+        return cb(new Error(this.$t('egw.nat.external_wan_ip_diffrent_network')))
       }
       // if (/\.1$/.test(val)) {
       //   return cb(new Error('请勿配置.1地址防止与网关冲突'))
@@ -155,7 +150,7 @@ export default {
         _name = this.pageList[this.editIndex].ruleName
       }
       if (val !== _name && _isExit('ruleName', val)) {
-        cb(new Error(`规则：${val}已存在`))
+        cb(new Error(this.$t('egw.nat.rule_is_has',{val:val})))
       }
       cb()
     }
@@ -163,21 +158,21 @@ export default {
       if (!v.includes('-')) {
         //  单个端口号
         if (!intValidate(v)) {
-          return cb(new Error('请输入整数'))
+          return cb(new Error(this.$t('egw.enter_positive_integer')))
         }
         //  单个端口号
         if (!isBetween(v, 1, 65535)) {
-          return cb(new Error('端口范围为1~65535'))
+          return cb(new Error(this.$t('egw.port_limit_tip')))
         }
       } else {
         // 端口号范围
         if (!isPortRange(v)) {
-          return cb(new Error('端口范围格式为 XX-YY'))
+          return cb(new Error(this.$t('egw.nat.port_limit_type')))
         }
         let sPort = v.split(/\s*-\s*/)[0]
         let ePort = v.split(/\s*-\s*/)[1]
         if (+sPort > +ePort) {
-          return cb(new Error('结束端口必须大于等于开始端口'))
+          return cb(new Error(this.$t('egw.nat.end_ip_mare_then_start_ip_is_required')))
         }
       }
       cb()
@@ -193,7 +188,7 @@ export default {
       }
       let _key = r.portKey || 'srcPort'
       if (_getPostNum(v) !== _getPostNum(this.baseModel[_key])) {
-        return cb(new Error('内外部端口范围的个数不同'))
+        return cb(new Error(this.$t('egw.nat.external_wan_port_diffrent_number')))
       }
       cb()
     }
@@ -251,8 +246,8 @@ export default {
       if (_item) {
         cb(
           new Error(
-            `${_item.proto.toLocaleUpperCase()} 已设置过映射（${_item.srcIp ||
-              '外网口IP'}:${_item.srcPort}）`
+            `${_item.proto.toLocaleUpperCase()}` + this.$t('egw.nat.portmap_is_edit') + `（${_item.srcIp ||
+              this.$t('egw.nat.external_port_ip')}:${_item.srcPort}）`
           )
         )
       }
@@ -270,8 +265,8 @@ export default {
       rangePort: false,
       baseRules: {
         ruleName: [
-          { required: true, message: '请输入规则名称' },
-          { range: true, min: 1, max: 28, message: '规则名称为1-28个字符' },
+          { required: true, message: this.$t('egw.enter_rule_name') },
+          { range: true, min: 1, max: 28, message: this.$t('egw.rule_name_length_tip') },
           { validator: nameValidator }
         ],
         srcIp: [
@@ -280,16 +275,16 @@ export default {
           { validator: natRepeat }
         ],
         srcPort: [
-          { required: true, message: '外网映射端口必填' },
+          { required: true, message: this.$t('egw.nat.external_portmap_port_is_required') },
           { validator: isLegalPort },
           { validator: natRepeat }
         ],
         destIp: [
-          { required: true, message: '内网映射IP必填' },
+          { required: true, message: this.$t('egw.nat.inside_portmap_ip_is_required') },
           { validator: ipValidator }
         ],
         destPort: [
-          { required: true, message: '内网映射端口必填' },
+          { required: true, message: this.$t('egw.nat.inside_portmap_port_is_required') },
           { validator: isLegalPort },
           { validator: isMergerPort, portKey: 'srcPort' }
         ]
@@ -298,7 +293,7 @@ export default {
   },
   computed: {
     modalTitle() {
-      return this.editIndex === -1 ? '新增' : '编辑'
+      return this.editIndex === -1 ? this.$t('action.add') : this.$t('action.edit1')
     }
   },
   mixins: [pageMixins, formMixins],
@@ -333,14 +328,14 @@ export default {
       if (!nameArr) {
         let selection = this.$refs.multipleTable.selection
         if (!selection.length) {
-          return this.$message.warning('请选择要删除的列表项')
+          return this.$message.warning( this.$t('tip.select_del_item'))
         }
         nameArr = selection.map(item => item.ruleName)
       }
       this._onDel(nameArr)
     },
     _onDel(nameArr) {
-      this.$confirm('是否确认删除？').then(() => {
+      this.$confirm( this.$t('tip.confirm_delete')).then(() => {
         this.$api.delPortMapping(nameArr).then(d => {
           nameArr.forEach(name => {
             let _index = this.pageList.findIndex(
@@ -349,7 +344,7 @@ export default {
             this.removeList(_index)
           })
           this.$message({
-            message: '删除成功',
+            message: this.$t('tip.del_success'),
             type: 'success'
           })
         })
@@ -360,7 +355,7 @@ export default {
       this.editIndex = idx
       if (idx === -1 && this.pageTotal >= this.MAX_NUM) {
         return this.$message.warning(
-          `端口映射最多只能添加 ${this.MAX_NUM} 条数据`
+          this.$t('egw.nat.portmap_length_any_more',{num:this.MAX_NUM})
         )
       }
       this._onShowModal(row)
@@ -394,7 +389,7 @@ export default {
           _promise
             .then(d => {
               this.$message({
-                message: '设置成功',
+                message: this.$t('tip.edit1_success'),
                 type: 'success'
               })
             })

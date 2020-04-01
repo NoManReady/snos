@@ -8,7 +8,8 @@ let TimeSelectionConstructor = Vue.extend(Instance)
 const TimeSelection = function (options) {
   if (!instance) {
     instance = new TimeSelectionConstructor({
-      data: options
+      data: options,
+      i18n:I18N
     })
     instance.vm = instance.$mount()
     document.body.appendChild(instance.vm.$el)

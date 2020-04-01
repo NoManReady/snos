@@ -1,37 +1,38 @@
 <template>
   <div class="behavior-accessctrl-timelimit">
-    <help-alert json-key="timeLimitJson" title="上网时间控制">
+    <help-alert json-key="timeLimitJson" :title="$t('egw.accessCtrl.time_limit')">
       <div slot="content"></div>
     </help-alert>
     <div class="box-header mt15">
       <span class="box-header-tit">
-        上网时间控制
+        {{$t('egw.accessCtrl.time_limit')}}
         <small></small>
       </span>
       <div class="fr">
-        <el-button :disabled="loading" @click.native="_onEdit(-1)" size="small" type="primary">
+        <el-button :disabled="loading" @click.native="_onEdit(-1)" plain size="medium" type="primary">
           <i class="el-icon-plus"></i>
-          <span>新增</span>
+          <span>{{$t('action.add')}}</span>
         </el-button>
-        <el-button :disabled="loading" @click.native="_onDel()" size="small" type="primary">
+        <el-button :disabled="loading" @click.native="_onDel" plain size="medium" type="primary">
           <i class="el-icon-delete"></i>
-          <span>批量删除</span>
+          <span>{{$t('action.patch_delete')}}</span>
         </el-button>
       </div>
     </div>
     <help-alert :show-icon="false" title>
       <div slot="content">
-        最大支持配置
-        <b class="c-warning mlr5">{{MAX_NUM}}</b>条。
+        <i18n path="egw.limit_num_tip">
+            <b class="c-warning mlr5">{{MAX_NUM}}</b>
+        </i18n>
       </div>
     </help-alert>
-    <el-table :data="pageList" ref="multipleTable" row-key="uuid" size="small" stripe>
+    <el-table :data="pageList" ref="multipleTable" row-key="uuid" size="medium" stripe>
       <el-table-column align="center" type="selection" width="50"></el-table-column>
-      <el-table-column align="center" label="MAC地址" prop="mac"></el-table-column>
-      <el-table-column align="center" label="用户名称" prop="hostname">
+      <el-table-column align="center" :label="$t('egw.mac')" prop="mac"></el-table-column>
+      <el-table-column align="center" :label="$t('egw.user_name')" prop="hostname">
         <span slot-scope="{row}">{{_getHostName(row)}}</span>
       </el-table-column>
-      <el-table-column align="center" label="禁止时段" prop="tmngtName">
+      <el-table-column align="center" :label="$t('egw.accessCtrl.no_allow_time')" prop="tmngtName">
         <template slot-scope="{row}">
           <span v-if="row.tmngtName !== SELF_DEFINED">{{row.tmngtName}}</span>
           <template v-else>
@@ -39,17 +40,17 @@
           </template>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="状态" prop="hostname">
+      <el-table-column align="center" :label="$t('phrase.status')" prop="hostname">
         <div slot-scope="{row}">
           <i class="el-icon-loading fs14" v-if="loadingStatus"></i>
-          <span class="c-success" v-else-if="row.status==='ACTIVE'">生效中</span>
-          <span class="c-info" v-else>未生效</span>
+          <span class="c-success" v-else-if="row.status==='ACTIVE'">{{$t('egw.accessCtrl.effectiving')}}</span>
+          <span class="c-info" v-else>{{$t('egw.accessCtrl.ineffectiving')}}</span>
         </div>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="100px">
+      <el-table-column align="center" :label="$t('action.ope')" width="100px">
         <template slot-scope="scope">
-          <el-button :disabled="loading" @click="_onEdit(scope.$index,scope.row)" type="text">修改</el-button>
-          <el-button :disabled="loading" @click="_onDel([scope.row.uuid])" type="text">删除</el-button>
+          <el-button :disabled="loading" @click="_onEdit(scope.$index,scope.row)" size="medium" type="text">{{$t('action.edit')}}</el-button>
+          <el-button :disabled="loading" @click="_onDel([scope.row.uuid])" size="medium" type="text">{{$t('action.delete')}}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -72,39 +73,39 @@
       @open="_clearValidate"
       width="500px"
     >
-      <el-form :model="baseModel" :rules="baseRules" label-width="120px" ref="baseForm">
-        <el-form-item label="MAC地址" prop="mac">
+      <el-form :model="baseModel" :rules="baseRules" label-width="120px" ref="baseForm" size="medium">
+        <el-form-item :label="$t('egw.mac')" prop="mac">
           <auto-complete
             :data-source="userList"
             class="w280"
             label="hostName"
-            placeholder="请选择用户"
+            :placeholder="$t('egw.accessCtrl.select_user')"
             v-model="baseModel.mac"
             value-key="mac"
           >
             <div slot-scope="{item}">
-              <span class="strong">{{ item.hostName||'未知' }}</span>
+              <span class="strong">{{ item.hostName||$t('phrase.unkown') }}</span>
               <span>({{ item.mac||'--' }})</span>
             </div>
           </auto-complete>
         </el-form-item>
-        <el-form-item label="禁止时段" prop="tmngtName">
-          <el-select class="w280" placeholder="请选择" v-model="baseModel.tmngtName">
-            <el-option :key="item.tmngtName" :label="item.tmngtName" :value="item.tmngtName" v-for="item in timeGroups"></el-option>
-            <el-option :value="SELF_DEFINED" label="自定义"></el-option>
+        <el-form-item :label="$t('egw.accessCtrl.no_allow_time')" prop="tmngtName">
+          <el-select class="w280" :placeholder="$t('action.select')" v-model="baseModel.tmngtName">
+            <el-option :key="item.tmngtName" :label="item.name" :value="item.tmngtName" v-for="item in timeGroups"></el-option>
+            <el-option :value="SELF_DEFINED" :label="$t('egw.custom')"></el-option>
           </el-select>
         </el-form-item>
         <template v-if="baseModel.tmngtName === SELF_DEFINED">
-          <el-form-item class="is-required" label="自定义时间" prop="time">
+          <el-form-item class="is-required" :label="$t('egw.accessCtrl.custom_time')" prop="time">
             <a @click="onOpenTimeSelection(baseModel.time,true)" class="f-theme pointer">
-              <i class="el-icon-date mr5"></i>选择时间
+              <i class="el-icon-date mr5"></i>{{$t('egw.accessCtrl.select_time')}}
             </a>
           </el-form-item>
         </template>
       </el-form>
       <span class="dialog-footer" slot="footer">
-        <el-button :disabled="loading" @click="isModalShow = false">取 消</el-button>
-        <el-button :loading="loading" @click="_onSubmit" type="primary">确 定</el-button>
+        <el-button :disabled="loading" @click="isModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+        <el-button :loading="loading" @click="_onSubmit" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -137,7 +138,7 @@ export default {
         }
       }
       if (_isExit) {
-        cb(new Error('MAC地址已配置过'))
+        cb(new Error(this.$t('egw.accessCtrl.mac_is_has')))
       }
       cb()
     }
@@ -159,11 +160,11 @@ export default {
       },
       baseRules: {
         mac: [
-          { required: true, message: '请选择用户或输入MAC地址' },
+          { required: true, message: this.$t('egw.accessCtrl.select_mac_or_user') },
           { validator: macValidator },
           { validator: checkMacUnit }
         ],
-        time: [{ validator: timeValidator, message: '请选择时间范围' }]
+        time: [{ validator: timeValidator, message: this.$t('egw.accessCtrl.select_time_range') }]
       }
     }
   },
@@ -173,7 +174,7 @@ export default {
   },
   computed: {
     modalTitle() {
-      return this.editIndex === -1 ? '添加' : '编辑'
+      return this.editIndex === -1 ? this.$t('action.add') : this.$t('action.edit1')
     }
   },
   watch: {
@@ -265,7 +266,7 @@ export default {
         this.pageModel.allItem.length >= this.MAX_NUM
       ) {
         return this.$message.warning(
-          `上网时间控制最多只能添加 ${this.MAX_NUM} 条规则`
+          this.$t('egw.accessCtrl.limit_time_rule_num',{num:this.MAX_NUM})
         )
       }
       this.baseModel = Object.assign(
@@ -282,18 +283,18 @@ export default {
       if (!uuids) {
         let selection = this.$refs.multipleTable.selection
         if (!selection.length) {
-          return this.$message.warning('请选择要删除的列表项')
+          return this.$message.warning(this.$t('tip.select_del_item'))
         }
         uuids = selection.map(item => item.uuid)
       }
-      await this.$confirm('是否确认删除？')
+      await this.$confirm(this.$t('tip.confirm_delete'))
       try {
         await this.$api.delTimeLimit(uuids, 'del', true)
         uuids.forEach(uuid => {
           let _index = this.pageList.findIndex(item => item.uuid === uuid)
           this.removeList(_index)
         })
-        this.$message.success('删除成功')
+        this.$message.success(this.$t('tip.del_success'))
       } finally {
       }
     },
@@ -316,7 +317,7 @@ export default {
           _promise
             .then(d => {
               setTimeout(this._loadStatusList, 1000)
-              this.$message('配置成功')
+              this.$message(this.$t('tip.edit1_success'))
             })
             .finally(() => {
               this.isModalShow = false

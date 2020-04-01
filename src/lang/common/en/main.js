@@ -1,0 +1,83 @@
+export default {
+  main_header: {
+    logout: 'Exit',
+    macc_dev: 'MACC',
+    app_download: "Download App",
+    network_cfg: 'Network Setup',
+    quick_cfg: 'Quick Setup',
+    network_check: 'Network Check',
+    warn_view: 'Alarm Details',
+    warn: 'Alarm',
+    def_pass_login: 'Default-Password-Free Login',
+    logout_safe: 'Exit to Login Page',
+    def_pass: 'Default Password',
+    shink: 'Collapse',
+    web_manage: 'EWEB Management System'
+  },
+  admin: {
+    master_source_err_tip: 'You are now logging into the slave device. Due to the file resource error on the master device, only the slave device information will be displayed.',
+    master_source_err: 'A file resource error occurred on the master device.',
+    master_ping_err_tip: 'You are now logging into the slave device. Due to unreachability to the master device, only the slave device information will be displayed.',
+    master_ping_err: 'The master device is unreachable.',
+    view_slave_only: 'View Slave Device Only',
+    master_old_err_tip: 'You are now logging into the slave device. Due to the outdated version of the master device, only the slave device information will be displayed.',
+    master_old_err: 'The version of the master device is outdated.',
+    upgrade_master: 'Upgrade Master Device',
+    master_unknow_err_tip: 'You are now logging into the slave device. Due to the master device error, only the slave device information will be displayed.',
+    master_unknow_err: 'A master device error occurred.'
+  },
+  devtool: {
+    reboot: 'Reboot',
+    reboot_confirm: 'Reboot requires a relogin. Do you want to continue?',
+    reboot_success: 'Reboot operation succeeded.',
+    rebooting: 'Rebooting...',
+    refresh_page: 'Refresh',
+    reset_confirm: 'Clearing settings may disable access EWEB. Do you want to continue?'
+  },
+  nbr: {
+    gateway_info: 'Gateway Info',
+    gateway_manage: 'Gateway Settings'
+  },
+  quickset: {
+    re_discover: 'Rediscover',
+    begin_cfg: 'Start Setup',
+    prev: 'Previous',
+    next: 'Next',
+    discover_dev: 'Discover Device',
+    create_network: 'Create Network',
+    scan_cloud: 'Scan QR Code',
+    whole_new_cfg: 'Network Setup',
+    check_cloud_status: 'Check Cloud Status',
+    create_and_connection: 'Create Network & Connect',
+    complete_cfg: 'Finish',
+    exit_tip: 'All changes on this page will be discarded after you exit. Please be cautious.',
+    cfg_nocomplete: 'You have not finished configuration yet.',
+    exit_confirm: 'Exit',
+    continue_cfg: 'Continue',
+    dev_cfg_tip1: '1. You can configure each device on EWEB.',
+    dev_cfg_tip2: '2. You can click <span class="c-success">MACC</span> or <span class="c-success">Download App</span> on the top of the page for remote operation and maintenance.',
+    dev_cfg_tip3: '2. You can click <span class="c-success">MACC</span> on the top of the page for remote operation and maintenance.',
+    tips: 'Tip',
+    enter_eweb: 'Enter EWEB',
+    dev_no_join_tip: 'The device has not joined in the ad hoc network. If you want to use this device with other devices for networking, please enter the management password. If it is used as a standalone device, please ignore this message.',
+    no_cfg_now: 'Ignore',
+    cfg_ok: 'Deliver',
+    cfg_no_change: 'No configuration is changed. Do you want to skip the configuration?',
+    skip_cfg: 'Skip',
+    override_cfg: 'Override',
+    cfging: 'Delivering configuration...',
+    cfg_action: 'Configuration',
+    cfg_effecting: 'Activating configuration...',
+    data_invalid: 'Please check data validity.',
+    check_connect: 'Checking connectivity...',
+    re_connect_wifi: 'If you access EWEB by WiFi, please connect to {ssid} again.',
+    ip_change_tip: 'Changing the IP assignment type will cause IP address change. {msg}.',
+    ip_change_msg1: 'Please enter the new IP address.',
+    ip_change_msg2: 'Please refresh the page later.'
+  },
+  slave_eg: {
+    gateway_err_tip: 'Failed to view the gateway management page. Please check the software version of the gateway device. Try rebooting, restoring or upgrading the device.',
+    page_err: 'Page error.',
+    source_err: 'File resource error.'
+  }
+}

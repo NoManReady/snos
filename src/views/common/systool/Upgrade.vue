@@ -1,44 +1,32 @@
 <template>
   <div class="systool-upgrade">
-    <el-tabs v-model="tabValue" v-show="showOnlineTab" @tab-click="_onTabClick">
-      <el-tab-pane v-if="showOnlineTab" name="0" label="在线升级"></el-tab-pane>
-      <el-tab-pane name="1" label="本地升级"></el-tab-pane>
-    </el-tabs>
-    <upgrade-tabs :type="tabValue" :key="randomId"></upgrade-tabs>
+    <common-tabs :tabs="tabs"></common-tabs>
   </div>
 </template>
 <script>
-import UpgradeTabs from './upgrade/Index'
+import Tabs from '@/common/Tabs'
+import * as upgrade from './upgrade/index'
 export default {
-  name: 'Upgrade',
-  props: {
-    tab: String,
-    default: '0'
+  name: 'systool-upgrade',
+  components: {
+    [Tabs.name]: Tabs
   },
   data() {
     return {
-      tabValue: '0',
-      randomId: Math.random()
-    }
-  },
-  created() {
-    this.tabValue = this.showOnlineTab ? this.tab : '1'
-  },
-  components: {
-    UpgradeTabs
-  },
-  computed: {
-    showOnlineTab() {
-      return !this.$roles().includes('slave') && !this.$roles().includes('eac')
-    }
-  },
-  methods: {
-    _onTabClick(v) {
-      this.randomId = Math.random()
-      this.$router.push({ query: { tab: v.name } })
+      tabs: Object.freeze([
+        {
+          label: I18N.t('systool.online_upgrade'),
+          value: '0',
+          comp: upgrade.Online
+        },
+        {
+          label: I18N.t('systool.local_upgrade'),
+          value: '1',
+          comp: upgrade.Local
+        }
+      ])
     }
   }
 }
 </script>
-<style lang="scss" scoped>
-</style>
+

@@ -1,33 +1,39 @@
-<template>
+{{ $t("devlist.patch_ope")
+}}<template>
   <div class="device-batch-operatation" style="display:inline-block">
     <el-dropdown trigger="click">
-      <el-button :disabled="isApEmpty" class="el-dropdown-link fs12" plain size="small" type="primary">
-        批量操作
+      <el-button :disabled="isApEmpty" class="el-dropdown-link" plain size="medium" type="primary">
+        {{ $t("devlist.patch_ope") }}
         <i class="el-icon-arrow-down el-icon--right"></i>
       </el-button>
-      <el-dropdown-menu class="fs12" slot="dropdown">
-        <el-dropdown-item v-auth="onUpdate">升级设备</el-dropdown-item>
-        <el-dropdown-item v-auth="onDelete">删除设备</el-dropdown-item>
-        <el-dropdown-item v-auth="onTransfer">迁移分组</el-dropdown-item>
+      <el-dropdown-menu class="w120" slot="dropdown">
+        <el-dropdown-item v-auth="onUpdate">{{ $t("devlist.dev_upgrade") }}</el-dropdown-item>
+        <el-dropdown-item v-auth="onDelete">{{ $t("devlist.dev_delete") }}</el-dropdown-item>
+        <el-dropdown-item v-auth="onTransfer" v-if="!$roles().includes('ehr')">{{ $t("devlist.group_move") }}</el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
-    <el-dialog :visible.sync="isModalShow" @open="select.selecedGroup=''" title="迁移设备分组" width="500px">
-      <el-form :model="select" :rules="baseRules" label-width="68px" ref="form">
-        <el-form-item label="选择分组" prop="selecedGroup">
-          <el-select no-data-text="暂无其他分组" placeholder="请选择" v-model="select.selecedGroup">
+    <el-dialog :title="$t('devlist.dev_group_move')" :visible.sync="isModalShow" @open="select.selecedGroup = ''" width="450px">
+      <el-form :model="select" :rules="baseRules" label-width="120px" ref="form" size="medium">
+        <el-form-item :label="$t('devlist.select_group')" prop="selecedGroup">
+          <el-select
+            :no-data-text="$t('devlist.no_other_group')"
+            :placeholder="$t('action.select')"
+            class="w260"
+            v-model="select.selecedGroup"
+          >
             <el-option
               :key="item.groupId"
-              :label="item.isDefault === 'true' ? '默认组' : item.groupName"
+              :label="item.isDefault === 'true' ? $t('devlist.def_group') : item.groupName"
               :value="item.groupId"
               v-for="item in tree.groupInfo"
             ></el-option>
           </el-select>
         </el-form-item>
-        <div class="tc">
-          <el-button @click="onGroupTransfer()" plain type="primary">确定</el-button>
-          <el-button @click="isModalShow=false">取消</el-button>
-        </div>
       </el-form>
+      <span class="dialog-footer" slot="footer">
+        <el-button @click="onGroupTransfer()" size="medium" type="primary">{{ $t("action.confirm") }}</el-button>
+        <el-button @click="isModalShow = false" size="medium">{{ $t("action.cancel") }}</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
@@ -60,7 +66,12 @@ export default {
       },
       selectionForTransfer: [],
       baseRules: {
-        selecedGroup: [{ validator: isGroupUnSelected, message: '未选中分组' }]
+        selecedGroup: [
+          {
+            validator: isGroupUnSelected,
+            message: I18N.t('devlist.group_no_empty')
+          }
+        ]
       }
     }
   },
@@ -73,7 +84,7 @@ export default {
     onUpdate() {
       let selection = this.faterRefs.multipleTable.selection
       if (!selection.length) {
-        return this.$message.warning('请选择要升级的设备')
+        return this.$message.warning(I18N.t('devlist.dev_upgrade_no_empty'))
       }
 
       let msgList = []
@@ -82,15 +93,13 @@ export default {
           msgList.push(this.getMsgList(item))
         }
       })
-      if (msgList.length == 0)
-        return this.$alert('当前选中的设备已是最新版本或是离线状态，不可升级。')
+      if (msgList.length == 0) return this.$alert(I18N.t('devlist.upgrade_tip'))
       this.$confirm(
-        `<div>当前选中 <span class="f-theme">${
-          selection.length
-        }</span> 台设备，其中已是最新版本和处于离线状态的设备有<span class="f-theme">${selection.length -
-          msgList.length} </span>台，将不执行升级，是否确认升级 <span class="f-red">${
-          msgList.length
-        }</span> 台设备？</div>`,
+        I18N.t('devlist.upgrade_confirm_tip', {
+          cnt: selection.length,
+          off_cnt: selection.length - msgList.length,
+          on_cnt: msgList.length
+        }),
         '',
         {
           dangerouslyUseHTMLString: true
@@ -105,7 +114,7 @@ export default {
     onDelete() {
       let selection = this.faterRefs.multipleTable.selection
       if (!selection.length) {
-        return this.$message.warning('请选择要删除的设备')
+        return this.$message.warning(I18N.t('devlist.delete_dev_item'))
       }
 
       let data = { snList: [] }
@@ -117,15 +126,13 @@ export default {
         }
       })
       if (!data.snList.length)
-        return this.$alert('当前选中的设备均为在线设备，不可删除')
+        return this.$alert(I18N.t('devlist.online_dev_tip'))
       this.$confirm(
-        `<div>当前选中 <span class="f-theme">${
-          selection.length
-        }</span> 台设备，其中 <span class="f-theme">${selection.length -
-          data.snList
-            .length} </span>台是在线设备不会删除，将删除 <span class="f-red">${
-          data.snList.length
-        }</span> 台非在线设备，是否确认删除？</div>`,
+        I18N.t('devlist.delete_confirm_tip', {
+          cnt: selection.length,
+          off_cnt: data.snList.length,
+          on_cnt: selection.length - data.snList.length
+        }),
         '',
         {
           dangerouslyUseHTMLString: true
@@ -144,7 +151,7 @@ export default {
       this.selectionForTransfer = []
       let selection = this.faterRefs.multipleTable.selection
       if (!selection.length) {
-        return this.$message.warning('请选择要迁移的设备')
+        return this.$message.warning(I18N.t('devlist.move_dev_item'))
       }
 
       this.selectionForTransfer = selection

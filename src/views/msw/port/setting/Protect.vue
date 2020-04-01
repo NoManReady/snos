@@ -1,26 +1,33 @@
 <template>
   <div class="port-setting-protect">
-    <help-alert title="端口保护">
-      <div slot="content">设为保护口的端口之间无法互相通讯。</div>
+    <help-alert :title="$t('msw.protect.port_protect')">
+      <div slot="content">{{$t('msw.protect.protect_tip')}}</div>
     </help-alert>
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">列表</span>
+        <span class="box-header-tit">{{$t('msw.port_list')}}</span>
         <div class="fr">
-          <el-button icon="el-icon-edit" size="small" type="primary" v-auth="_onPatchEdit">批量编辑</el-button>
+          <el-button icon="el-icon-edit" plain size="medium" type="primary" v-auth="_onPatchEdit">{{$t('action.patch_edit')}}</el-button>
         </div>
       </div>
-      <el-table :data="pageList" ref="baseTable" size="small" stripe>
-        <el-table-column align="center" label="端口">
+      <el-table :data="pageList" ref="baseTable" size="medium" stripe>
+        <el-table-column :label="$t('msw.port')" align="center">
           <template slot-scope="{row}">
-            <span>{{row.interface}}</span>
+            <span>{{row.ifname}}</span>
             <i class="rjucd-shanglian uplink" v-if="uplink.lpid.includes(row.lpid)"></i>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作" prop="enable">
+        <el-table-column :label="$t('action.ope')" align="center" prop="enable">
           <template slot-scope="{row,$index}">
-            <span class="c-info" v-if="row.aggregate_port>0">当前口属于lag{{row.aggregate_port}},不可配置</span>
-            <el-switch :active-value="1" :inactive-value="0" :value="row.enable" @change="_onEnableChange(row,$index)" v-else></el-switch>
+            <span class="c-info" v-if="row.aggregate_port>0">{{$t('msw.agg_port_tip',{id:row.aggregate_port})}}</span>
+            <el-switch
+              :active-value="1"
+              :inactive-value="0"
+              :value="row.enable"
+              @change="_onEnableChange(row,$index)"
+              size="medium"
+              v-else
+            ></el-switch>
           </template>
         </el-table-column>
       </el-table>
@@ -42,20 +49,26 @@
         :visible.sync="baseModalShow"
         @open="_clearValidate"
         append-to-body
-        width="650px"
+        width="700px"
       >
-        <el-form :model="baseModel" :rules="baseRules" label-width="180px" ref="baseForm" size="small">
-          <el-form-item label="端口保护开关：" prop="enable">
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('msw.protect.protect_status_f')" prop="enable">
             <el-switch :active-value="1" :inactive-value="0" v-model="baseModel.enable"></el-switch>
           </el-form-item>
           <template v-if="editIndex===-1">
-            <el-form-item class="inline-message" label="端口：" prop="portid"></el-form-item>
+            <el-form-item :label="$t('msw.port_select_f')" class="inline-message" prop="portid"></el-form-item>
             <port-panel :selecteds.sync="baseModel.portid" has-agg mutilple />
           </template>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click.native="baseModalShow = false" size="small">取 消</el-button>
-          <el-button :loading="isLoading" @click.native="_onModalConfirm" size="small" type="primary">确定</el-button>
+          <el-button @click.native="baseModalShow = false" class="w120" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button
+            :loading="isLoading"
+            @click.native="_onModalConfirm"
+            class="w120"
+            size="medium"
+            type="primary"
+          >{{isLoading?$t('action.editing'):$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -65,6 +78,7 @@
 import pageMixins from '@/mixins/msw/pageMixins'
 import formMixins from '@/mixins/formMixins'
 import PortPanel from '@/common/PortPanel'
+import { isPhyPort, hasLagmemberByLpid } from '@/utils/lag'
 import { protect } from '@/model/msw/port'
 import { mapGetters } from 'vuex'
 export default {
@@ -78,17 +92,19 @@ export default {
       baseModel: protect(),
       isLoading: false,
       baseRules: {
-        portid: [{ required: true, message: '请选择需要配置的端口' }]
+        portid: [{ required: true, message: I18N.t('msw.port_is_required') }]
       },
       baseModalShow: false,
       editIndex: -1
     }
   },
   computed: {
-    ...mapGetters('switcher', ['portinfo', 'lagPort', 'piMap', 'uplink']),
+    ...mapGetters('switcher', ['portinfo', 'uplink']),
     modalTitle() {
       let _item = this.getItem(this.editIndex)
-      return _item ? `端口：${_item.interface}` : '批量配置'
+      return _item
+        ? `${I18N.t('msw.port_f')}${_item.ifname}`
+        : I18N.t('action.patch_edit')
     }
   },
   watch: {
@@ -115,12 +131,9 @@ export default {
           })
           // 过滤逻辑口和具有成员口的聚合口
           .filter(port => {
-            return (
-              port.aggregate_port !== undefined ||
-              this.lagPort.find(p => p.lpid === port.lpid)
-            )
+            return isPhyPort(port.lpid) || hasLagmemberByLpid(port.lpid)
           })
-        return Object.freeze(_list)
+        return _list
       } catch (error) {}
       return []
     },
@@ -133,12 +146,16 @@ export default {
     // 状态值改变
     _onEnableChange(row, index) {
       this.$confirm(
-        `是否确认${row.enable === 1 ? '关闭' : '开启'}端口${
-          row.interface
-        }端口保护功能？`,
+        I18N.t('msw.protect.protect_status_confirm', {
+          port: row.ifname,
+          status:
+            row.enable === 1
+              ? I18N.t('phrase.disable')
+              : I18N.t('phrase.enable')
+        }),
         {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+          confirmButtonText: I18N.t('action.confirm'),
+          cancelButtonText: I18N.t('action.cancel'),
           type: 'warning'
         }
       ).then(() => {
@@ -154,37 +171,37 @@ export default {
       })
     },
     // 提交port数据
-    _saveData(params) {
+    async _saveData(params) {
       let { portid, ...model } = params
       let _confirmData = portid.map(p => {
         return {
           ...model,
-          lpid: p,
-          interface: this.piMap[p]
+          lpid: p
         }
       })
       this.isLoading = true
-      this.$api
-        .cmd('devConfig.update', {
+      try {
+        await this.$api.cmd('devConfig.update', {
           module: 'protected',
           data: { data: _confirmData }
         })
-        .then(() => {
-          this.$message.success('配置成功')
-          this.refresh()
-          this.baseModalShow = false
-        })
-        .finally(() => {
-          this.isLoading = false
-        })
+        this.$message.success(I18N.t('tip.edit1_success'))
+        for (let _port of _confirmData) {
+          let _index = this.pageModel.allItem.findIndex(
+            item => item.lpid === _port.lpid
+          )
+          if (_index > -1) {
+            this.pageModel.allItem.splice(_index, 1, {
+              ...this.pageModel.allItem[_index],
+              ..._port
+            })
+          }
+        }
+        this.baseModalShow = false
+      } catch (error) {}
+      this.isLoading = false
     }
   }
 }
 </script>
-<style lang="scss" scoped>
-.port-setting-protect {
-}
-</style>
-<style lang="scss">
-</style>
 

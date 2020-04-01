@@ -1,21 +1,27 @@
 <template>
   <div class="advanced-acl-port">
-    <help-alert title="应用ACL">
-      <p class="c-warning" slot="content">设备过滤方向：入口方向（只在接收报文上做过滤）。</p>
+    <help-alert :title="$t('msw.acl.apply_acl')">
+      <p class="c-warning" slot="content">{{$t('msw.acl.acl_port_tip')}}</p>
     </help-alert>
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">应用ACL</span>
+        <span class="box-header-tit">{{$t('msw.acl.apply_acl')}}</span>
         <div class="fr">
-          <el-button icon="el-icon-plus" size="small" type="primary" v-auth="_onAdd">批量添加ACL应用端口</el-button>
-          <el-button icon="el-icon-delete" size="small" type="danger" v-auth="_onPatchRemove">删除选中ACL应用端口</el-button>
+          <el-button icon="el-icon-plus" plain size="medium" type="primary" v-auth="_onAdd">{{$t('action.patch_add')}}</el-button>
+          <el-button
+            icon="el-icon-delete"
+            plain
+            size="medium"
+            type="primary"
+            v-auth="_onPatchRemove"
+          >{{$t('msw.acl.patch_release')}}</el-button>
         </div>
       </div>
-      <el-table :data="pageList" :span-method="_spanMethods" ref="baseTable" size="small" stripe>
+      <el-table :data="pageList" :span-method="_spanMethods" ref="baseTable" size="medium" stripe>
         <el-table-column :selectable="_onSelectable" type="selection" width="55"></el-table-column>
-        <el-table-column align="center" label="端口" prop="intfName">
+        <el-table-column :label="$t('msw.port')" align="center" prop="ifname">
           <template slot-scope="{row}">
-            <span>{{row.intfName}}</span>
+            <span>{{row.ifname}}</span>
             <i class="rjucd-shanglian uplink" v-if="uplink.lpid.includes(row.lpid)"></i>
           </template>
         </el-table-column>
@@ -25,18 +31,18 @@
         <el-table-column align="center" label="IP ACL" prop="ip_uuid">
           <template slot-scope="{row}">{{_getAclName(row.ip_uuid)}}</template>
         </el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column :label="$t('action.ope')" align="center">
           <template slot-scope="{$index,row}">
-            <span class="c-info" v-if="row.aggregate_port>0">当前口属于lag{{row.aggregate_port}},不可配置</span>
+            <span class="c-info" v-if="row.aggregate_port>0">{{$t('msw.agg_port_tip',{id:row.aggregate_port})}}</span>
             <template v-else>
-              <el-button size="mini" type="text" v-auth="{fn:_onEdit,params:$index}">修改</el-button>
+              <el-button size="medium" type="text" v-auth="{fn:_onEdit,params:$index}">{{$t('action.edit')}}</el-button>
               <el-button
                 :class="{'c-danger':row.mac_uuid!=='none'||row.ip_uuid!=='none'}"
                 :disabled="row.mac_uuid==='none'&&row.ip_uuid==='none'"
-                size="mini"
+                size="medium"
                 type="text"
                 v-auth="{fn:_onPatchRemove,params:row.portid}"
-              >解除绑定</el-button>
+              >{{$t('msw.acl.release_bind')}}</el-button>
             </template>
           </template>
         </el-table-column>
@@ -59,29 +65,35 @@
         :visible.sync="baseModalShow"
         @open="_clearValidate"
         append-to-body
-        width="650px"
+        width="700px"
       >
-        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="small">
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
           <el-form-item label="MAC ACL：" prop="mac_uuid">
-            <el-select class="w160" placeholder="请选择" size="mini" v-model="baseModel.mac_uuid">
-              <el-option label="无" value="none"></el-option>
+            <el-select :placeholder="$t('action.select')" class="w300" v-model="baseModel.mac_uuid">
+              <el-option :label="$t('msw.acl.empty')" value="none"></el-option>
               <el-option :key="acl.uuid" :label="acl.name" :value="acl.uuid" v-for="acl in macAcls"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="IP ACL：" prop="ip_uuid">
-            <el-select class="w160" placeholder="请选择" size="mini" v-model="baseModel.ip_uuid">
-              <el-option label="无" value="none"></el-option>
+            <el-select :placeholder="$t('action.select')" class="w300" v-model="baseModel.ip_uuid">
+              <el-option :label="$t('msw.acl.empty')" value="none"></el-option>
               <el-option :key="acl.uuid" :label="acl.name" :value="acl.uuid" v-for="acl in ipAcls"></el-option>
             </el-select>
           </el-form-item>
           <template v-if="editIndex===-1">
-            <el-form-item class="inline-message" inline-message label="应用端口：" prop="portid"></el-form-item>
+            <el-form-item :label="$t('msw.port_select_f')" class="inline-message" inline-message prop="portid"></el-form-item>
             <port-panel :selecteds.sync="baseModel.portid" has-agg mutilple />
           </template>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click.native="baseModalShow = false" size="small">取 消</el-button>
-          <el-button :loading="isLoading" @click.native="_onModalConfirm" size="small" type="primary">确定</el-button>
+          <el-button @click.native="baseModalShow = false" class="w120" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button
+            :loading="isLoading"
+            @click.native="_onModalConfirm"
+            class="w120"
+            size="medium"
+            type="primary"
+          >{{isLoading?$t('action.editing'):$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -91,6 +103,7 @@
 import PortPanel from '@/common/PortPanel'
 import formMixins from '@/mixins/formMixins'
 import pageMixins from '@/mixins/msw/pageMixins'
+import { isPhyPort, hasLagmemberByLpid } from '@/utils/lag'
 import { aclPort } from '@/model/msw/advanced'
 import { mapGetters } from 'vuex'
 export default {
@@ -105,7 +118,7 @@ export default {
         this.baseModel.mac_uuid === 'none' &&
         this.baseModel.ip_uuid === 'none'
       ) {
-        return cb(new Error('至少绑定一个ACL，请选择'))
+        return cb(new Error(I18N.t('msw.acl.must_one_rule')))
       }
       cb()
     }
@@ -117,17 +130,19 @@ export default {
       editIndex: -1,
       baseModel: aclPort(),
       baseRules: {
-        portid: [{ required: true, message: '请选择应用的端口' }],
+        portid: [
+          { required: true, message: I18N.t('msw.acl.apply_port_no_empty') }
+        ],
         ip_uuid: [{ validator: aclBindValidator }],
         mac_uuid: [{ validator: aclBindValidator }]
       }
     }
   },
   computed: {
-    ...mapGetters('switcher', ['lagPort', 'portinfo', 'uplink']),
+    ...mapGetters('switcher', ['portinfo', 'uplink']),
     // modal名称
     modalTitle() {
-      return this.editIndex > -1 ? '编辑ACL应用端口' : `添加ACL应用端口`
+      return this.editIndex > -1 ? I18N.t('action.edit1') : I18N.t('action.add')
     },
     macAcls() {
       return this.aclList.filter(acl => acl.type === 1)
@@ -176,10 +191,7 @@ export default {
             })
             // 过滤逻辑口和具有成员口的聚合口
             .filter(port => {
-              return (
-                port.aggregate_port !== undefined ||
-                this.lagPort.find(p => p.lpid === port.portid)
-              )
+              return isPhyPort(port.lpid) || hasLagmemberByLpid(port.lpid)
             })
         )
       } catch (error) {}
@@ -209,11 +221,11 @@ export default {
           ? [pid]
           : this.$refs.baseTable.selection.map(s => s.portid)
       if (!_pids.length) {
-        return this.$message.warning('请选择要解除的列表项')
+        return this.$message.warning(I18N.t('tip.select_del_item'))
       }
-      await this.$confirm(`是否确认解除绑定？`, {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      await this.$confirm(I18N.t('tip.confirm_delete'), {
+        confirmButtonText: I18N.t('action.confirm'),
+        cancelButtonText: I18N.t('action.cancel'),
         type: 'warning'
       })
       this.isLoading = true
@@ -222,7 +234,7 @@ export default {
           module: 'acl_bind',
           data: { portid: _pids }
         })
-        this.$message.success('解除绑定成功')
+        this.$message.success(I18N.t('msw.acl.release_success'))
         this.refresh()
       } catch (error) {}
       this.isLoading = false
@@ -252,7 +264,7 @@ export default {
             })
             this.baseModalShow = false
             this.refresh()
-            this.$message.success('配置成功')
+            this.$message.success(I18N.t('tip.edit1_success'))
           } catch (error) {}
           this.isLoading = false
         }
@@ -279,7 +291,3 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.advanced-acl-port {
-}
-</style>

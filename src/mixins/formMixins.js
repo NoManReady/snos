@@ -7,7 +7,7 @@ export default {
       })
     },
     // 验证表单字段
-    _onValidateField(prop, cb = () => { }, from) {
+    _onValidateField(prop, cb = () => { }, form) {
       this.$refs[form || 'baseForm'].validateField(prop, cb)
     }
   }

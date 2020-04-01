@@ -15,7 +15,7 @@ export default {
     return {
       tabs: Object.freeze([
         {
-          label: 'POE端口设置',
+          label: I18N.t('msw.poe.poe_port_set'),
           value: '0',
           comp: poe.Port
         }

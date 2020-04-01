@@ -1,8 +1,8 @@
 <template>
   <div class="behavior-site-manage">
     <el-tabs v-model="tabValue" @tab-click="_onTabClick">
-      <el-tab-pane name="0" label="网站过滤"></el-tab-pane>
-      <el-tab-pane name="1" label="网站分组"></el-tab-pane>
+      <el-tab-pane name="0" :label="$t('egw.SiteManage.web_filter')"></el-tab-pane>
+      <el-tab-pane name="1" :label="$t('egw.SiteManage.web_group')"></el-tab-pane>
     </el-tabs>
     <site-tabs :type="tabValue" :key="randomId"></site-tabs>
   </div>

@@ -1,13 +1,13 @@
 <template>
-<div class="common-port" @click="onClick">
+  <div @click="onClick" class="common-port">
     <span>
-      <slot name="top" :port="port"></slot>
+      <slot :port="port" name="top"></slot>
     </span>
-    <i class="rjucd-upport" :class="icnClass"></i>
+    <i :class="icnClass" class="rjucd-upport"></i>
     <span>
-      <slot name="bottom" :port="port"></slot>
+      <slot :port="port" name="bottom"></slot>
     </span>
-</div>
+  </div>
 </template>
 <script>
 export default {

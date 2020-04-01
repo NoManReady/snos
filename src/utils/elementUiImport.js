@@ -35,7 +35,11 @@ import {
   Notification,
   Tabs,
   TabPane,
-  Transfer
+  Transfer,
+  Divider,
+  Row,
+  Col,
+  Progress
 } from 'element-ui'
 
 Vue.use(Transfer)
@@ -63,6 +67,10 @@ Vue.use(Form)
 Vue.use(FormItem)
 Vue.use(Tabs)
 Vue.use(TabPane)
+Vue.use(Divider)
+Vue.use(Row)
+Vue.use(Col)
+Vue.use(Progress)
 
 Vue.use(Loading.directive)
 

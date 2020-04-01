@@ -21,13 +21,17 @@ export default {
     async _initPage() {
       if (this._loadList && typeof this._loadList === 'function') {
         let result = await this._loadList(this._applyQuery())
-        this.pageList = result.list
+        this.pageList = Array.isArray(result.list) ? result.list : []
         this.pageModel.total = Number(result.total) || 0
         this.$refs.multipleTable && this.$refs.multipleTable.clearSelection()
       }
     },
     onSizeChange(size) {
       this.pageModel.size = size
+      let _currentIndex = Math.ceil(this.pageModel.total / size)
+      if (this.pageModel.index > _currentIndex) {
+        return
+      }
       this._initPage()
     },
     onCurrentChange(index) {

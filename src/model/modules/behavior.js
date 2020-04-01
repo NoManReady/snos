@@ -74,7 +74,7 @@ export const behaviorQqbwlistFn = (defaultIpGroup = '', defaultTimeGroup = '') =
   }
 }
 // 访问控制对象
-export const behaviorAccessCtrlFn = (defaultTimeGroup = '所有时段') => {
+export const behaviorAccessCtrlFn = (defaultTimeGroup = I18N.t('phrase.alltime')) => {
   return {
     by: 'mac',
     mac: '',
@@ -87,6 +87,7 @@ export const behaviorAccessCtrlFn = (defaultTimeGroup = '所有时段') => {
     proto: 'all',
     target: 'ACCEPT',
     tmngtName: defaultTimeGroup,
-    ruleName: ''
+    ruleName: '',
+    time: {}
   }
 }

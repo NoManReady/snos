@@ -143,6 +143,10 @@
   color: $--color-primary !important;
 }
 
+.c-success-green {
+  color: $--color-success !important;
+}
+
 .c-ok {
   color: $--color-success !important;
 }
@@ -265,4 +269,22 @@
   color: $theme;
   margin-right: -15px;
   font-size: 12px !important;
+}
+
+ol.ol-num li {
+  list-style: decimal;
+}
+
+
+.icon-inner {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    content: attr(data-icon);
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -38%) scale(0.8);
+  }
 }

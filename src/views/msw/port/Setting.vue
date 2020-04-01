@@ -15,12 +15,12 @@ export default {
     return {
       tabs: Object.freeze([
         {
-          label: '基本配置',
+          label: I18N.t('esw.sys.base_cfg'),
           value: '0',
           comp: Base
         },
         {
-          label: '物理配置',
+          label: I18N.t('msw.base.phy_cfg'),
           value: '1',
           comp: Phy
         }

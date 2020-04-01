@@ -1,18 +1,22 @@
 <template>
-  <el-input
-    :type="typ"
-    class="component_input-password"
-    :class="clazz"
-    v-model="val"
-    :placeholder="placeholder"
-  >
-    <el-button
-      class="el-input__icon suffix-icon pointer"
-      slot="append"
-      :icon="typ === 'text' ? 'rjucd-visible' : 'rjucd-unvisible'"
-      @click="onClick"
-    ></el-button>
-  </el-input>
+  <div>
+    <form class="hide">
+      <input autocomplete="on" name="loginPass" type="password" />
+      <input autocomplete="on" name="ewebInputPassword" type="password" />
+    </form>
+    <el-input
+      :class="clazz"
+      :placeholder="placeholder"
+      :type="typ"
+      autocomplete="off"
+      class="component_input-password"
+      name="ewebInputPassword"
+      size="medium"
+      v-model="val"
+    >
+      <el-button :icon="typ === 'text' ? 'rjucd-visible' : 'rjucd-unvisible'" @click="onClick" class="pointer" slot="append"></el-button>
+    </el-input>
+  </div>
 </template>
 <script>
 export default {
@@ -53,16 +57,20 @@ export default {
 </script>
 <style lang="scss">
 @import '../theme/theme.scss';
+.hide {
+  visibility: hidden;
+  width: 0;
+  height: 0;
+}
 .component_input-password {
-  .suffix-icon {
-    text-indent: -4px;
-    font-size: 18px;
-  }
-  .suffix-icon:hover {
-    color: $--color-primary-light-4;
-  }
-  .eweb-eye-show {
-    color: $--color-primary;
+  i {
+    font-size: 22px;
+    &:hover {
+      color: $--color-primary-light-4;
+    }
+    &.rjucd-visible {
+      color: $--color-primary;
+    }
   }
 }
 </style>

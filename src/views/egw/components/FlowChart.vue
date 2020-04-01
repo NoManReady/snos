@@ -9,10 +9,38 @@ import 'echarts/lib/chart/line'
 import 'echarts/lib/component/legendScroll'
 import 'echarts/lib/component/tooltip'
 import 'echarts/lib/component/title'
-
+const getBaseSerie = color => {
+  return {
+    smooth: true,
+    symbol: 'circle',
+    symbolSize: 5,
+    sampling: 'average',
+    itemStyle: {
+      normal: {
+        color: color
+      }
+    },
+    smoothMonotone: 'x',
+    areaStyle: {
+      normal: {
+        opacity: 0.2,
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          {
+            offset: 0,
+            color: color
+          },
+          {
+            offset: 1,
+            color: '#fff'
+          }
+        ])
+      }
+    }
+  }
+}
 const OPT = {
   title: {
-    text: '折线图'
+    text: I18N.t('egw.chart')
   },
   tooltip: {
     trigger: 'axis'
@@ -20,7 +48,7 @@ const OPT = {
   legend: {
     top: 0,
     left: 'center',
-    data: ['上传流量', '下载流量']
+    data: [I18N.t('egw.update_rate'), I18N.t('egw.download_rate')]
   },
   grid: {
     top: 20,
@@ -38,20 +66,18 @@ const OPT = {
     type: 'value'
   },
   series: [
-    {
+    Object.assign(getBaseSerie('#2B6AFD'), {
       type: 'up',
-      name: '上传流量',
+      name: I18N.t('egw.update_rate'),
       type: 'line',
-      data: [],
-      smooth: true
-    },
-    {
+      data: []
+    }),
+    Object.assign(getBaseSerie('#018903'), {
       type: 'down',
-      name: '下载流量',
+      name:  I18N.t('egw.download_rate'),
       type: 'line',
-      data: [],
-      smooth: true
-    }
+      data: []
+    })
   ]
 }
 export default {

@@ -1,40 +1,81 @@
 <template>
   <div class="network-static">
-    <help-alert json-key="staticJson" title="静态地址分配页面">
-      <div slot="content">静态地址分配列表</div>
+    <help-alert json-key="staticJson" :title="$t('network.static_alloc_list')">
+      <!-- <div slot="content">{{ $t("network.static_alloc_list") }}</div> -->
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          静态地址分配列表
+          {{ $t("network.static_alloc_list") }}
           <small></small>
         </span>
         <div class="fr">
-          <el-button @click.native="onAdd" size="small" type="primary">
-            <i class="el-icon-plus"></i>
-            <span>新增</span>
-          </el-button>
-          <el-button @click.native="onDel()" size="small" type="primary">
-            <i class="el-icon-delete"></i>
-            <span>批量删除</span>
-          </el-button>
+          <el-button
+            icon="el-icon-plus"
+            plain
+            size="medium"
+            type="primary"
+            v-auth="onAdd"
+            >{{ $t("action.add") }}</el-button
+          >
+          <el-button
+            icon="el-icon-delete"
+            plain
+            size="medium"
+            type="primary"
+            v-auth="onDel"
+            >{{ $t("action.patch_delete") }}</el-button
+          >
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{MAX_NUM}}</b>条数据。
+          <i18n path="tip.max_limit" tag="span">
+            <b place="cnt" class="c-warning mlr5">{{ MAX_NUM }}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="pageList" ref="multipleTable" row-key="macaddr" size="small" stripe>
-        <el-table-column align="center" type="selection" width="50"></el-table-column>
-        <el-table-column align="center" label="序号" type="index"></el-table-column>
-        <el-table-column align="center" label="IP地址" prop="ipaddr"></el-table-column>
-        <el-table-column align="center" label="MAC地址" prop="macaddr"></el-table-column>
-        <el-table-column align="center" label="操作">
+      <el-table
+        :data="pageList"
+        ref="multipleTable"
+        row-key="macaddr"
+        size="medium"
+        stripe
+      >
+        <el-table-column
+          align="center"
+          type="selection"
+          width="50"
+        ></el-table-column>
+        <el-table-column
+          align="center"
+          :label="$t('phrase.serial')"
+          type="index"
+        ></el-table-column>
+        <el-table-column
+          align="center"
+          :label="$t('sysinfo.ip_addr')"
+          prop="ipaddr"
+        ></el-table-column>
+        <el-table-column
+          align="center"
+          :label="$t('sysinfo.mac_addr')"
+          prop="macaddr"
+        ></el-table-column>
+        <el-table-column align="center" :label="$t('action.ope')">
           <template slot-scope="scope">
-            <el-button @click="onEdit(scope.$index,scope.row)" type="text">修改</el-button>
-            <el-button @click="onDel([scope.row.macaddr])" type="text">删除</el-button>
+            <el-button
+              size="medium"
+              type="text"
+              v-auth="{ fn: onEdit, params: [scope.$index, scope.row] }"
+              >{{ $t("action.edit") }}</el-button
+            >
+            <el-button
+              size="medium"
+              type="text"
+              v-auth="{ fn: onDel, params: scope.row.macaddr }"
+              >{{ $t("action.delete") }}</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -51,87 +92,112 @@
       ></el-pagination>
 
       <!-- 静态地址编辑 -->
-      <el-dialog :title="modalTitle" :visible.sync="isModalShow" @open="_clearValidate" width="500px">
-        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" status-icon>
-          <el-form-item label="IP地址" prop="ipaddr">
+      <el-dialog
+        :title="modalTitle"
+        :visible.sync="isModalShow"
+        @open="_clearValidate"
+        width="500px"
+      >
+        <el-form
+          :model="baseModel"
+          :rules="baseRules"
+          label-width="160px"
+          ref="baseForm"
+          size="medium"
+          status-icon
+        >
+          <el-form-item :label="$t('sysinfo.ip_addr')" prop="ipaddr">
             <arp-input
               @select="onSelectIp"
               class="w260"
               filterType="LAN"
-              placeholder="格式如：192.168.1.1"
+              :placeholder="$t('wan.ip_example')"
               v-model="baseModel.ipaddr"
             ></arp-input>
           </el-form-item>
-          <el-form-item label="MAC地址" prop="macaddr">
-            <el-input class="w260" placeholder="格式如：00:74:9c:1e:4b:f4" v-model="baseModel.macaddr"></el-input>
+          <el-form-item :label="$t('sysinfo.mac_addr')" prop="macaddr">
+            <el-input
+              class="w260"
+              :placeholder="$t('wan.mac_example')"
+              v-model="baseModel.macaddr"
+            ></el-input>
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click="isModalShow = false">取 消</el-button>
-          <el-button :disabled="isSetting" :loading="isSetting" @click="onSubmitForm()" type="primary">确 定</el-button>
+          <el-button @click="isModalShow = false" size="medium">{{
+            $t("action.cancel")
+          }}</el-button>
+          <el-button
+            :disabled="isSetting"
+            :loading="isSetting"
+            @click="onSubmitForm"
+            size="medium"
+            type="primary"
+            >{{ $t("action.confirm") }}</el-button
+          >
         </span>
       </el-dialog>
     </div>
   </div>
 </template>
 <script>
-import ArpInput from '@/common/ArpInput'
-import { ipValidator, macValidator } from '@/utils/rules'
-import pageMixins from '@/mixins/pageMixins'
-import formMixins from '@/mixins/formMixins'
+import ArpInput from "@/common/ArpInput";
+import { ipValidator, macValidator } from "@/utils/rules";
+import pageMixins from "@/mixins/pageMixins";
+import formMixins from "@/mixins/formMixins";
 export default {
-  name: 'DhcpStatic',
+  name: "DhcpStatic",
   data() {
     const checkIpaddrUnit = (rule, value, cb) => {
       let _isExit = this.pageModel.allItem.find(
         (item, index) =>
           item.ipaddr === value && index !== this.getRealIndex(this.editIndex)
-      )
+      );
       if (_isExit) {
-        cb(new Error('IP地址已配置过'))
+        cb(new Error(I18N.t("rules.ip_is_exist")));
       }
-      cb()
-    }
+      cb();
+    };
     const _compareVal = (v, v1) => {
-      return v && v1 && v.toLocaleLowerCase() === v1.toLocaleLowerCase()
-    }
+      return v && v1 && v.toLocaleLowerCase() === v1.toLocaleLowerCase();
+    };
     const checkMacUnit = (rule, value, cb) => {
       let _isExit = this.pageModel.allItem.find(item => {
         return (
           _compareVal(item.macaddr, value) &&
           !_compareVal(
-            this.editIndex > -1 ? this.pageList[this.editIndex].macaddr : '',
+            this.editIndex > -1 ? this.pageList[this.editIndex].macaddr : "",
             value
           )
-        )
-      })
+        );
+      });
       if (_isExit) {
-        cb(new Error('MAC地址已配置过'))
+        cb(new Error(I18N.t("rules.mac_is_exist")));
       }
-      cb()
-    }
+      cb();
+    };
     return {
       MAX_NUM: 300,
       baseModel: {
-        ipaddr: '',
-        macaddr: ''
+        ipaddr: "",
+        macaddr: ""
       },
       editIndex: -1,
       isSetting: false,
       isModalShow: false,
       baseRules: {
         ipaddr: [
-          { required: true, message: '请输入IP地址' },
+          { required: true, message: I18N.t("wan.ip_no_empty") },
           { validator: ipValidator },
           { validator: checkIpaddrUnit }
         ],
         macaddr: [
-          { required: true, message: '请输入MAC地址' },
+          { required: true, message: I18N.t("wan.mac_no_empty") },
           { validator: macValidator },
           { validator: checkMacUnit }
         ]
       }
-    }
+    };
   },
   mixins: [pageMixins, formMixins],
   components: {
@@ -139,67 +205,70 @@ export default {
   },
   computed: {
     modalTitle() {
-      return this.editIndex !== -1 ? '编辑静态地址分配' : '添加静态地址分配'
+      return this.editIndex !== -1
+        ? I18N.t("action.edit")
+        : I18N.t("action.add");
     }
   },
   methods: {
     async _loadList() {
-      let _result = await this.$api.getStaticDhcpTable()
-      return _result.dhcp_static || []
+      let _result = await this.$api.getStaticDhcpTable();
+      return _result.dhcp_static || [];
     },
     // 删除静态dhcp绑定
     onDel(macArr) {
-      if (!macArr) {
-        let selection = this.$refs.multipleTable.selection
-        if (!selection.length) {
-          return this.$message.warning('请选择要删除的列表项')
-        }
-        macArr = selection.map(item => item.macaddr)
+      macArr = macArr
+        ? [macArr]
+        : this.$refs.multipleTable.selection.map(item => item.macaddr);
+      if (!macArr.length) {
+        return this.$message.warning(I18N.t("tip.select_del_item"));
       }
-      this._onDel(macArr)
+      this._onDel(macArr);
     },
     // 删除
     _onDel(macArr) {
-      this.$confirm('是否确认删除？').then(() => {
+      this.$confirm(I18N.t("tip.confirm_delete")).then(() => {
         this.$api.delStaticDhcpTable(macArr).then(d => {
           macArr.forEach(mac => {
             let _index = this.pageList.findIndex(
               ({ macaddr }) => macaddr === mac
-            )
-            this.removeList(_index)
-          })
+            );
+            this.removeList(_index);
+          });
           this.$message({
-            message: '删除成功',
-            type: 'success'
-          })
-        })
-      })
+            message: I18N.t("tip.del_success"),
+            type: "success"
+          });
+        });
+      });
     },
     // 新增
     onAdd() {
       if (this.pageTotal >= this.MAX_NUM) {
-        return this.$message.warning(`最多支持配置 ${this.MAX_NUM} 条数据`)
+        return this.$message.warning(
+          I18N.t("tip.max_limit", { cnt: this.MAX_NUM })
+        );
       }
-      this.isModalShow = true
-      this.editIndex = -1
-      this.baseModel = { ipaddr: '', macaddr: '' }
+      this.isModalShow = true;
+      this.editIndex = -1;
+      this.baseModel = { ipaddr: "", macaddr: "" };
       this.$nextTick(() => {
-        this.$refs.baseForm.clearValidate()
-      })
+        this.$refs.baseForm.clearValidate();
+      });
     },
     // 编辑添加静态dhcp
     onEdit(idx, row = {}) {
-      this.isModalShow = true
-      this.editIndex = idx
-      this.baseModel = Object.assign({}, row)
+      this.isModalShow = true;
+      this.editIndex = idx;
+      this.baseModel = Object.assign({}, row);
     },
     // 提交数据
     onSubmitForm() {
       this.$refs.baseForm.validate(valid => {
         if (valid) {
-          this.isSetting = true
-          let _promise = null
-          let _list = [this.baseModel]
+          this.isSetting = true;
+          let _promise = null;
+          let _list = [this.baseModel];
           // 编辑
           if (this.editIndex > -1) {
             _promise = this.$api
@@ -208,34 +277,34 @@ export default {
                 old: this.pageList[this.editIndex]
               })
               .then(() => {
-                this.editList(this.editIndex, this.baseModel)
-              })
+                this.editList(this.editIndex, this.baseModel);
+              });
           } else {
             _promise = this.$api.addStaticDhcpTable(_list).then(() => {
-              this.addList(this.baseModel)
-            })
+              this.addList(this.baseModel);
+            });
           }
           _promise
             .then(d => {
               this.$message({
-                message: '设置成功',
-                type: 'success'
-              })
+                message: I18N.t("tip.edit1_success"),
+                type: "success"
+              });
             })
             .finally(() => {
-              this.isSetting = false
-              this.isModalShow = false
-            })
+              this.isSetting = false;
+              this.isModalShow = false;
+            });
         }
-      })
+      });
     },
     onSelectIp(item) {
       if (item.mac) {
-        this.baseModel.macaddr = item.mac
+        this.baseModel.macaddr = item.mac;
       }
     }
   }
-}
+};
 </script>
 <style lang="scss" scoped>
 </style>

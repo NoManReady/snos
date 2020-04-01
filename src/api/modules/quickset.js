@@ -16,6 +16,6 @@ export const getQuickInfo = () => {
 }
 
 // 设置配置
-export const setQuickInfo = data => {
-  return api.common('setQuickInfo', data, { timeout: 0 })
+export const setQuickInfo = (data, isSilence = false) => {
+  return api.common('setQuickInfo', data, { timeout: 0, isSilence })
 }

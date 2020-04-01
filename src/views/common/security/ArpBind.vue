@@ -1,17 +1,17 @@
 <template>
   <div class="security-arp">
-    <help-alert json-key="arpbindJson" title="MAC绑定IP">
-      <div slot="content" v-if="showMacFilter">通过开启ARP防护，并将IP地址和MAC地址绑定，能够增加网络的安全防护功能。</div>
+    <help-alert :title="$t('arp_bind.mac_ip')" json-key="arpbindJson">
+      <div slot="content" v-if="showMacFilter">{{ $t("arp_bind.bind_tip") }}</div>
     </help-alert>
     <div class="box">
       <template v-if="showMacFilter">
         <div class="box-header">
-          <span class="box-header-tit">ARP防护</span>
+          <span class="box-header-tit">{{ $t("arp_bind.arp_prot") }}</span>
         </div>
-        <el-form :model="pageData" class="w600" label-width="160px" status-icon>
-          <el-form-item label="ARP防护" prop="bind_enable">
+        <el-form :model="pageData" class="w600" label-width="160px" size="medium">
+          <el-form-item :label="$t('arp_bind.arp_prot')" prop="bind_enable">
             <el-switch @change="onEnableChange" active-value="1" inactive-value="0" v-model="pageData.bind_enable"></el-switch>
-            <strong class="vm ml10 c-warning">开启状态下，将只允许绑定了IP的MAC主机访问外网</strong>
+            <strong class="vm ml10 c-warning">{{ $t("arp_bind.prot_tip") }}</strong>
           </el-form-item>
           <!-- <el-form-item>
             <el-button class="w160" type="primary" @click="setEnableConfig">保存配置</el-button>
@@ -20,35 +20,40 @@
       </template>
       <div class="box-header">
         <span class="box-header-tit">
-          IP-MAC绑定列表
+          {{ $t("arp_bind.ip_mac_list") }}
           <small></small>
         </span>
         <div class="fr">
-          <el-button @click.native="onEdit(-1)" size="small" type="primary">
-            <i class="el-icon-plus"></i>
-            <span>新增</span>
-          </el-button>
-          <el-button size="small" type="primary" v-auth="onDel">
-            <i class="el-icon-delete"></i>
-            <span>批量删除</span>
-          </el-button>
+          <el-button
+            icon="el-icon-plus"
+            plain
+            size="medium"
+            type="primary"
+            v-auth="{ fn: onEdit, params: { idx: -1 } }"
+          >{{ $t("action.add") }}</el-button>
+          <el-button icon="el-icon-delete" plain size="medium" type="primary" v-auth="onDel">{{ $t("action.patch_delete") }}</el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{MAX_NUM}}</b>条绑定。
+          <i18n path="arp_bind.bind_limit" tag="span">
+            <b :loading='!MAX_NUM' class="c-warning mlr5" place="max">{{ MAX_NUM }}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="pageList" ref="baseTable" row-key="macaddr" size="small" stripe>
+      <el-table :data="pageList" ref="baseTable" row-key="macaddr" size="medium" stripe>
         <el-table-column align="center" type="selection" width="50"></el-table-column>
-        <el-table-column align="center" label="序号" type="index"></el-table-column>
-        <el-table-column align="center" label="MAC地址" prop="macaddr"></el-table-column>
-        <el-table-column align="center" label="IP地址" prop="ipaddr"></el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column :label="$t('phrase.serial')" align="center" type="index"></el-table-column>
+        <el-table-column :label="$t('sysinfo.mac_addr')" align="center" prop="macaddr"></el-table-column>
+        <el-table-column :label="$t('sysinfo.ip_addr')" align="center" prop="ipaddr"></el-table-column>
+        <el-table-column :label="$t('action.ope')" align="center">
           <template slot-scope="scope">
-            <el-button @click.native="onEdit(scope.$index, scope.row)" type="text">修改</el-button>
-            <el-button type="text" v-auth="{fn:onDel,params:scope.row}">删除</el-button>
+            <el-button
+              size="medium"
+              type="text"
+              v-auth="{fn: onEdit, params: { idx: scope.$index, row: scope.row } }"
+            >{{ $t("action.edit") }}</el-button>
+            <el-button size="medium" type="text" v-auth="{ fn: onDel, params: scope.row }">{{ $t("action.delete") }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -66,17 +71,17 @@
 
       <!-- 编辑框 -->
       <el-dialog :title="modalTitle" :visible.sync="isModalShow" @open="_clearValidate" width="500px">
-        <el-form :model="modelData" :rules="baseRules" label-width="160px" ref="baseForm" status-icon>
-          <el-form-item label="IP地址" prop="ipaddr">
-            <arp-input @select="onSelectIp" filterType="LAN" placeholder="输入或从ARP列表中选择IP" v-model="modelData.ipaddr"></arp-input>
+        <el-form :model="modelData" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('sysinfo.ip_addr')" prop="ipaddr">
+            <arp-input :placeholder="$t('arp_bind.select_ip')" @select="onSelectIp" filterType="LAN" v-model="modelData.ipaddr"></arp-input>
           </el-form-item>
-          <el-form-item label="MAC地址" prop="macaddr">
-            <arp-input filterType="LAN" placeholder="输入或从ARP列表中选择MAC" v-model="modelData.macaddr" valueKey="mac"></arp-input>
+          <el-form-item :label="$t('sysinfo.mac_addr')" prop="macaddr">
+            <arp-input :placeholder="$t('arp_bind.select_mac')" filterType="LAN" v-model="modelData.macaddr" valueKey="mac"></arp-input>
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click="isModalShow = false">取 消</el-button>
-          <el-button @click="onClickFormBtn" type="primary">确 定</el-button>
+          <el-button @click="isModalShow = false" size="medium">{{ $t("action.cancel") }}</el-button>
+          <el-button @click="onClickFormBtn" size="medium" type="primary">{{ $t("action.confirm") }}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -101,7 +106,7 @@ export default {
           !_compareVal(item.ipaddr, this.editData.ipaddr)
       )
       if (_isExit) {
-        cb(new Error('IP地址已配置过'))
+        cb(new Error(I18N.t('arp_bind.ip_exist')))
       }
       cb()
     }
@@ -112,13 +117,13 @@ export default {
           !_compareVal(item.macaddr, this.editData.macaddr)
       )
       if (_isExit) {
-        cb(new Error('MAC地址已配置过'))
+        cb(new Error(I18N.t('arp_bind.mac_exist')))
       }
       cb()
     }
     return {
-      MAX_NUM: 256,
-      title: 'MAC绑定',
+      MAX_NUM: '',
+      title: I18N.t('arp.mac_bind'),
       pageData: {},
       editData: {},
       editIndex: -1,
@@ -127,12 +132,12 @@ export default {
       isModalShow: false,
       baseRules: {
         ipaddr: [
-          { required: true, message: '请输入IP地址' },
+          { required: true, message: I18N.t('wan.ip_no_empty') },
           { validator: ipValidator },
           { validator: checkIpaddrUnit }
         ],
         macaddr: [
-          { required: true, message: '请输入MAC地址' },
+          { required: true, message: I18N.t('wan.mac_no_empty') },
           { validator: macValidator },
           { validator: checkMacUnit }
         ]
@@ -163,14 +168,14 @@ export default {
       } else {
         _items = this.$refs.baseTable.selection
         if (_items.length === 0) {
-          return this.$message.warning('请选择要删除的列表项')
+          return this.$message.warning(I18N.t('tip.select_del_item'))
         }
       }
 
-      this.$confirm('是否确认删除？').then(() => {
+      this.$confirm(I18N.t('tip.confirm_delete')).then(() => {
         this.$api.delStaticArpTable({ arp_list: _items }).then(d => {
           this.$message({
-            message: '删除成功',
+            message: I18N.t('tip.del_success'),
             type: 'success'
           })
           let _map = _items.map(o => o.macaddr)
@@ -181,16 +186,17 @@ export default {
         })
       })
     },
-    onEdit(idx, row = model.macbindFn()) {
+    onEdit({ idx, row = model.macbindFn() }) {
       let isAdd = idx < 0
       if (isAdd && this.pageTotal >= this.MAX_NUM) {
         return this.$message.warning(
-          `${this.title}最多只能添加 ${this.MAX_NUM} 条数据`
+          I18N.t('arp_bind.add_limit', { name: this.title, max: this.MAX_NUM })
         )
       }
       this.editIndex = idx
-      let title = (isAdd ? '新增' : '修改') + this.title
-      this.onShowModal(title, row)
+      let title =
+        (isAdd ? I18N.t("action.add") : I18N.t("action.edit"));
+      this.onShowModal(title, row);
     },
     onShowModal(title, data) {
       this.isModalShow = true
@@ -211,7 +217,7 @@ export default {
               .addStaticArpTable({ arp_list: [_item] })
               .then(d => {
                 this.$message({
-                  message: '添加成功',
+                  message: I18N.t('tip.add_success'),
                   type: 'success'
                 })
                 this.addList(_item)
@@ -224,7 +230,7 @@ export default {
               })
               .then(d => {
                 this.$message({
-                  message: '编辑成功',
+                  message: I18N.t('tip.edit_success'),
                   type: 'success'
                 })
                 this.editList(this.editIndex, _item)
@@ -246,12 +252,15 @@ export default {
     // 切换arp防护功能
     setEnableConfig(enable) {
       return new Promise((resolve, reject) => {
-        let _msg = `是否确认${enable === '1' ? '开启' : '关闭'}ARP防护`
-        this.$confirm(_msg, '提示', { type: 'warning' }).then(
+        let _msg = I18N.t('arp_bind.arp_bind_confirm', {
+          status:
+            enable === '1' ? I18N.t('phrase.enable') : I18N.t('phrase.disable')
+        })
+        this.$confirm(_msg, I18N.t('phrase.tip'), { type: 'warning' }).then(
           () => {
             this.$api.setArpmacBind(enable).then(
               () => {
-                this.$message('配置成功')
+                this.$message(I18N.t('tip.edit1_success'))
                 resolve()
               },
               () => {

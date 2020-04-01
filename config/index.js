@@ -37,7 +37,7 @@ module.exports = {
 
     // Various Dev Server settings
     // host:'192.168.23.136',
-    host: '192.168.110.47',//localhost', // can be overwritten by process.env.HOST
+    host: '192.168.110.121',//localhost', // can be overwritten by process.env.HOST
     port: 9000, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
     autoOpenBrowser: false,
     errorOverlay: true,
@@ -96,6 +96,6 @@ module.exports = {
     // View the bundle analyzer report after build finishes:
     // `npm run build --report`
     // Set to `true` or `false` to always turn it on or off
-    bundleAnalyzerReport: true//process.env.npm_config_report
+    bundleAnalyzerReport: process.env.npm_config_report
   }
 }

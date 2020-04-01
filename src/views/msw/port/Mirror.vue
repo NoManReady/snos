@@ -1,58 +1,60 @@
 <template>
   <div class="port-mirror">
-    <help-alert title="端口镜像">
+    <help-alert :title="$t('msw.mirror.mirror')">
       <div slot="content">
-        <p>
-          <b>说明：开启端口镜像功能，源端口上的所有报文都会被复制一份转发给目的端口，目的端口上通常连接一个报文分析器分析源端口的报文情况，可以将多个端口镜像到一个目的端口。</b>
-        </p>
+        <i18n path="msw.mirror.mirror_explain" tag="p">
+          <b>{{$t('phrase.explain_f')}}</b>
+        </i18n>
         <p class="c-warning">
-          <b>提示：目的端口和源端口不能为同一个。</b>
+          <i18n path="msw.mirror.mirror_notice">
+            <b>{{$t('phrase.notice_f')}}</b>
+          </i18n>
         </p>
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">镜像列表</span>
+        <span class="box-header-tit">{{$t('msw.mirror.mirror_list')}}</span>
       </div>
-      <el-table :data="mirrorList" ref="baseTable" size="small" stripe>
+      <el-table :data="mirrorList" ref="baseTable" size="medium" stripe>
         <el-table-column type="index" width="55"></el-table-column>
-        <el-table-column align="center" label="镜像源端口" prop="src_port">
+        <el-table-column :label="$t('msw.mirror.source_port')" align="center" prop="src_port">
           <template slot-scope="{row}">
             <span v-if="row.src_port">{{row.src_port.map(p=>piMap[p]).join(',')}}</span>
             <span v-else>--</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="镜像目的端口" prop="dst_port">
+        <el-table-column :label="$t('msw.mirror.dest_port')" align="center" prop="dst_port">
           <template slot-scope="{row}">
             <span v-if="row.dst_port!==undefined">{{piMap[row.dst_port]}}</span>
             <span v-else>--</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="监控报文" prop="mirror_direction">
+        <el-table-column :label="$t('msw.mirror.monitor_pack')" align="center" prop="mirror_direction">
           <template slot-scope="{row}">
-            <span v-if="row.mirror_direction===0">所有报文</span>
-            <span v-else-if="row.mirror_direction===1">输入报文</span>
-            <span v-else-if="row.mirror_direction===2">输出报文</span>
+            <span v-if="row.mirror_direction===0">{{$t('msw.mirror.all_pack')}}</span>
+            <span v-else-if="row.mirror_direction===1">{{$t('msw.mirror.in_pack')}}</span>
+            <span v-else-if="row.mirror_direction===2">{{$t('msw.mirror.out_pack')}}</span>
             <span v-else>--</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="是否接收非镜像源端口报文" prop="switch">
+        <el-table-column :label="$t('msw.mirror.reciver_diff_pack')" align="center" prop="switch">
           <template slot-scope="{row}">
-            <span v-if="row.switch===1">是</span>
-            <span v-else-if="row.switch===0">否</span>
+            <span v-if="row.switch===1">{{$t('phrase.yes')}}</span>
+            <span v-else-if="row.switch===0">{{$t('phrase.no')}}</span>
             <span v-else>--</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column :label="$t('action.ope')" align="center">
           <template slot-scope="{row,$index}">
-            <el-button size="mini" type="text" v-auth="{fn:_onEdit,params:$index}">配置</el-button>
+            <el-button size="medium" type="text" v-auth="{fn:_onEdit,params:$index}">{{$t('msw.mirror.edit')}}</el-button>
             <el-button
               :class="{'c-danger':row.src_port}"
               :disabled="!row.src_port"
-              size="mini"
+              size="medium"
               type="text"
-              v-auth="{fn:_onPatchRemove,params:row.session}"
-            >清空</el-button>
+              v-auth="{fn:_onRemove,params:$index}"
+            >{{$t('msw.mirror.clear')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -63,27 +65,33 @@
         :visible.sync="baseModalShow"
         @open="_clearValidate"
         append-to-body
-        width="650px"
+        width="700px"
       >
-        <el-form :model="baseModel" :rules="baseRules" label-width="180px" ref="baseForm" size="small">
-          <el-form-item label="监控报文：" prop="mirror_direction">
-            <el-select class="w200" placeholder="请选择" v-model="baseModel.mirror_direction">
-              <el-option :value="0" label="所有报文"></el-option>
-              <el-option :value="1" label="输入报文"></el-option>
-              <el-option :value="2" label="输出报文"></el-option>
+        <el-form :model="baseModel" :rules="baseRules" label-width="195px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('msw.mirror.monitor_pack_f')" prop="mirror_direction">
+            <el-select :placeholder="$t('msw.select')" class="w300" v-model="baseModel.mirror_direction">
+              <el-option :label="$t('msw.mirror.all_pack')" :value="0"></el-option>
+              <el-option :label="$t('msw.mirror.in_pack')" :value="1"></el-option>
+              <el-option :label="$t('msw.mirror.out_pack')" :value="2"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="是否接收非镜像源端口报文" prop="switch">
+          <el-form-item :label="$t('msw.mirror.reciver_diff_pack_f')" prop="switch">
             <el-switch :active-value="1" :inactive-value="0" v-model="baseModel.switch"></el-switch>
           </el-form-item>
-          <el-form-item class="inline-message" inline-message label="选择源端口：" prop="src_port"></el-form-item>
+          <el-form-item :label="$t('msw.mirror.source_port_f')" class="inline-message" inline-message prop="src_port"></el-form-item>
           <port-panel :disableds="disabledPorts" :selecteds.sync="baseModel.src_port" has-agg mutilple />
-          <el-form-item class="inline-message" inline-message label="选择目的端口：" prop="dst_port"></el-form-item>
+          <el-form-item :label="$t('msw.mirror.dest_port_f')" class="inline-message" inline-message prop="dst_port"></el-form-item>
           <port-panel :disableds="[...disabledPorts,...lagPorts]" :selecteds.sync="baseModel.dst_port" :show-lag="false" />
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click.native="baseModalShow = false" size="small">取 消</el-button>
-          <el-button :loading="isLoading" @click.native="_onModalConfirm" size="small" type="primary">确定</el-button>
+          <el-button @click.native="baseModalShow = false" class="w120" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button
+            :loading="isLoading"
+            @click.native="_onModalConfirm"
+            class="w120"
+            size="medium"
+            type="primary"
+          >{{isLoading?$t('action.editing'):$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -122,17 +130,17 @@ export default {
       mirrorList: [],
       baseRules: {
         src_port: [
-          { required: true, message: '请选择镜像源端口' },
+          { required: true, message: I18N.t('msw.mirror.source_no_empty') },
           {
             validator: portIncludeValidator,
-            message: '源端口不能同时作为目的端口'
+            message: I18N.t('msw.mirror.source_dest_is_same')
           }
         ],
         dst_port: [
-          { required: true, message: '请选择镜像目的端口' },
+          { required: true, message: I18N.t('msw.mirror.dest_no_empty') },
           {
             validator: portIncludeValidator,
-            message: '源端口不能同时作为目的端口'
+            message: I18N.t('msw.mirror.source_dest_is_same')
           }
         ]
       }
@@ -142,7 +150,7 @@ export default {
     ...mapGetters('switcher', ['piMap', 'lagPortsMap']),
     // modal名称
     modalTitle() {
-      return this.editIndex > -1 ? '编辑端口镜像' : `添加端口镜像`
+      return this.editIndex > -1 ? I18N.t('action.edit1') : I18N.t('action.add')
     },
     // 被使用过的port
     disabledPorts() {
@@ -189,24 +197,19 @@ export default {
         this.mirrorList = _result.list
       } catch (error) {}
     },
-    // 批量删除
-    async _onPatchRemove(sess) {
-      let _sess = sess
-        ? [sess]
-        : this.$refs.baseTable.selection.map(s => s.session)
-      if (!_sess.length) {
-        return this.$message.warning('请选择要清除的列表项')
-      }
-      await this.$confirm(`是否确认清除镜像口？`, {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+    // 删除(不做批量删除)
+    async _onRemove(index) {
+      this.editIndex = index
+      await this.$confirm(I18N.t('msw.mirror.clear_mirror_confirm'), {
+        confirmButtonText: I18N.t('action.confirm'),
+        cancelButtonText: I18N.t('action.cancel'),
         type: 'warning'
       })
       await this._saveData({
-        session: sess
+        session: this.mirrorList[index].session
       })
-      this.$message.success('清除成功')
-      this._loadMirrorList()
+      this.$message.success(I18N.t('tip.remove_success'))
+      // this._loadMirrorList()
     },
     // 编辑镜像
     _onEdit(index) {
@@ -219,10 +222,10 @@ export default {
       this.$refs.baseForm.validate(async valid => {
         if (valid) {
           await this._saveData(this.baseModel)
-          this.$message.success('配置成功')
+          this.$message.success(I18N.t('tip.edit1_success'))
           this.baseModalShow = false
           this.editIndex = -1
-          this._loadMirrorList()
+          // this._loadMirrorList()
         }
       })
     },
@@ -234,13 +237,10 @@ export default {
           module: 'mirror',
           data
         })
+        this.mirrorList.splice(this.editIndex, 1, { ...data })
       } catch (error) {}
       this.isLoading = false
     }
   }
 }
 </script>
-<style lang="scss" scoped>
-.port-mirror {
-}
-</style>

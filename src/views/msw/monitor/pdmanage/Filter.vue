@@ -1,36 +1,45 @@
 <template>
   <div class="port-mac-filter">
-    <help-alert title="过滤MAC地址">
+    <help-alert :title="$t('msw.mac.filter_mac_addr')">
       <div slot="content">
-        <b>说明：</b> 交换机在转发数据时，需要根据MAC地址表来做出相应转发，当在配置的VLAN中接收到源地址或目的地址为配置的MAC地址时，将丢弃此报文，不进行转发。应用场景如某个用户发起ARP攻击时，可以将其配置为过滤地址，防止攻击。
+        <i18n path="msw.mac.filter_notice_tip">
+          <b>{{$t('phrase.explain_f')}}</b>
+        </i18n>
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">MAC列表</span>
+        <span class="box-header-tit">{{$t('msw.mac.mac_addr_list')}}</span>
         <div class="fr">
-          <el-button icon="el-icon-plus" size="small" type="primary" v-auth="_onAdd">添加过滤地址</el-button>
-          <el-button icon="el-icon-delete" size="small" type="danger" v-auth="_onPatchRemove">删除过滤地址</el-button>
+          <el-button icon="el-icon-plus" plain size="medium" type="primary" v-auth="_onAdd">{{$t('action.add')}}</el-button>
+          <el-button
+            icon="el-icon-delete"
+            plain
+            size="medium"
+            type="primary"
+            v-auth="_onPatchRemove"
+          >{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{maxLimit}}</b>条。
+          <i18n path="msw.limit_tip">
+            <b class="c-warning mlr5">{{maxLimit}}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="pageList" ref="baseTable" size="small" stripe>
+      <el-table :data="pageList" ref="baseTable" size="medium" stripe>
         <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column align="center" label="MAC地址" prop="macaddr"></el-table-column>
+        <el-table-column :label="$t('msw.mac.mac_addr')" align="center" prop="macaddr"></el-table-column>
         <el-table-column align="center" label="VLAN ID" prop="vlanid"></el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column :label="$t('action.ope')" align="center">
           <template slot-scope="{row}">
             <el-button
               class="c-danger"
-              size="mini"
+              size="medium"
               type="text"
               v-auth="{fn:_onPatchRemove,params:{vlanid:row.vlanid,macaddr:row.macaddr}}"
-            >删除</el-button>
+            >{{$t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -43,29 +52,33 @@
         @size-change="onSizeChange"
         background
         class="mt20"
-        hide-on-single-page
         layout="total, sizes, prev, pager, next, jumper"
       ></el-pagination>
       <!--basemodal -->
       <el-dialog
         :close-on-click-modal="false"
+        :title="$t('action.add')"
         :visible.sync="baseModalShow"
         @open="_clearValidate"
         append-to-body
-        title="添加过滤地址"
-        width="650px"
+        width="700px"
       >
-        <el-form :model="baseModel" :rules="baseRules" label-width="180px" ref="baseForm" size="small">
-          <el-form-item label="MAC地址：" prop="macaddr">
-            <el-input class="w200" placeholder="格式如：00:11:22:33:44:55" v-model="baseModel.macaddr"></el-input>
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm">
+          <el-form-item :label="$t('wan.mac_addr_f')" prop="macaddr">
+            <el-input :placeholder="$t('wan.mac_example')" class="w300" v-model="baseModel.macaddr"></el-input>
           </el-form-item>
           <el-form-item label="VLAN ID：" prop="vlanid">
-            <el-input class="w200" placeholder="请输入VLAN ID" v-model="baseModel.vlanid"></el-input>
+            <el-input :placeholder="$t('msw.vlan_no_empty')" class="w300" v-model="baseModel.vlanid"></el-input>
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click.native="baseModalShow = false" size="small">取 消</el-button>
-          <el-button :loading="isLoading" @click.native="_onModalConfirm" size="small" type="primary">确定</el-button>
+          <el-button @click.native="baseModalShow = false" class="w120">{{$t('action.cancel')}}</el-button>
+          <el-button
+            :loading="isLoading"
+            @click.native="_onModalConfirm"
+            class="w120"
+            type="primary"
+          >{{isLoading?$t('action.editing'):$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -91,7 +104,7 @@ export default {
         return cb()
       }
       if (v.toLowerCase() === this.sysinfo.sys_mac.toLowerCase()) {
-        return cb(new Error(`${v}为设备MAC，不可配置`))
+        return cb(new Error(I18N.t('msw.mac.no_pc_mac', { mac: v })))
       }
       cb()
     }
@@ -99,11 +112,11 @@ export default {
       baseModel: macBase(),
       baseRules: {
         vlanid: [
-          { required: true, message: '请输入VLAN ID' },
-          { validator: vlanidValidator, message: 'VLAN ID格式错误' }
+          { required: true, message: I18N.t('msw.vlan_no_empty') },
+          { validator: vlanidValidator, message: I18N.t('msw.vlan_is_invalid') }
         ],
         macaddr: [
-          { required: true, message: '请输入MAC地址' },
+          { required: true, message: I18N.t('msw.mac_no_empty') },
           { validator: macStrictValidator },
           { validator: macCheckOwnerValidator }
         ]
@@ -133,7 +146,7 @@ export default {
         let _list = (_result.list || []).map(lis => {
           return {
             ...lis,
-            interface: this.piMap[lis.lpid]
+            ifname: this.piMap[lis.lpid]
           }
         })
         return _list
@@ -144,7 +157,7 @@ export default {
     // 添加
     _onAdd() {
       if (this.pageModel.allItem.length === this.maxLimit) {
-        this.$alert('过滤MAC已配置最大容量', { type: 'warning' })
+        this.$alert(I18N.t('msw.mac.filter_limit_over'), { type: 'warning' })
         return
       }
       this.baseModalShow = true
@@ -159,11 +172,11 @@ export default {
             macaddr: s.macaddr
           }))
       if (!_macs.length) {
-        return this.$message.warning('请选择要删除的列表项')
+        return this.$message.warning(I18N.t('tip.select_del_item'))
       }
-      await this.$confirm(`是否确认删除？`, {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      await this.$confirm(I18N.t('tip.confirm_delete'), {
+        confirmButtonText: I18N.t('action.confirm'),
+        cancelButtonText: I18N.t('action.cancel'),
         type: 'warning'
       })
       try {
@@ -174,7 +187,7 @@ export default {
           }
         })
         this.refresh()
-        this.$message.success('删除成功')
+        this.$message.success(I18N.t('tip.del_success'))
       } catch (error) {}
     },
     // 检查配置是否有效
@@ -193,7 +206,7 @@ export default {
       this.$refs.baseForm.validate(async valid => {
         if (valid) {
           if (!this._compareConfIsValid()) {
-            this.$alert('该配置已存在，请重新配置', { type: 'error' })
+            this.$alert(I18N.t('msw.mac.cfg_is_exist'), { type: 'error' })
             return
           }
           this.isLoading = true
@@ -203,8 +216,12 @@ export default {
               data: this.baseModel
             })
             this.baseModalShow = false
-            this.refresh()
-            this.$message.success('添加成功')
+            this.$message.success(I18N.t('tip.add_success'))
+            // this.refresh()
+            this.pageModel.allItem.push({
+              ifname: this.piMap[this.baseModel.lpid],
+              ...this.baseModel
+            })
           } catch (error) {}
           this.isLoading = false
         }
@@ -213,8 +230,4 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.port-mac-filter {
-}
-</style>
 

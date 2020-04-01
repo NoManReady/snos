@@ -1,32 +1,37 @@
 <template>
   <div class="pdmanage-arp">
-    <help-alert>
+    <help-alert :title="$t('msw.mac.arp_addr_list')">
       <div slot="content">
-        <p class="mt10">设备学习连接在设备各接口上的网络设备IP与MAC对应表。</p>
+        <i18n path="msw.mac.arp_notice_tip">
+          <b>{{$t('phrase.explain_f')}}</b>
+        </i18n>
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          ARP列表
+          {{$t('msw.mac.arp_addr_list')}}
           <small></small>
         </span>
         <div class="fr">
-          <el-input class="w220 mr10" clearable placeholder="根据IP/MAC地址查找" size="small" v-model="filter">
-            <el-button @click.native="_initPage()" icon="el-icon-search" size="small" slot="append"></el-button>
-          </el-input>
-          <el-button @click.native="_onRefresh" size="small" type="primary">
-            <i class="el-icon-refresh"></i>
-            <span>刷新</span>
-          </el-button>
+          <el-form class="fr inline-tip view-form" inline inline-message size="medium">
+            <el-form-item>
+              <el-input :placeholder="$t('msw.mac.search_by_ipmac')" class="w280" clearable v-model="filter">
+                <el-button @click.native="_initPage()" icon="el-icon-search" slot="append"></el-button>
+              </el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button @click.native="_onRefresh" icon="el-icon-refresh" plain type="primary">{{$t('action.refresh')}}</el-button>
+            </el-form-item>
+          </el-form>
         </div>
       </div>
-      <el-table :data="pageList" ref="baseTable" row-key="`${ip}_${mac}`" size="small" stripe>
-        <el-table-column align="center" label="序号" width="60">
+      <el-table :data="pageList" ref="baseTable" row-key="`${ip}_${mac}`" size="medium" stripe>
+        <el-table-column :label="$t('phrase.serial')" align="center" width="60">
           <template slot-scope="{$index}">{{$index+1+(pageModel.page-1)*pageModel.size}}</template>
         </el-table-column>
-        <el-table-column align="center" label="IP地址" min-width="120px" prop="ip"></el-table-column>
-        <el-table-column align="center" label="MAC地址" min-width="120px" prop="mac"></el-table-column>
+        <el-table-column :label="$t('msw.mac.ip_addr')" align="center" min-width="120px" prop="ip"></el-table-column>
+        <el-table-column :label="$t('msw.mac.mac_addr')" align="center" min-width="120px" prop="mac"></el-table-column>
       </el-table>
       <el-pagination
         :current-page.sync="pageModel.page"
@@ -37,7 +42,6 @@
         @size-change="onSizeChange"
         background
         class="mt20"
-        hide-on-single-page
         layout="total, sizes, prev, pager, next, jumper"
       ></el-pagination>
     </div>
@@ -70,10 +74,3 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.pdmanage-arp {
-  .inline {
-    display: inline-block;
-  }
-}
-</style>

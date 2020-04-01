@@ -1,4 +1,5 @@
 import * as api from './api'
+import store from '@/store'
 
 /**
  * 获取Network配置
@@ -31,18 +32,52 @@ export const getNetworkByType = (type, setting) => {
 /**
  * 获取交换机邻居
  */
-export const getNeighborListByType = roles => {
-  return api.network('getNeighborListByType', { roles })
+export const getNeighborListByType = async (roles = ['esw', 'ap'], isSilence = false) => {
+  let params = []
+  if (roles.length === 0 || roles.includes('ap')) {
+    params.push({
+      method: 'devSta.get',
+      params: { module: 'neighbor' }
+    })
+  }
+  if (roles.length === 0 || roles.includes('esw')) {
+    params.push({
+      method: 'devSta.get',
+      params: { module: 'esw_neighbor' }
+    })
+  }
+  let _res = await api.cmd(
+    'cmdArr',
+    { params },
+    { isSilence, timeout: 0, noParse: true }
+  )
+  let _list1 = !!_res[0] ? _res[0].neighbor || [] : []
+  let _list2 = !!_res[1] ? _res[1].neighbor || [] : []
+  let _neighbor = _list1.concat(_list2)
+  return _neighbor
 }
 
 /**
  * 获取Network邻居(包括交换机)
  */
-export const getNetworkNeighbor = (isSilence = false, roles = ['esw', 'ap']) => {
-  return api.network('getNetworkNeighbor', { roles }, {
-    isSilence,
-    timeout: 0
+export const getNetworkNeighbor = async (isSilence = false, roles = ['esw', 'ap']) => {
+  let _groupMap = {}
+  let _result = { conflict: false }
+  let _neighbor = await getNeighborListByType(roles, isSilence)
+
+  // 获取当前网络
+  _result.curNetwork = store.getters.networkId || {}
+  _result.neighbor = _neighbor
+  _groupMap[_result.curNetwork.networkId] = _result.curNetwork.networkId
+  _result.neighbor.forEach(v => {
+    if (!_groupMap[v.networkId]) {
+      _groupMap[v.networkId] = v.networkId
+      _result.conflict = true
+    }
   })
+  _result.networkIds = _groupMap
+
+  return _result
 }
 
 /**
@@ -60,21 +95,14 @@ export const getNetworkId = () => {
 export const setNetworkNeighbor = (params, async = true) => {
   return api.cmd(
     'devSta.set', {
-      module: 'networkId_merge',
-      data: params,
-      async
-    }, {
-      timeout: 0
-    }
+    module: 'networkId_merge',
+    data: params,
+    async
+  }, {
+    timeout: 0
+  }
   )
 }
-
-/**
- * 创建Network
- */
-// export const setQuickStatus = params => {
-//   return api.common('setQuickStatus', params)
-// }
 
 /**
  * 设置Network分组配置
@@ -82,19 +110,19 @@ export const setNetworkNeighbor = (params, async = true) => {
 export const setNetworkGroup = (params, async = false) => {
   return api.cmd(
     'acConfig.set', {
-      module: 'network_group',
-      data: params,
-      async
-    }, {
-      timeout: 0
-    }
+    module: 'network_group',
+    data: params,
+    async
+  }, {
+    timeout: 0
+  }
   )
 }
 
 /**
  * 设置Network配置
  */
-export const setNetwork = network => {
+export const setNetwork = (network, updateSysinfo = true) => {
   // return api.cmd(
   //   'devConfig.set',
   //   { module: 'network', data: params },
@@ -103,8 +131,16 @@ export const setNetwork = network => {
   return api.network('setNetwork', {
     network
   }, {
-      timeout: 0
-    })
+    timeout: 0,
+    async: true
+  }).then(_ => {
+    if (updateSysinfo) {
+      // 更新sysinfo信息
+      setTimeout(() => {
+        store.dispatch('getSysinfo')
+      }, 12000);
+    }
+  })
 }
 
 /**
@@ -193,11 +229,11 @@ export const setMultWan = params => {
 export const getNetworkStatus = () => {
   return api.cmd(
     'devSta.get', {
-      module: 'networkConnect'
-    }, {
-      isSilence: true,
-      timeout: 0
-    }
+    module: 'networkConnect'
+  }, {
+    isSilence: true,
+    timeout: 0
+  }
   )
 }
 
@@ -208,8 +244,8 @@ export const getWanMac = () => {
   return api.cmd('devSta.get', {
     module: 'waninfo'
   }, {
-      isSilence: true
-    })
+    isSilence: true
+  })
 }
 
 /**
@@ -220,9 +256,9 @@ export const getWanIp = (auth = {}, isSilence = true) => {
     module: 'ipinfo',
     ...auth
   }, {
-      isSilence,
-      timeout: 0
-    })
+    isSilence,
+    timeout: 0
+  })
 }
 
 /**
@@ -271,7 +307,7 @@ export const getVlanPort = () => {
  * 设置端口VLAN
  */
 export const setVlanPort = (data) => {
-  return api.cmd('devSta.set', {
+  return api.cmd('devConfig.set', {
     module: 'vlan_port',
     data
   })
@@ -311,3 +347,38 @@ export const setWireLan = (data) => {
   // })
   return api.wireless('setWireLan', data)
 }
+/**
+ * 获取DHCP SNOOPING
+ */
+export const getDhcpSnoop = () => {
+  return api.cmd('acConfig.get', {
+    module: 'dhcp_snp'
+  })
+}
+/**
+ * 设置DHCP SNOOPING
+ */
+export const setDhcpSnoop = (params) => {
+  return api.cmd('acConfig.set', {
+    module: 'dhcp_snp',
+    data: params
+  })
+}
+/**
+ * 获取 WIFi NET
+ */
+export const getNet = () => {
+  return api.cmd('acConfig.get', {
+    module: 'nfpp_global'
+  })
+}
+/**
+ * 设置  WIFi NET
+ */
+export const setNet = (params) => {
+  return api.cmd('acConfig.set', {
+    module: 'nfpp_global',
+    data: params
+  })
+}
+

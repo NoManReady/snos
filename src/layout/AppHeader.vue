@@ -1,64 +1,99 @@
 <template>
   <div class="app-header clearfix">
     <div class="tm fl">
-      <div class="brand fl">
-        <a class="brand-logo" v-if="!collapse" />
-        <span class="brand-txt vm">SNOS</span>
+      <div class="fl" v-if="collapse && !isMacc || isMobile">
+        <i class="rjucd-r"></i>
       </div>
-      <ul class="nav-group fl">
-        <li class="ml5">
-          <a class="nav-item nav-item__toggle" href="javascript:;">
-            <i :class="{'rjucd-menu-left':!collapse,'rjucd-menu-right':collapse}" @click="onCollapse" class="fs28 collapse-icon"></i>
-          </a>
-        </li>
-        <li>
-          <brand />
-        </li>
-      </ul>
+      <!-- <img :src="logoUrl" class="header-logo fl" v-else /> -->
+      <div class="header-logo fl" v-else>
+        <i :style="{ backgroundImage: `url(${logoUrl})` }"></i>
+      </div>
+      <div class="tm fl separation"></div>
+      <strong class="tc" v-if="isMobile">{{ title }}</strong>
+      <div class="fl" v-else>
+        <strong v-if="isMacc">{{ title }}</strong>
+        <brand v-else />
+      </div>
     </div>
     <div class="tm fr">
-      <ul class="nav-group clearfix">
-        <li v-if="showCheck">
-          <a @click="onToDiagnoseNet" class="nav-item" href="javascript:;">
-            <el-tooltip content="网络体检" effect="light" placement="bottom">
-              <i class="rjucd-diagnosis"></i>
-            </el-tooltip>
-            <span>网络体检</span>
-          </a>
+      <span @click="$emit('exit')" class="pointer mr5" v-if="isMacc || isMobile">
+        <i class="rjucd-exit vm"></i>
+        <slot name="exitText">{{ $t("main_header.logout") }}</slot>
+      </span>
+      <ul class="nav-group clearfix" v-else>
+        <li v-if="showLang">
+          <el-select class="w100" size="mini" v-model="langConf">
+            <el-option label="中文" value="zh_cn"></el-option>
+            <el-option label="English" value="en"></el-option>
+          </el-select>
+        </li>
+        <li v-if="!$roles().includes('ehr')">
+          <noc-qrcode>
+            <a class="nav-item" href="javascript:;">
+              <el-tooltip :content="$t('main_header.macc_dev')" effect="light" placement="bottom">
+                <i class="rjucd-cloud"></i>
+              </el-tooltip>
+              <span>{{ $t("main_header.macc_dev") }}</span>
+            </a>
+          </noc-qrcode>
         </li>
         <li v-if="showApp">
           <qrcode>
             <a class="nav-item" href="javascript:;">
-              <el-tooltip content="下载APP" effect="light" placement="bottom">
+              <el-tooltip :content="$t('main_header.app_download')" effect="light" placement="bottom">
                 <i class="rjucd-sys"></i>
               </el-tooltip>
-              <span>下载APP</span>
+              <span>{{ $t("main_header.app_download") }}</span>
             </a>
           </qrcode>
         </li>
-        <li v-if="!$roles().includes('slave')">
-          <a @click="goQuickset" class="nav-item" href="javascript:;">
-            <el-tooltip content="快速配置" effect="light" placement="bottom">
-              <i class="rjucd-rocket"></i>
-            </el-tooltip>
-            <span>快速配置</span>
-          </a>
-        </li>
-        <li v-if="showCheck">
-          <!-- <el-badge :max="9" :value="alarmNum" style="line-height: 1"> -->
-          <a @click="gotoAlarm" class="nav-item" href="javascript:;">
-            <el-tooltip content="查看告警详情" effect="light" placement="bottom">
-              <i class="rjucd-warning"></i>
-            </el-tooltip>
-            <span>告警</span>
-          </a>
-          <!-- </el-badge> -->
-        </li>
+        <template v-if="isDefUser">
+          <li v-if="!$roles().includes('slave')">
+            <a @click="goQuickmacc" class="nav-item" href="javascript:;">
+              <el-tooltip
+                :content="isMaster ? $t('main_header.network_cfg') : $t('main_header.quick_cfg')"
+                effect="light"
+                placement="bottom"
+              >
+                <i class="rjucd-rocket"></i>
+              </el-tooltip>
+              <span>{{ isMaster ? $t("main_header.network_cfg") : $t("main_header.quick_cfg")}}</span>
+            </a>
+          </li>
+          <template v-if="!isMsw">
+            <li>
+              <a @click="onToDiagnoseNet" class="nav-item" href="javascript:;">
+                <el-tooltip :content="$t('main_header.network_check')" effect="light" placement="bottom">
+                  <i class="rjucd-diagnosis"></i>
+                </el-tooltip>
+                <span>{{ $t("main_header.network_check") }}</span>
+              </a>
+            </li>
+            <li>
+              <!-- <el-badge :max="9" :value="alarmNum" style="line-height: 1"> -->
+              <a @click="gotoAlarm" class="nav-item" href="javascript:;">
+                <el-tooltip :content="$t('main_header.warn_view')" effect="light" placement="bottom">
+                  <i class="rjucd-warning"></i>
+                </el-tooltip>
+                <span>{{ $t("main_header.warn") }}</span>
+              </a>
+              <!-- </el-badge> -->
+            </li>
+          </template>
+        </template>
         <li>
-          <a :class="{'c-info cursor-def': isDefaultPass}" @click="logout" class="nav-item" href="javascript:;">
-            <el-tooltip :content="isDefaultPass ? '默认密码免登录' : '安全退出到登录页'" effect="light" placement="bottom">
-              <!-- <i class="rjucd-reload"></i> -->
-              <span>{{isDefaultPass ? '默认密码' : '注销'}}</span>
+          <a :class="{ 'cursor-def': isDefaultPass !== false }" class="nav-item" href="javascript:;" v-auth="logout">
+            <el-tooltip
+              :content="isDefaultPass ? $t('main_header.def_pass_login') : $t('main_header.logout_safe')              "
+              effect="light"
+              placement="bottom"
+            >
+              <span>
+                {{!isDefUser?userName:''}}
+                <i class="rjucd-exit"></i>
+                <i class="el-icon-loading fs16" v-if="isDefaultPass === ''"></i>
+                <span v-else>{{ isDefaultPass ? $t("main_header.def_pass") : $t("main_header.logout")}}</span>
+              </span>
             </el-tooltip>
           </a>
         </li>
@@ -70,11 +105,24 @@
 import { Badge } from 'element-ui'
 import { removeFromSession } from '@/utils/localStorage'
 import Qrcode from '@/views/common/header/Qrcode'
+import NocQrcode from '@/views/common/header/NocQrcode'
 import Brand from '@/views/common/header/Brand'
+import { mapGetters, mapActions } from 'vuex'
 export default {
   name: 'AppHeader',
+  props: {
+    isMacc: {
+      type: Boolean,
+      default: false
+    },
+    title: {
+      type: String,
+      default: ''
+    }
+  },
   data() {
     return {
+      isMobile: !!ISMOBILE,
       alarmNum: 0,
       timer: true
     }
@@ -82,6 +130,7 @@ export default {
   components: {
     [Brand.name]: Brand,
     [Qrcode.name]: Qrcode,
+    [NocQrcode.name]: NocQrcode,
     [Badge.name]: Badge
   },
   beforeDestroy() {
@@ -92,6 +141,47 @@ export default {
     // this._loadAlarm()
   },
   computed: {
+    ...mapGetters(['lang', 'userName']),
+    isDefUser() {
+      return this.userName === 'admin'
+    },
+    // 家用路由器
+    isEhr() {
+      return this.$roles().includes('ehr')
+    },
+    showLang() {
+      // 家用路由器先去掉国际化，使用中文显示
+      if (this.isEhr) {
+        if (this.lang === 'en') {
+          this.setLang('zh_cn')
+        }
+        return false
+      }
+      return true
+    },
+    langConf: {
+      get() {
+        return this.lang
+      },
+      set(v) {
+        this.setLang(v)
+      }
+    },
+    isSmb() {
+      return !this.$store.getters.isIndustry
+    },
+    logoUrl() {
+      let _snos = window.BASE_URI.split(/cgi-bin/)[0]
+      return `${_snos === '/' ? '' : _snos}${
+        process.env.STATIC_PATH
+      }/static/image/${
+        this.lang === 'en'
+          ? 'logo_en.svg'
+          : this.isSmb
+          ? 'logo.svg'
+          : 'logo-rj.svg'
+      }`
+    },
     devType() {
       if (this.isEwr) {
         return 'EWR'
@@ -104,34 +194,27 @@ export default {
     },
     // 是否显示APP下载
     showApp() {
-      return (
-        this.$roles().includes('egw') ||
-        this.$roles().includes('eap') ||
-        this.$roles().includes('msw')
-      )
+      return this.isSmb && ['egw', 'eap', 'msw'].includes(this.$dev())
     },
-    // 是否显示网络体检
-    showCheck() {
-      return !this.$roles().includes('msw')
+    // MSW不显示网络体检和告警
+    isMsw() {
+      return this.$roles().includes('msw')
     },
     collapse() {
       return this.$store.getters.collapse
     },
     isDefaultPass() {
       return this.$store.getters.isDefaultPass
-    }
-  },
-  watch: {
-    collapse() {
-      if (window.Event) {
-        setTimeout(() => {
-          let $resize = new Event('resize')
-          window.dispatchEvent($resize)
-        }, 100)
-      }
+    },
+    curSn() {
+      return (window.top.APP_SYSINFO || this.$store.getters.sysinfo).serial_num
+    },
+    isMaster() {
+      return this.$roles().includes('master')
     }
   },
   methods: {
+    ...mapActions(['setLang']),
     async _loadAlarm() {
       let _res = await this.$api.getAlarm()
       this.alarmNum = (_res.list || []).length || 0
@@ -153,10 +236,6 @@ export default {
         query: { start: true }
       })
     },
-    // 切换侧边菜单栏
-    onCollapse() {
-      this.$store.dispatch('setCollapse', !this.collapse)
-    },
     // 跳转告警页
     gotoAlarm() {
       this.$router.push({
@@ -165,35 +244,63 @@ export default {
       })
     },
     // 跳转向导页
-    goQuickset() {
-      this.$router.push({ name: 'quickset' })
+    goQuickmacc() {
+      // this.$router.push({ name: this.isMaster ? 'quickmacc' : 'quickset' })
+      this.$router.push({ name: 'quickmacc' })
     },
     // 注销
     logout() {
-      if (!this.isDefaultPass) {
-        this.$api.common('logout').then(d => {
+      if (this.isDefaultPass === false) {
+        this.$api.common('logout', { sn: this.curSn }).then(d => {
           removeFromSession('APP_DEFAULT_PATH')
           window.top.location = window.top.location.origin
         })
+      } else {
       }
     }
   }
 }
 </script>
-<style lang="scss">
-ol.ol-num li {
-  list-style: decimal;
-}
-</style>
 <style lang="scss" scoped>
 @import '../style/utils/variable';
 @import '../style/utils/mixins';
-.qrcode-tip li {
-  margin-top: 5px;
-  list-style: disc;
-}
 .app-header {
   padding: 0 10px;
+  .separation {
+    border-left: 1px solid $border-main;
+    height: 34px !important;
+    margin-top: 15px;
+    padding-right: 18px;
+  }
+  a {
+    color: #fff;
+  }
+  .header-logo {
+    width: $app-aside-width;
+    height: 100%;
+    margin-left: -10px;
+    position: relative;
+    text-align: center;
+    overflow: hidden;
+    i {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      background-repeat: no-repeat;
+      // background-size: 280% 319%;
+      // background-size: auto;
+      background-position: 50% 49%;
+      background-size: 120%;
+    }
+  }
+  i {
+    &.rjucd-r {
+      height: 64px;
+      line-height: 64px;
+      font-size: 54px;
+      margin-left: -5px;
+    }
+  }
   .tm {
     @include text-middle($app-header-height);
   }
@@ -203,15 +310,12 @@ ol.ol-num li {
       margin-left: 14px;
     }
     .nav-item {
-      &__toggle {
-        display: none;
-      }
       cursor: pointer;
       display: inline-block;
       vertical-align: middle;
       text-align: center;
       &:hover {
-        color: $--color-text-primary;
+        color: $--border-color-lighter;
       }
       [class^='rjucd-'],
       [class*=' rjucd-'] {
@@ -221,15 +325,6 @@ ol.ol-num li {
         & ~ span {
           margin-left: -4px;
           display: none;
-        }
-      }
-    }
-  }
-  @media screen and (min-width: 768px) {
-    .nav-group {
-      .nav-item {
-        &__toggle {
-          display: inline-block;
         }
       }
     }
@@ -248,7 +343,7 @@ ol.ol-num li {
     }
   }
   .cursor-def {
-    cursor: default;
+    cursor: default !important;
   }
 }
 </style>

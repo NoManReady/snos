@@ -19,7 +19,19 @@ export const getDateManage = (isSilence = false) => {
         { module: 'tmngt' },
         { isSilence }
     ).then(d => {
-        return d.list.filter(lis => lis.type !== 'auto')
+        const _map = {
+            everytime: I18N.t('api.everytime'),
+            workday: I18N.t('api.workday'),
+            weekend: I18N.t('api.weekend')
+        }
+        return d.list.filter(lis => lis.type !== 'auto').map(t => {
+            if (t.type === 'system') {
+                t.name = _map[t.tmngtName] || t.tmngtName
+            } else {
+                t.name = t.tmngtName
+            }
+            return t
+        })
     })
 }
 

@@ -1,57 +1,52 @@
 <template>
   <div class="advanced-nat-dmz">
-    <help-alert json-key="natdmzJson" title="NAT-DMZ规则列表">
-      <div slot="content">您可以查看规则条目，还可以通过表格按钮对条目进行操作。</div>
+    <help-alert json-key="natdmzJson" :title="$t('egw.nat.nat_dmz')">
+      <div slot="content">{{$t('egw.nat.nat_dmz_rule_tip')}}</div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          NAT-DMZ规则列表
+          {{$t('egw.nat.nat_dmz_rule_tab')}}
           <small></small>
         </span>
         <div class="fr">
-          <el-button size="small" type="primary" v-auth="onAdd">
-            <i class="el-icon-plus"></i>
-            <span>新增</span>
-          </el-button>
-          <el-button size="small" type="primary" v-auth="onDel">
-            <i class="el-icon-delete"></i>
-            <span>批量删除</span>
-          </el-button>
+          <el-button icon="el-icon-plus" plain size="medium" type="primary" v-auth="onAdd">{{$t('action.add')}}</el-button>
+          <el-button icon="el-icon-delete" plain size="medium" type="primary" v-auth="onDel">{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          当前有
-          <b class="c-warning mlr5">{{MAX_NUM}}</b>个出接口，所以最大支持配置
-          <b class="c-warning mlr5">{{MAX_NUM}}</b>条规则。
+          <i18n path="egw.nat.rule_length_by_interface_tip">
+              <b class="c-warning mlr5">{{MAX_NUM}}</b>
+              <b class="c-warning mlr5">{{MAX_NUM}}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="pageList" ref="baseTable" row-key="rule_name" size="small" stripe>
+      <el-table :data="pageList" ref="baseTable" row-key="rule_name" size="medium" stripe>
         <el-table-column align="center" type="selection" width="50"></el-table-column>
-        <el-table-column align="center" label="规则名称" prop="rule_name"></el-table-column>
-        <el-table-column align="center" label="出接口" prop="interface">
+        <el-table-column align="center" :label="$t('egw.nat.rule_name')" prop="rule_name"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.interface')" prop="interface">
           <template slot-scope="scope">{{scope.row.interface.toLocaleUpperCase()}}</template>
         </el-table-column>
-        <el-table-column align="center" label="主机地址" prop="dest_ip" width="200"></el-table-column>
-        <el-table-column align="center" label="状态" prop="enable">
+        <el-table-column align="center" :label="$t('egw.nat.dest_ip')"  prop="dest_ip" width="200"></el-table-column>
+        <el-table-column align="center" :label="$t('phrase.status')" prop="enable">
           <template slot-scope="scope">
             <div @click="toggleStatus(scope.row,scope.$index)" class="toggle-enable pointer">
               <span class="c-success" v-if="scope.row.enable==='1'">
-                启用
+                {{$t('phrase.enable')}}
                 <i class="el-icon-circle-check"></i>
               </span>
               <span class="c-danger" v-else>
-                关闭
+                 {{$t('phrase.disable')}}
                 <i class="el-icon-remove"></i>
               </span>
             </div>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作" width="140">
+        <el-table-column align="center" :label="$t('action.ope')" width="140">
           <template slot-scope="scope">
-            <el-button @click.native="onEdit(scope.$index, scope.row)" type="text">修改</el-button>
-            <el-button type="text" v-auth="{fn:onDel,params:scope.row}">删除</el-button>
+            <el-button @click.native="onEdit(scope.$index, scope.row)" size="medium" type="text"> {{$t('action.edit')}}</el-button>
+            <el-button size="medium" type="text" v-auth="{fn:onDel,params:scope.row}"> {{$t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -77,25 +72,25 @@
         class="form-inline"
         width="600px"
       >
-        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" status-icon>
-          <el-form-item label="规则名称" prop="rule_name">
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('egw.nat.rule_name')" prop="rule_name">
             <el-input :disabled="editIndex!==-1" class="w300" v-model="baseModel.rule_name"></el-input>
           </el-form-item>
-          <el-form-item label="主机地址" prop="dest_ip">
-            <el-input class="w300" placeholder="格式：192.168.1.1" v-model="baseModel.dest_ip"></el-input>
+          <el-form-item :label="$t('egw.nat.dest_ip')" prop="dest_ip">
+            <el-input class="w300" :placeholder="$t('wan.ip_example')" v-model="baseModel.dest_ip"></el-input>
           </el-form-item>
-          <el-form-item label="出接口" prop="interface">
-            <el-select class="w300" placeholder="请选择" v-model="baseModel.interface">
+          <el-form-item :label="$t('egw.interface')" prop="interface">
+            <el-select class="w300" :placeholder="$t('action.select')" v-model="baseModel.interface">
               <el-option :key="intf.v" :label="intf.l" :value="intf.v" v-for="intf in intfs"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="状态" prop="enable">
+          <el-form-item :label="$t('phrase.status')" prop="enable">
             <el-switch active-value="1" inactive-value="0" v-model="baseModel.enable"></el-switch>
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click="modalShow = false">取 消</el-button>
-          <el-button @click="onModalConfirm" type="primary">确 定</el-button>
+          <el-button @click="modalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button @click="onModalConfirm" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -112,13 +107,13 @@ export default {
     const _sameNameValidate = (r, v, cb) => {
       let _editItem = this.getItem(this.editIndex)
       if (v !== _editItem.rule_name && this.nameMap.includes(v))
-        return cb(new Error('规则名称已存在'))
+        return cb(new Error(this.$t('egw.rule_name_is_duplication')))
       cb()
     }
     const _sameIntfValidate = (r, v, cb) => {
       let _editItem = this.getItem(this.editIndex)
       if (v !== _editItem.interface && this.hasConfigIntf.includes(v))
-        return cb(new Error('此接口已配置过'))
+        return cb(new Error(this.$t('egw.nat.interface_used')))
       cb()
     }
     return {
@@ -129,13 +124,13 @@ export default {
       baseModel: model.natDmzFn(),
       baseRules: {
         rule_name: [
-          { required: true, message: '请输入规则名称' },
-          { range: true, min: 1, max: 28, message: '规则名称为1-28个字符' },
+          { required: true, message: this.$t('egw.enter_rule_name') },
+          { range: true, min: 1, max: 28, message: this.$t('egw.rule_name_length_tip') },
           { validator: _sameNameValidate },
           { validator: quoteValidator }
         ],
         dest_ip: [
-          { required: true, message: '请输入主机地址' },
+          { required: true, message: this.$t('egw.nat.enter_dest_ip') },
           { validator: ipValidator }
         ],
         interface: [{ validator: _sameIntfValidate }]
@@ -154,7 +149,7 @@ export default {
       return this.pageModel.allItem.map(o => o.interface) || []
     },
     modalTitle() {
-      return this.editIndex !== -1 ? '编辑规则' : '新增规则'
+      return this.editIndex !== -1 ? this.$t('egw.rule_edit') : this.$t('egw.rule_add')
     }
   },
   created() {
@@ -179,7 +174,7 @@ export default {
     onAdd() {
       if (this.pageTotal >= this.MAX_NUM) {
         return this.$message.warning(
-          `当前有${this.MAX_NUM}个出接口，所以最多支持配置 ${this.MAX_NUM} 条规则`
+          this.$t('egw.nat.rule_length_by_interface_tip',{num:this.MAX_NUM})
         )
       }
       this.modalShow = true
@@ -203,10 +198,10 @@ export default {
       } else {
         _items = this.$refs.baseTable.selection
         if (_items.length === 0) {
-          return this.$message.warning('请选择要删除的列表项')
+          return this.$message.warning(this.$t('tip.select_del_item'))
         }
       }
-      this.$confirm('是否确认删除？').then(() => {
+      this.$confirm(this.$t('tip.confirm_delete')).then(() => {
         let _map = _items.map(o => o.rule_name)
         // 更新本地数据
         this.pageModel.allItem = this.pageModel.allItem.filter(item => {
@@ -244,7 +239,7 @@ export default {
       this.$api.setNatDmz(data, opt).then(d => {
         // this._initPage()
         this.$message({
-          message: '配置成功',
+          message: this.$t('tip.edit1_success'),
           type: 'success'
         })
       })

@@ -1,83 +1,103 @@
 <template>
-  <div>
-    <el-breadcrumb class="header-brand" separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item>
-        <strong>{{networkName}}</strong>
-      </el-breadcrumb-item>
-      <el-breadcrumb-item>
-        当前登录设备:
-        <strong :class="{'pointer': !disPopDevDetail}" @click="_onPopDevDetail" v-popover:devInfoPopover>
+  <div class="header-brand">
+    <div class="fs14">
+      <i class="el-icon-loading fs16" v-if="!networkName"></i>
+      <strong v-else>{{ networkName }}</strong>
+      <i class="el-icon-arrow-right"></i>
+      <label>
+        <!-- <span>当前登录设备:</span> -->
+        <strong :class="{ pointer: !disPopDevDetail }" @click="_onPopDevDetail" v-popover:devInfoPopover>
           <i class="el-icon-loading" v-if="!curHostname"></i>
           <template v-else>
-            <span class="ellipsis vm width" v-if="disPopDevDetail">{{curHostname}}</span>
-            <el-tooltip :content="`点击配置此设备（${curHostname}）`" effect="light" placement="right" v-else>
-              <span>
-                <span class="ellipsis vm width c-success">{{curHostname}}</span>
-              </span>
-            </el-tooltip>
-            <span class="c-warning" v-if="!isAlone">【{{isSlave ? "从" : "主"}}】</span>
+            <strong class="ellipsis vm width">{{ curHostname }}</strong>
+            <span class="c-warning" v-if="!isAlone">[{{ isSlave ? $t("devlist.slave") : $t("devlist.master") }}]</span>
+            <i class="el-icon-info"></i>
           </template>
         </strong>
-      </el-breadcrumb-item>
-    </el-breadcrumb>
-    <el-popover placement="bottom" ref="devInfoPopover" trigger="hover">
-      <el-form :model="curSysinfo" class="view-form" label-width="100px" size="mini">
-        <el-form-item label="型号：">
-          <label>{{curSysinfo.model}}</label>
+      </label>
+    </div>
+    <el-popover
+      :title="`${$t('header.cur_dev_info')}${ disPopDevDetail ? '' : $t('header.click_edit_dev') }`"
+      placement="right"
+      ref="devInfoPopover"
+      trigger="hover"
+    >
+      <el-form :model="curSysinfo" class="view-form" label-width="140px" size="medium">
+        <el-form-item :label="$t('sysinfo.dev_name_f')">
+          <label style="word-break: break-all;">{{ curHostname }}</label>
         </el-form-item>
-        <el-form-item label="SN号：">
-          <label>{{curSysinfo.serial_num}}</label>
+        <el-form-item :label="$t('sysinfo.dev_type_f')">
+          <label>{{ curSysinfo.model }}</label>
         </el-form-item>
-        <el-form-item label="IP地址：">
-          <label>{{curSysinfo.wan_ip}}</label>
+        <el-form-item :label="$t('sysinfo.sn_num_f')">
+          <label>{{ curSysinfo.serial_num }}</label>
         </el-form-item>
-        <el-form-item label="MAC地址：">
-          <label>{{curSysinfo.sys_mac}}</label>
+        <el-form-item :label="$t('wan.ip_addr_f')">
+          <label>{{ curSysinfo.wan_ip }}</label>
         </el-form-item>
-        <el-form-item label="软件版本：">
-          <label>{{curSysinfo.software_version}}</label>
+        <el-form-item :label="$t('wan.mac_addr_f')">
+          <label>{{ curSysinfo.sys_mac }}</label>
+        </el-form-item>
+        <el-form-item :label="$t('sysinfo.soft_version_f')">
+          <label class="break-word">{{ curSysinfo.software_version }}</label>
         </el-form-item>
       </el-form>
     </el-popover>
   </div>
 </template>
 <script>
-import { Breadcrumb, BreadcrumbItem } from 'element-ui'
-import { mapActions, mapGetters } from 'vuex'
 import { popDevDetail } from '@/utils/iframeUtils'
+import { mapGetters, mapActions } from 'vuex'
 export default {
   name: 'Brand',
-  components: {
-    [Breadcrumb.name]: Breadcrumb,
-    [BreadcrumbItem.name]: BreadcrumbItem
-  },
   data() {
     return {
-      networkName: 'defaultNetwork',
       curHostname: window.top.APP_HOSTNAME,
       curSysinfo: window.top.APP_SYSINFO
     }
   },
   mounted() {
-    // alone和master设备需要监听header的hostname变更信息
-    if (this.isMaster || this.isAlone) {
-      window.addEventListener(
-        'message',
-        e => {
+    window.addEventListener(
+      'message',
+      e => {
+        if (e.data && e.data.type) {
           if (
-            e.data &&
             e.data.type === 'ewebHostname' &&
             e.data.sn === this.curSysinfo.serial_num
           ) {
             window.top.APP_HOSTNAME = e.data.value
             this.curHostname = e.data.value
           }
-        },
-        false
-      )
-    }
+          if (
+            e.data.type === 'ewebSysinfo' &&
+            e.data.sn === window.top.APP_SYSINFO.serial_num
+          ) {
+            window.top.APP_SYSINFO = e.data.value
+            this.curSysinfo = e.data.value
+          }
+        }
+      },
+      false
+    )
+  },
+  async created() {
+    await this.getNetworkId()
   },
   computed: {
+    ...mapGetters(['networkId']),
+    networkName() {
+      if (!this.networkId) {
+        this.getNetworkId()
+        return false
+      }
+      if (
+        this.networkId.networkId === '0' ||
+        this.networkId.networkName === 'defaultNetwork'
+      ) {
+        return I18N.t('header.unknow_projname')
+      }
+      return this.networkId.networkName
+    },
     isSlave() {
       return window.top.APP_ROLES.includes('slave')
     },
@@ -94,26 +114,13 @@ export default {
       return this.isAlone || (this.isSlave && !this.isInIframe)
     }
   },
-  async created() {
-    let groupsData = await this.$api.getNetworkGroup({ isSilence: true })
-    this.networkName = groupsData.networkName
-    // this.getHostname()
-  },
   methods: {
-    // ...mapActions(['getHostname']),
+    ...mapActions(['getNetworkId']),
     _onPopDevDetail() {
-      if (!this.disPopDevDetail) {
-        let _isSlaveEg = this.curSysinfo.productType === 'egw' && this.isSlave // 从EG要弹出
-
-        popDevDetail(
-          {
-            ip: this.curSysinfo.auth_ip,
-            sn: this.curSysinfo.serial_num
-          },
-          'Brand',
-          _isSlaveEg ? false : this.curSysinfo.productType
-        )
+      if (this.disPopDevDetail) {
+        return
       }
+      popDevDetail(this.curSysinfo, 'Brand')
     }
   }
 }
@@ -121,10 +128,8 @@ export default {
 
 <style lang="scss" scope>
 .header-brand {
-  line-height: 64px !important;
-  height: 64px !important;
   .ellipsis.width {
-    max-width: 100px;
+    max-width: 130px;
     width: auto;
   }
 }

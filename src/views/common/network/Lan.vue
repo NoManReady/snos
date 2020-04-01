@@ -1,26 +1,20 @@
 <template>
   <div class="network-lan">
-    <el-tabs v-model="tabValue" @tab-click="_onTabClick">
-      <el-tab-pane name="0" label="LAN设置"></el-tab-pane>
-      <el-tab-pane name="5" v-if="isEgw" label="端口VLAN"></el-tab-pane>
-      <el-tab-pane name="1" label="客户端列表"></el-tab-pane>
-      <el-tab-pane name="2" label="静态地址分配"></el-tab-pane>
-      <el-tab-pane v-if="isEgw" name="3" label="DHCP选项"></el-tab-pane>
-      <el-tab-pane v-if="isEgw" name="4" label="DNS代理"></el-tab-pane>
+    <el-tabs @tab-click="_onTabClick" v-model="tabValue">
+      <el-tab-pane :label="$t('network.lan_cfg')" name="0"></el-tab-pane>
+      <el-tab-pane :label="$t('network.port_vlan')" name="5" v-if="isEgw && !isEhr"></el-tab-pane>
+      <el-tab-pane :label="$t('network.client_list')" name="1"></el-tab-pane>
+      <el-tab-pane :label="$t('network.static_addr_alloc')" name="2"></el-tab-pane>
+      <el-tab-pane :label="$t('network.dhcp_cfg')" name="3" v-if="isEgw && !isEhr"></el-tab-pane>
+      <el-tab-pane :label="$t('network.dns_proxy')" name="4" v-if="isEgw"></el-tab-pane>
     </el-tabs>
-    <lan-tabs :type="tabValue" :key="randomId"></lan-tabs>
+    <lan-tabs :key="randomId" :type="tabValue"></lan-tabs>
   </div>
 </template>
 <script>
 import LanTabs from './lan/Index'
 export default {
   name: 'NetworkLan',
-  props: {
-    tab: {
-      type: String,
-      default: '0'
-    }
-  },
   data() {
     return {
       tabValue: '0',
@@ -29,13 +23,16 @@ export default {
   },
   computed: {
     isEgw() {
-      return this.$dev() === "egw"
+      return this.$dev() === 'egw'
+    },
+    isEhr() {
+      return this.$roles().includes('ehr')
     }
   },
   watch: {
-    tab: {
+    $route: {
       handler() {
-        this.tabValue = this.tab
+        this.tabValue = this.$route.query.tab
       },
       immediate: true
     }

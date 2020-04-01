@@ -1,8 +1,8 @@
 <template>
   <div class="advanced-nat">
     <el-tabs v-model="tabValue" @tab-click="_onTabClick">
-      <el-tab-pane name="0" label="端口映射"></el-tab-pane>
-      <el-tab-pane name="1" label="NAT-DMZ"></el-tab-pane>
+      <el-tab-pane name="0" :label="$t('egw.nat.portmap')"></el-tab-pane>
+      <el-tab-pane name="1" :label="$t('egw.nat.nat_dmz')"></el-tab-pane>
     </el-tabs>
     <nat-tabs :type="tabValue" :key="randomId"></nat-tabs>
   </div>

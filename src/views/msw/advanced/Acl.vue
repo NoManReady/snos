@@ -15,17 +15,17 @@ export default {
     return {
       tabs: Object.freeze([
         {
-          label: 'ACL列表',
+          label: I18N.t('msw.acl.acl_list'),
           value: '0',
           comp: acl.Acl
         },
         // {
-        //   label: 'ACL时间',
+        //   label: I18N.t('msw.acl.alc_date'),
         //   value: '1',
         //   comp: acl.Date
         // },
         {
-          label: '应用ACL',
+          label: I18N.t('msw.acl.apply_acl'),
           value: '2',
           comp: acl.Port
         }

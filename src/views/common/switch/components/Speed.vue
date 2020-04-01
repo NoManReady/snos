@@ -3,42 +3,42 @@
     <el-form :model="baseModel" :rules="baseRules" label-width="100px" ref="baseForm" size="mini">
       <el-row :gutter="0">
         <el-col :span="12">
-          <el-form-item label="端口" prop="portid">
+          <el-form-item :label="$t('esw.port')" prop="portid">
             <treeselect
               :default-expand-level="1"
               :max-height="250"
               :multiple="true"
               :options="portTreeList"
+              :placeholder="$t('esw.select')"
               @click.native="_onTreeSelectClick"
               class="w170"
-              placeholder="请选择"
               v-model="baseModel.portid"
             />
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="类型" prop="type">
+          <el-form-item :label="$t('phrase.type')" prop="type">
             <el-select class="w120" v-model="baseModel.type">
-              <el-option :value="0" label="入口"></el-option>
-              <el-option :value="1" label="出口"></el-option>
-              <el-option :value="2" label="全部"></el-option>
+              <el-option :label="$t('esw.mirror.in')" :value="0"></el-option>
+              <el-option :label="$t('esw.mirror.out')" :value="1"></el-option>
+              <el-option :label="$t('phrase.all')" :value="2"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="开关" prop="state">
+          <el-form-item :label="$t('phrase.status')" prop="state">
             <el-select class="w170" ref="stateRef" v-model="baseModel.state">
               <!-- <el-option :value="0" label="关闭"></el-option> -->
-              <el-option :value="0" label="关闭"></el-option>
-              <el-option :value="1" label="开启"></el-option>
+              <el-option :label="$t('phrase.disable')" :value="0"></el-option>
+              <el-option :label="$t('phrase.enable')" :value="1"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="速率" prop="rate">
+          <el-form-item :label="$t('esw.base.rate')" prop="rate">
             <el-input
               :disabled="baseModel.state===0"
-              :placeholder="baseModel.state===0?'不限制':'请输入速率'"
+              :placeholder="baseModel.state===0?$t('esw.base.no_limit'):$t('esw.base.rate_no_empty')"
               class="w120"
               v-model="baseModel.rate"
             ></el-input>
@@ -47,7 +47,7 @@
       </el-row>
 
       <el-form-item>
-        <el-button @click.native="_onSubmit" type="primary">保存</el-button>
+        <el-button @click.native="_onSubmit" type="primary">{{$t('action.save_edit')}}</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -60,18 +60,18 @@
       size="mini"
       style="width: 100%"
     >
-      <el-table-column align="center" label="端口" prop="port" width="100">
+      <el-table-column :label="$t('esw.port')" align="center" prop="port" width="100">
         <template slot-scope="{row}">{{+row.port+1}}</template>
       </el-table-column>
-      <el-table-column align="center" label="入口速率 (Mbit/sec)">
+      <el-table-column :label="$t('esw.base.in_rate')" align="center">
         <template slot-scope="{row}">
-          <span v-if="row.rxRate==='0'">不限制</span>
+          <span v-if="row.rxRate==='0'">{{$t('esw.base.no_limit')}}</span>
           <span v-else>{{+row.rxRate/1000}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="出口速率 (Mbit/sec)">
+      <el-table-column :label="$t('esw.base.out_rate')" align="center">
         <template slot-scope="{row}">
-          <span v-if="row.txRate==='0'">不限制</span>
+          <span v-if="row.txRate==='0'">{{$t('esw.base.no_limit')}}</span>
           <span v-else>{{+row.txRate/1000}}</span>
         </template>
       </el-table-column>
@@ -79,15 +79,12 @@
   </div>
 </template>
 <script>
-import { Row, Col } from 'element-ui'
 import Treeselect from '@riophae/vue-treeselect'
 import { isBetween, intValidate } from '@/utils/rulesUtils'
 import { mapGetters } from 'vuex'
 export default {
   name: 'switch-speed',
   components: {
-    [Row.name]: Row,
-    [Col.name]: Col,
     Treeselect
   },
   data() {
@@ -95,10 +92,10 @@ export default {
       if (this.baseModel.state === 0) {
         cb()
       }
-      if (!intValidate(v)) return cb(new Error('请输入整数'))
+      if (!intValidate(v)) return cb(new Error(I18N.t('esw.base.require_int')))
       let _random = this.hasGillionPort ? 1000 : 100
       if (!isBetween(v, 1, _random)) {
-        return cb(new Error(`请输入有效的速率（1~${_random}）`))
+        return cb(new Error(I18N.t('esw.base.rate_range', { rate: _random })))
       }
       cb()
     }
@@ -111,7 +108,7 @@ export default {
         state: 0
       },
       baseRules: {
-        portid: [{ required: true, message: '请选择端口号' }],
+        portid: [{ required: true, message: I18N.t('esw.port_no_empty') }],
         rate: [{ validator: rateValidator }]
       },
       isLoading: false
@@ -180,7 +177,7 @@ export default {
           this.$refs.baseForm.resetFields()
           this.$message({
             type: 'success',
-            message: '配置成功'
+            message: I18N.t('tip.edit1_success')
           })
           this._load()
         }

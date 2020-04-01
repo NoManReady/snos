@@ -17,6 +17,7 @@ export const getCommonInfo = async () => {
     window.APP_CAPACITY_SW = {}
     window.APP_HOSTNAME = _commonInfo.hostname
     window.APP_SYSINFO = _commonInfo.sysinfo
+    window.APP_ACCOUNT_CTRL = _commonInfo.accountMenus
     if (_commonInfo.capacity_sw) {
       try {
         window.APP_CAPACITY_SW = JSON.parse(_commonInfo.capacity_sw)
@@ -25,24 +26,21 @@ export const getCommonInfo = async () => {
       }
     }
     window.APP_DEFAULT_PATH = _commonInfo.defaultPath || ''
-    window.APP_QUICK_STATUS = _commonInfo.quickStatus
-    window.APP_DEFAULT_PASS = _commonInfo.isDefaultPass
+    window.APP_NETWORK_ID = _commonInfo.networkId
     window.APP_CURRENT_IP = _commonInfo.currentIp
+    window.APP_USERNAME = _commonInfo.username
     store.dispatch('setMenus', window.APP_MENUS)
     store.dispatch('setRoles', window.APP_ROLES)
+    store.dispatch('setUsreName', window.APP_USERNAME)
     store.dispatch('setDeviceRole', window.APP_DEVICE_ROLE)
     store.dispatch('setCapacity', window.APP_CAPACITY)
     store.dispatch('setDefaultPath', window.APP_DEFAULT_PATH)
     store.dispatch('setDevMode', window.APP_DEV_MODE)
-    store.dispatch('setIsDefaultPass', window.APP_DEFAULT_PASS)
     store.dispatch('setMaster', window.APP_MASTER)
     store.commit('APP_SET_HOSTNAME', window.APP_HOSTNAME)
     store.commit('APP_SET_SYSINFO', window.APP_SYSINFO)
+    store.commit('APP_SET_NETWORKID', window.APP_NETWORK_ID)
     window.$$json = window.APP_ROLES.includes('msw')
-    // 出厂设置需要设置下系统时间
-    if (window.APP_DEFAULT_PASS && api.setSysTime) {
-      api.setSysTime({ time: (new Date().getTime() / 1000).toFixed(0) })
-    }
     resolve()
   } catch (error) {
   }
@@ -59,12 +57,16 @@ export const login = () => {
     api
       .auth('login', {
         username: 'admin',
-        password: config.server.ewebpass || 'ruijie'
+        password: process.env.EWEB_PASS || config.server.ewebpass || 'ruijie'
       }, { isSilence: true })
       .then(async d => {
         window.sn = d.sn
         window.sid = d.sid
-        window.LANG = d.lang || loadFromLocal('APP_LANG') || 'zh'
+        window.Cookie.set(d.sn, d.sid, {
+          path: window.BASE_URI || '/cgi-bin/luci',
+          expires: 3600
+        })
+        window.LANG = d.lang || loadFromLocal('APP_LANG') || 'zh_cn'
         resolve()
       })
   })

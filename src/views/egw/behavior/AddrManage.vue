@@ -1,67 +1,69 @@
 <template>
   <div class="behavior-addr-manage">
-    <help-alert json-key="behaviorAddrManageJson" title="地址管理">
+    <help-alert json-key="behaviorAddrManageJson" :title="$t('egw.AddrManage.addr_manage')">
       <div slot="collapseFoot">
-        <h3 class="tit">注意</h3>
-        <p class="desc">地址组一旦在其他地方被引用则无法在本页面被删除，除非解除引用。</p>
+        <h3 class="tit">{{$t('phrase.notice')}}</h3>
+        <p class="desc">{{$t('egw.AddrManage.addr_manage_tip')}}</p>
       </div>
     </help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          地址组列表
+          {{$t('egw.AddrManage.addr_group_tab')}}
           <small></small>
         </span>
         <div class="fr">
           <el-button
             :disabled="addrList.length>=maxLimit||isLoading"
             icon="el-icon-plus"
-            size="small"
+            plain
+            size="medium"
             type="primary"
             v-auth="onAdd"
-          >新增</el-button>
-          <el-button :disabled="isLoading" icon="el-icon-delete" size="small" type="primary" v-auth="onDel">批量删除</el-button>
+          >{{$t('action.add')}}</el-button>
+          <el-button :disabled="isLoading" icon="el-icon-delete" plain size="medium" type="primary" v-auth="onDel">{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{maxLimit}}</b>条。
+          <i18n path="egw.limit_num_tip">
+              <b class="c-warning mlr5">{{maxLimit}}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="addrList" ref="baseTable" size="mini" stripe>
+      <el-table :data="addrList" ref="baseTable" size="medium" stripe>
         <el-table-column :selectable="_isSelectable" type="selection" width="55"></el-table-column>
         <!-- <el-table-column label="序号" align="center">
           <template slot-scope="scope">
             {{scope.$index+1}}
           </template>
         </el-table-column>-->
-        <el-table-column align="center" label="组名称" prop="name"></el-table-column>
-        <el-table-column align="center" label="IP地址段" prop="ip">
+        <el-table-column align="center" :label="$t('egw.SiteManage.group_name')" prop="name"></el-table-column>
+        <el-table-column align="center" :label="$t('egw.AddrManage.IP_group_range')" prop="ip">
           <template slot-scope="scope">
             <p :key="i" v-for="i of scope.row.ip">{{i}}</p>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column align="center" :label="$t('action.ope')">
           <template slot-scope="scope">
-            <el-button :disabled="scope.row.flag==='sys'" type="text" v-auth="{fn:onEdit,params:scope.$index}">修改</el-button>
-            <el-button :disabled="!_isSelectable(scope.row)" type="text" v-auth="{fn:onDel,params:scope.row}">删除</el-button>
+            <el-button :disabled="scope.row.flag==='sys'" size="medium" type="text" v-auth="{fn:onEdit,params:scope.$index}">{{$t('action.edit')}}</el-button>
+            <el-button :disabled="!_isSelectable(scope.row)" size="medium" type="text" v-auth="{fn:onDel,params:scope.row}">{{$t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
       <!-- 地址管理modal -->
       <el-dialog :title="modalTitle" :visible.sync="baseModalShow" width="550px">
-        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm">
-          <el-form-item label="组名称" prop="name">
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('egw.SiteManage.group_name')" prop="name">
             <el-input
               :disabled="editIndex!==-1"
               :title="baseModel.name"
               class="w250"
-              placeholder="请输入组名称"
+              :placeholder="$t('egw.AddrManage.enter_group_name')"
               v-model="baseModel.name"
             ></el-input>
           </el-form-item>
-          <el-form-item class="is-required" label="IP地址段" prop="ip">
+          <el-form-item class="is-required" :label="$t('egw.AddrManage.IP_group_range')" prop="ip">
             <el-form-item
               :class="{mb20:index!==baseModel.ip.length-1}"
               :key="index"
@@ -69,7 +71,7 @@
               :rules="ipValidate(item,index)"
               v-for="(item,index) in baseModel.ip"
             >
-              <el-input class="w250" placeholder="范围格式：1.1.1.1-1.1.1.100" v-model="baseModel.ip[index]"></el-input>
+              <el-input class="w250" :placeholder="$t('wan.ip_range_example')" v-model="baseModel.ip[index]"></el-input>
               <el-button @click="onDelIpList(index)" size="medium" type="text" v-if="baseModel.ip.length > 1">
                 <i class="el-icon-close"></i>
               </el-button>
@@ -85,8 +87,8 @@
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click="baseModalShow = false">取 消</el-button>
-          <el-button :diaabled="isLoading" @click="onModalConfirm" type="primary">确 定</el-button>
+          <el-button @click="baseModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button :diaabled="isLoading" @click="onModalConfirm" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -107,7 +109,7 @@ export default {
           (addr, index) => addr.name === value && index !== this.editIndex
         )
       ) {
-        cb(new Error(`地址名称已被使用`))
+        cb(new Error(this.$t('egw.AddrManage.addr_name_is_has')))
       }
       cb()
     }
@@ -119,11 +121,11 @@ export default {
       baseModel: model.behaviorAddrManageFn(),
       baseRules: {
         name: [
-          { required: true, message: '请输入组名称', whitespace: true },
+          { required: true, message: this.$t('egw.AddrManage.enter_group_name'), whitespace: true },
           {
             validator: nameLengthValidator,
             size: 64,
-            message: '组名称不能超过64个字符，中文占3字符'
+            message: this.$t('egw.invalid_group_name')
           },
           { validator: uniqueValidator }
         ]
@@ -134,7 +136,7 @@ export default {
   mixins: [formMixins],
   computed: {
     modalTitle() {
-      return this.editIndex === -1 ? '添加地址' : '编辑地址'
+      return this.editIndex === -1 ? this.$t('egw.AddrManage.addr_add') : this.$t('egw.AddrManage.addr_edit')
     }
   },
   created() {
@@ -176,9 +178,9 @@ export default {
         _items = [item]
       }
       if (!_items.length) {
-        return this.$message.warning('请选择要删除的列表项')
+        return this.$message.warning(this.$t('tip.select_del_item'))
       }
-      this.$confirm('是否确认删除？').then(() => {
+      this.$confirm(this.$t('tip.confirm_delete')).then(() => {
         this.isLoading = true
         this.$api
           .delAddrManage({ names: _items.map(ite => ite.ip_group) })
@@ -188,7 +190,7 @@ export default {
               this.addrList.splice(_index, 1)
             })
             this.$message({
-              message: '删除成功',
+              message:this.$t('tip.del_success'),
               type: 'success'
             })
           })

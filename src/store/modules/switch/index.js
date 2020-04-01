@@ -84,7 +84,9 @@ export default () => ({
           },
           { isSilence: true }
         )
-        commit(types.UPLINK, result)
+        if (result && result.port) {
+          commit(types.UPLINK, result)
+        }
       } catch (error) {
         commit(types.UPLINK, {
           port: -1,
@@ -152,9 +154,84 @@ export default () => ({
     uplink(state) {
       return state.uplink
     },
-    // portInfoList
-    portInfoList(state) {
-      return state.portInfoList
+    // 获取面板信息
+    panelList(state) {
+      return Object.freeze(device_panel[state.item.deviceType])
+    },
+    // portinfo
+    portinfo(state, getters) {
+      return state.portInfoList.map(p => {
+        let _port = Array.prototype.concat.apply([], getters.panelList).find(_p => _p && _p.lpid === p.port) || { ifname: '' }
+        let _r_speed
+        switch (p.dup_r) {
+          case 1:
+          case 2:
+            _r_speed = 0
+            break
+          case 3:
+          case 4:
+            _r_speed = 1
+            break
+          case 5:
+            _r_speed = 2
+            break
+          default:
+            _r_speed = -1
+            break
+        }
+        let _port_type = 'closed'
+        if (p.enable) {
+          if (p.status) {
+            if (p.dup_r === 5) {
+              _port_type = 'success'
+            } else {
+              _port_type = 'warning'
+            }
+          } else {
+            _port_type = 'info'
+          }
+        }
+        let _execption = p.loop !== 0 ? (p.loop === 1 ? 3 : -1) : 0
+        let _portInfo = {
+          ...p,
+          // media_type:端口类型，lpid端口id
+          ..._port,
+          // 端口状态
+          link: p.status,
+          // 端口使能
+          enable: p.enable,
+          // 端口名称
+          ifname: _port.ifname.replace(/^(\w)(.*)/, (_, a, b) => `${a.toUpperCase()}${b}`),
+          // 显示icon
+          icon: p.isFiber ? 'guangkou' : 'upport',
+          // 端口状态（图标场景颜色）
+          portType: _port_type,
+          // poe是否上电
+          poeUp: p.pEnable && p.pPower,
+          // poe是否异常
+          poeError: p.pEnable && p.pFault,
+          // 端口速率（协商）
+          r_speed: _r_speed,
+          // 收\发字节（流量B）
+          input_total: (p.rxBytes || 0) * 1024,
+          output_total: (p.txBytes || 0) * 1024,
+          input: (p.rxBytes || 0) * 1024,
+          output: (p.txBytes || 0) * 1024,
+          // 收\发速率（kbps）
+          inrate_10s: p.rxSpeed || 0,
+          outtrate_10s: p.txSpeed || 0,
+          input_rate: p.rxSpeed || 0,
+          output_rate: p.txSpeed || 0,
+          // 异常信息
+          exception: _execption
+        }
+        // esw自环时设置端口使能为0
+        if (p.loop) {
+          _portInfo.enable = 0
+          _portInfo.portType = 'error'
+        }
+        return _portInfo
+      })
     },
     // item
     item(state) {
@@ -177,7 +254,7 @@ export default () => ({
       return portInfoList.map(info => {
         return {
           id: info.port,
-          label: `端口${info.port + 1}`,
+          label: `${I18N.t('esw.port')} ${info.port + 1}`,
           isFiber: info.isFiber
         }
       })
@@ -188,16 +265,12 @@ export default () => ({
         {
           id: 'all',
           children: getters.easyPortList,
-          label: '全部'
+          label: I18N.t('phrase.all')
         }
       ])
     },
-    // 获取面板信息
-    panelList(state) {
-      return Object.freeze(device_panel[state.item.deviceType])
-    },
     hasDhcp(state, getters) {
-      return getters.portInfoList.length > 16
+      return getters.portinfo.length > 16
     }
   }
 })

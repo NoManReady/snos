@@ -22,7 +22,7 @@ export default {
   computed: {
     // 显示无线信息
     showWifiInfo() {
-      return this.$roles().includes('slave')
+      return !!this.$store.getters.capacity.wireless // 有无线的能力值
     }
   },
   mounted() {

@@ -1,8 +1,8 @@
 <template>
   <div class="authentication">
     <el-tabs v-model="tabValue" @tab-click="_onTabClick">
-      <el-tab-pane name="0" label="策略路由"></el-tab-pane>
-      <el-tab-pane name="1" label="静态路由"></el-tab-pane>
+      <el-tab-pane name="0" :label="$t('egw.route.priority_route')"></el-tab-pane>
+      <el-tab-pane name="1" :label="$t('egw.route.route_static')"></el-tab-pane>
     </el-tabs>
     <menu-tabs :type="tabValue" :key="randomId"></menu-tabs>
   </div>

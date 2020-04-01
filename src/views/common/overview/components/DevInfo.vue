@@ -1,37 +1,43 @@
 <template>
   <div class="overview-dev-info">
     <el-row align="middle" class="device-info" type="flex" v-if="curSysinfo">
-      <el-col :lg="5" :span="3" class="device-info-brand">
-        <div :title="netStatus.connnected === 'false' && netStatus.message" class="img">
-          <i class="rjucd-gateway"></i>
+      <el-col :lg="7" :span="4" class="device-info-brand">
+        <div :title="netStatus.connnected === 'false' && netStatus.message" class="img vm">
+          <i
+            :class="curSysinfo.productType.toLocaleUpperCase()==='EAP'?'rjucd-apac':'rjucd-device'"
+            :data-icon="deviceIcon"
+            class="icon-inner"
+          ></i>
+        </div>
+        <div>
           <sup
             :class="netStatus.connnected === 'true' ? 'online' : 'offline'"
-            class="badge-dot"
+            class="badge-dot vm"
             v-show="netStatus.connnected !== ''"
           ></sup>
+          <strong class="vtm">{{ curSysinfo.product_class }}</strong>
         </div>
-        <span>{{curSysinfo.product_class}}</span>
       </el-col>
-      <el-col :lg="19" :span="21" class="tl">
-        <el-form class="view-form c-info" label-width="85px" size="mini">
-          <el-form-item class="fl" label="名称：" style="height: 22px;">
-            <div class="w100">
-              <el-tooltip :content="`名称：${curHostname}`" effect="light" placement="top">
+      <el-col :lg="17" :span="20" class="tl">
+        <el-form class="view-form c-info" label-width="92px" size="medium">
+          <el-form-item :label="$t('overview.name_f')" class="fl" style="height: 22px;">
+            <div class="mw70 md-w120">
+              <el-tooltip :content="`${$t('overview.name_f')}${curHostname}`" effect="light" placement="top">
                 <label class="ellipsis width">{{ curHostname }}</label>
               </el-tooltip>
             </div>
           </el-form-item>
-          <el-form-item class="fl" label="SN号：">
-            <label>{{curSysinfo.serial_num}}</label>
+          <el-form-item :label="$t('sysinfo.sn_num_f')" class="fl">
+            <div class="w120">{{ curSysinfo.serial_num }}</div>
           </el-form-item>
-          <el-form-item class="fl" label="IP地址：">
-            <label>{{curSysinfo.wan_ip}}</label>
+          <el-form-item :label="$t('wan.ip_addr_f')" class="fl">
+            <div class="w120">{{ curSysinfo.wan_ip }}</div>
           </el-form-item>
-          <el-form-item class="fl" label="MAC地址：">
-            <label>{{curSysinfo.sys_mac}}</label>
+          <el-form-item :label="$t('sysinfo.mac_addr_f')" class="fl">
+            <div class="w120">{{ curSysinfo.sys_mac }}</div>
           </el-form-item>
-          <el-form-item class="fl" label="软件版本：" v-if="!alone">
-            <label>{{curSysinfo.software_version}}</label>
+          <el-form-item :label="$t('sysinfo.soft_version_f')" class="fl" v-if="showCur">
+            <label class="break-word">{{ curSysinfo.software_version }}</label>
           </el-form-item>
         </el-form>
       </el-col>
@@ -40,7 +46,6 @@
   </div>
 </template>
 <script>
-import { Col, Row } from 'element-ui'
 import { mapGetters, mapActions } from 'vuex'
 export default {
   name: 'DevInfo',
@@ -50,10 +55,10 @@ export default {
       type: Boolean,
       default: true
     },
-    // 是否显示本机，设置false的时候显示顶层iframe的信息（比如：显示登录的设备）
-    alone: {
+    // 是否显示当前登录的信息
+    showCur: {
       type: Boolean,
-      default: true
+      default: false
     }
   },
   data() {
@@ -61,17 +66,27 @@ export default {
       netTimer: true
     }
   },
-  components: {
-    [Col.name]: Col,
-    [Row.name]: Row
-  },
   computed: {
     ...mapGetters(['netStatus', 'hostname', 'sysinfo']),
     curHostname() {
-      return this.alone ? this.hostname : window.top.APP_HOSTNAME
+      return this.showCur ? window.top.APP_HOSTNAME : this.hostname
     },
     curSysinfo() {
-      return this.alone ? this.sysinfo : window.top.APP_SYSINFO
+      return this.showCur ? window.top.APP_SYSINFO : this.sysinfo
+    },
+    deviceIcon() {
+      let _textMap = {
+        EGW: I18N.t('nei.gateway'),
+        EWR: I18N.t('nei.gateway'),
+        EHR: I18N.t('nei.router'),
+        EAP: '',
+        EAC: 'AC',
+        SW: I18N.t('nei.switch'),
+        MSW: I18N.t('nei.switch')
+      }
+      let _type = this.curSysinfo.productType.toLocaleUpperCase()
+      let _supportIcon = ['EGW', 'EWR', 'EAP', 'SW', 'MSW']
+      return _textMap[_type] || '?'
     }
   },
   beforeDestroy() {
@@ -91,7 +106,7 @@ export default {
         (this.netTimer = setTimeout(() => {
           clearTimeout(this.netTimer)
           this._loadNetStatus()
-        }, 11000))
+        }, 30000))
     }
   }
 }
@@ -118,46 +133,46 @@ export default {
   }
   &-brand {
     text-align: center;
-    width: auto;
-    min-width: 90px;
-    max-width: 138px;
-    .img,
-    span {
-      display: inline-block;
+    // width: auto;
+    min-width: 100px;
+    max-width: 140px;
+    .vtm {
       vertical-align: middle;
     }
     .img {
-      position: relative;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background-color: $box-bgc;
+      width: 100px;
+      height: 40px;
+      overflow: hidden;
       i {
-        font-size: 40px;
-        line-height: 56px;
-      }
-      .badge-dot {
-        position: absolute;
-        top: 0px;
-        right: 8px;
-        height: 8px;
-        width: 8px;
-        padding: 0;
-        border-radius: 50%;
-        transition: translateY(-50%) translateX(100%);
-        &.offline {
-          background-color: $--color-danger;
-        }
-        &.online {
-          background-color: $--color-success;
-        }
+        font-size: 100px;
+        line-height: 40px;
+        color: $--color-text-regular;
       }
     }
-    span {
-      color: #000;
-      font-weight: bold;
+    .badge-dot {
+      height: 8px;
+      width: 8px;
+      padding: 0;
+      border-radius: 50%;
+      &.offline {
+        background-color: $--color-danger;
+      }
+      &.online {
+        background-color: $--color-success;
+      }
+    }
+    strong {
       font-size: 15px;
       word-break: break-word;
+      color: $--color-text-regular;
+    }
+  }
+  .mw70 {
+    min-width: 70px;
+  }
+  @media screen and (max-width: 992px) {
+    .md-w120 {
+      width: 120px !important;
     }
   }
 }

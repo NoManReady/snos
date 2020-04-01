@@ -63,12 +63,14 @@ export default {
 <style lang="scss">
 .custom-drawer {
   min-width: 768px;
+  font-size: 0;
 
   .iframe {
     position: absolute; // 解决低版本谷歌高度撑不开问题
     width: 100%;
     height: 100%;
     border: none;
+    display: block;
   }
   #el-drawer__title {
     display: none;

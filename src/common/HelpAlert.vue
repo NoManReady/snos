@@ -51,7 +51,11 @@
           </slot>
         </div>
         <template v-if="showHelp&&!!dataSource">
-          <i class="rjucd-help fr" v-popover:helpPopover></i>
+          <div class="help" v-popover:helpPopover>
+            <slot name="helpContent">
+              <i class="rjucd-help fs32"></i>
+            </slot>
+          </div>
         </template>
       </el-tooltip>
     </el-alert>
@@ -60,14 +64,14 @@
 <script>
 const types = ['info', 'error', 'success', 'warning']
 const triggers = ['click', 'focus', 'hover', 'manual']
-import { default as dateJson } from '@/tips'
+import dateJson from '@/tips'
 import { Alert, Collapse, CollapseItem } from 'element-ui'
 export default {
   name: 'help-alert',
   props: {
     title: {
       type: String,
-      default: '说明'
+      default: I18N.t('phrase.explain')
     },
     closable: {
       type: Boolean,
@@ -94,7 +98,7 @@ export default {
       default: true
     },
     helpTip: {
-      default: '帮助'
+      default: I18N.t('phrase.help')
     },
     popoverWidth: {
       type: Number,
@@ -137,28 +141,48 @@ export default {
 </script>
 <style lang="scss">
 @import '../style/utils/_variable.scss';
-.common-help-alert {
+div.common-help-alert {
   margin-bottom: 15px;
+  .el-alert--info {
+    background-color: $box-bgc;
+    .el-alert__description {
+      color: $--color-text-regular;
+    }
+  }
+  .el-alert__description {
+    margin-top: 0;
+    font-size: 13px !important;
+  }
   .el-alert__title {
-    font-size: 14px;
+    font-size: 14px !important;
+    & ~ .el-alert__description {
+      margin: 3px 0;
+    }
   }
   .el-alert__icon {
     display: inline-block;
     vertical-align: middle;
+    &.el-icon-info {
+      color: $theme;
+    }
   }
   .el-alert__content {
     display: inline-block;
     vertical-align: middle;
     padding-right: 24px;
-    .rjucd-help {
+    .help {
       position: absolute;
-      right: 16px;
       top: 50%;
-      transform: translateY(-50%);
-      font-size: 32px;
+      right: 0;
+      color: $--color-text-regular;
       cursor: pointer;
+      transform: translateY(-50%);
       &:hover {
         color: $theme;
+      }
+      .fs32 {
+        margin-right: 16px;
+        font-size: 32px;
       }
     }
   }

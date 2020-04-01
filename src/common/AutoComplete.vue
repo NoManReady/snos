@@ -1,11 +1,25 @@
 <template>
-  <el-autocomplete class="component_autocomplete" :class="clazz" v-model="val" :valueKey="valueKey" popper-class="eweb-popper" :fetch-suggestions="onFetch" :placeholder="placeholder" @select="onSelect">
-    <i class="el-icon-error el-input__icon clear-icon" slot="suffix" v-show="value" title="清空重选" @click="onClear">
-    </i>
+  <el-autocomplete
+    :class="clazz"
+    :fetch-suggestions="onFetch"
+    :placeholder="placeholder"
+    :valueKey="valueKey"
+    @select="onSelect"
+    class="component_autocomplete"
+    popper-class="eweb-popper"
+    v-model="val"
+  >
+    <i
+      :title="$t('comp.clear_select')"
+      @click="onClear"
+      class="el-icon-error el-input__icon clear-icon"
+      slot="suffix"
+      v-show="value"
+    ></i>
     <template slot-scope="{item}">
       <slot :item="item">
         <span>{{item[valueKey]}}</span>
-        <span v-if="item.desc" class="c-info">（{{item.desc}}）</span>
+        <span class="c-info" v-if="item.desc">（{{item.desc}}）</span>
       </slot>
     </template>
   </el-autocomplete>

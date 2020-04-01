@@ -1,16 +1,20 @@
 import * as types from './constant'
 import { cmd } from '@/api/modules/api'
+import { isPhyPort, getAggidByLpid } from '@/utils/lag'
 /**
  * 交换机全局共享状态
+ * lpid<window.APP_CAPACITY_SW.port.port_total判断为物理口，否则为聚合口；
+ * 聚合口id从1开始，对应的lpid从1+window.APP_CAPACITY_SW.port.port_total-1开始
  */
 
-export default {
+export default () => ({
   namespaced: true,
   state: {
     // 系统信息
     portinfo: [],
     // 上联口信息
     uplink: {
+      lagid: -1,
       lpid: -1,
       ip: '',
       interface: '',
@@ -18,9 +22,6 @@ export default {
     }
   },
   actions: {
-    setPortinfo({ commit }, portinfo) {
-      commit(types.PORT_INFO, portinfo)
-    },
     fetchPortinfo({ commit }) {
       return cmd('devSta.get', { module: 'port_info' }, { isSilence: true }).then(d => {
         commit(types.PORT_INFO, Object.freeze(d.data))
@@ -44,7 +45,7 @@ export default {
   },
   getters: {
     uplink(state, getters) {
-      let _uplinkObj = { ...state.uplink, lpid: [] }
+      let _uplinkObj = { ...state.uplink, lpid: [], lagid: -1 }
       // 判断是否为聚合口(查找link态的端口)
       if (state.uplink.lpid > window.APP_CAPACITY_SW.port.port_total - 1) {
         let _uplinkGroup = getters.lagPortsMap[state.uplink.lpid] || []
@@ -61,43 +62,44 @@ export default {
       return _uplinkObj
     },
     portinfo(state, getters) {
-      return state.portinfo.map(port => {
+      return state.portinfo.map((port, index) => {
+        // 端口物理能力值（读取poe及ifname），暂时没用
+        let _capacity = window.APP_CAPACITY_SW.port.port_list.find(p => p.lpid === port.lpid)
         return {
           ...port,
-          isUplink: getters.uplink.lpid.includes(port.lpid)
+          ifname: _capacity.ifname.replace(/^(\w)(.*)/, (_, a, b) => `${a.toUpperCase()}${b}`)
         }
       })
     },
-    // 普通逻辑口
-    logicPort(state) {
-      return state.portinfo.filter(port => !port.interface.includes('lag')).map(p => {
-        return {
-          ...p,
-          isStaticFiber: p.media_flag === 0 && p.media_type === 2,
-          isDynamicFiber: p.media_flag === 1 && p.media_type === 2,
-          showPort: p.lpid + 1
-        }
-      })
+    // 光电复合口（包含聚合）
+    hybridPort(_, getters) {
+      return getters.portinfo.filter(port => port.media_flag === 1)
+    },
+    // 普通逻辑口（物理口）
+    logicPort(_, getters) {
+      return getters.portinfo.filter(port => isPhyPort(port.lpid))
     },
     // lag聚合口
-    lagPort(state, getters) {
-      return state.portinfo.filter(port => {
-        return port.interface.includes('lag') && getters.logicPort.find(p => `lag${p.aggregate_port}` === port.interface)
+    lagPort(_, getters) {
+      return getters.portinfo.filter(port => {
+        return !isPhyPort(port.lpid) &&
+          getters.logicPort.find(p => p.aggregate_port === getAggidByLpid(port.lpid))
       })
     },
     // 名称与portid的相互映射
-    piMap(state) {
-      return state.portinfo.reduce((map, port) => {
-        map[map[port.interface] = port.lpid] = port.interface
+    piMap(_, getters) {
+      return getters.portinfo.reduce((map, port) => {
+        map[map[port.ifname] = port.lpid] = port.ifname
         return map
       }, {})
     },
     // lag与端口集合的映射
     lagPortsMap(_, getters) {
       return getters.lagPort.reduce((map, port) => {
-        map[port.lpid] = getters.logicPort.filter(p => `lag${p.aggregate_port}` === port.interface).map(p => p.lpid)
+        map[port.lpid] = getters.logicPort.filter(p => p.aggregate_port === getAggidByLpid(port.lpid))
+          .map(p => p.lpid)
         return map
       }, {})
     }
   }
-}
+})

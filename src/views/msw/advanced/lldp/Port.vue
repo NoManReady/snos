@@ -3,39 +3,39 @@
     <!-- <help-alert title="LLDP端口设置"></help-alert> -->
     <div class="box">
       <div class="box-header">
-        <span class="box-header-tit">端口列表</span>
+        <span class="box-header-tit">{{$t('msw.port_list')}}</span>
         <div class="fr">
-          <el-button icon="el-icon-edit" size="small" type="primary" v-auth="_onPatchEdit">批量设置</el-button>
+          <el-button icon="el-icon-edit" plain size="medium" type="primary" v-auth="_onPatchEdit">{{$t('action.patch_edit')}}</el-button>
         </div>
       </div>
-      <el-table :data="pageList" ref="baseTable" size="small" stripe>
-        <el-table-column align="center" label="端口">
+      <el-table :data="pageList" ref="baseTable" size="medium" stripe>
+        <el-table-column :label="$t('msw.port')" align="center">
           <template slot-scope="{row}">
-            <span>{{row.interface}}</span>
+            <span>{{row.ifname}}</span>
             <i class="rjucd-shanglian uplink" v-if="uplink.lpid.includes(row.lpid)"></i>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="发送LLDPDU" prop="tx">
+        <el-table-column :label="$t('msw.lldp.send_lldpdu')" align="center" prop="tx">
           <template slot-scope="{row}">
-            <span v-if="row.tx===1">开启</span>
-            <span v-else>关闭</span>
+            <span v-if="row.tx===1">{{$t('phrase.enable')}}</span>
+            <span v-else>{{$t('phrase.disable')}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="接收LLDPDU" prop="rx">
+        <el-table-column :label="$t('msw.lldp.receive_lldpdu')" align="center" prop="rx">
           <template slot-scope="{row}">
-            <span v-if="row.rx===1">开启</span>
-            <span v-else>关闭</span>
+            <span v-if="row.rx===1">{{$t('phrase.enable')}}</span>
+            <span v-else>{{$t('phrase.disable')}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="媒体终端发现MED" prop="med">
+        <el-table-column :label="$t('msw.lldp.media_terminal')" align="center" prop="med">
           <template slot-scope="{row}">
-            <span v-if="row.med===1">开启</span>
-            <span v-else>关闭</span>
+            <span v-if="row.med===1">{{$t('phrase.enable')}}</span>
+            <span v-else>{{$t('phrase.disable')}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column :label="$t('action.ope')" align="center">
           <template slot-scope="{$index}">
-            <el-button size="mini" type="text" v-auth="{fn:_onEdit,params:$index}">修改</el-button>
+            <el-button size="medium" type="text" v-auth="{fn:_onEdit,params:$index}">{{$t('action.edit')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -57,26 +57,32 @@
         :visible.sync="baseModalShow"
         @open="_clearValidate"
         append-to-body
-        width="650px"
+        width="700px"
       >
-        <el-form :model="baseModel" :rules="baseRules" label-width="180px" ref="baseForm" size="small">
-          <el-form-item label="发送LLDPDU：" prop="tx">
+        <el-form :model="baseModel" :rules="baseRules" label-width="180px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('msw.lldp.send_lldpdu_f')" prop="tx">
             <el-switch :active-value="1" :inactive-value="0" v-model="baseModel.tx"></el-switch>
           </el-form-item>
-          <el-form-item label="接收LLDPDU：" prop="rx">
+          <el-form-item :label="$t('msw.lldp.receive_lldpdu_f')" prop="rx">
             <el-switch :active-value="1" :inactive-value="0" v-model="baseModel.rx"></el-switch>
           </el-form-item>
-          <el-form-item label="媒体终端发现MED：" prop="med">
+          <el-form-item :label="$t('msw.lldp.media_terminal_f')" prop="med">
             <el-switch :active-value="1" :inactive-value="0" v-model="baseModel.med"></el-switch>
           </el-form-item>
           <template v-if="editIndex===-1">
-            <el-form-item class="inline-message" inline-message label="选择端口：" prop="portid"></el-form-item>
+            <el-form-item :label="$t('msw.port_select_f')" class="inline-message" inline-message prop="portid"></el-form-item>
             <port-panel :selecteds.sync="baseModel.portid" :showLag="false" mutilple />
           </template>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click.native="baseModalShow = false" size="small">取 消</el-button>
-          <el-button :loading="isLoading" @click.native="_onModalConfirm" size="small" type="primary">确定</el-button>
+          <el-button @click.native="baseModalShow = false" class="w120" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button
+            :loading="isLoading"
+            @click.native="_onModalConfirm"
+            class="w120"
+            size="medium"
+            type="primary"
+          >{{isLoading?$t('action.editing'):$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -100,9 +106,9 @@ export default {
       isLoading: false,
       baseModel: lldpPort(),
       baseRules: {
-        portid: [{ required: true, message: '请选择需要配置的端口' }],
+        portid: [{ required: true, message: I18N.t('msw.port_is_required') }],
         delaytime: [
-          { required: true, message: '请输入优先级' },
+          { required: true, message: I18N.t('msw.stp.priority_no_empty') },
           { validator: rangeValidator, min: 1, max: 10 }
         ]
       },
@@ -114,7 +120,9 @@ export default {
     ...mapGetters('switcher', ['piMap', 'uplink']),
     modalTitle() {
       let _item = this.getItem(this.editIndex)
-      return _item ? `端口：${_item.interface}` : '批量配置'
+      return _item
+        ? `${I18N.t('msw.port_f')}${_item.ifname}`
+        : I18N.t('action.patch_edit')
     }
   },
   watch: {
@@ -134,7 +142,7 @@ export default {
         return _result.list.map(lis => {
           return {
             ...lis,
-            interface: this.piMap[lis.lpid]
+            ifname: this.piMap[lis.lpid]
           }
         })
       } catch (error) {
@@ -173,8 +181,19 @@ export default {
                 list: _confirmData
               }
             })
-            this.$message.success('配置成功')
-            this.refresh()
+            this.$message.success(I18N.t('tip.edit1_success'))
+            // this.refresh()
+            for (let _port of _confirmData) {
+              let _index = this.pageModel.allItem.findIndex(
+                item => item.lpid === _port.lpid
+              )
+              if (_index > -1) {
+                this.pageModel.allItem.splice(_index, 1, {
+                  ...this.pageModel.allItem[_index],
+                  ..._port
+                })
+              }
+            }
             this.baseModalShow = false
           } catch (error) {}
           this.isLoading = false
@@ -184,8 +203,4 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.advanced-lldp-port {
-}
-</style>
 

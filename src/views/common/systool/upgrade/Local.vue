@@ -2,30 +2,30 @@
   <div
     :element-loading-text="loadingText"
     class="sys-tab"
-    element-loading-background="rgba(0, 0, 0, .1)"
-    element-loading-custom-class="eweb-loading"
+    element-loading-background="rgba(0, 0, 0, .3)"
     element-loading-spinner="el-icon-loading"
     v-loading.fullscreen="loading"
   >
-    <help-alert json-key="localUpdateJson" title="本地升级">
-      <p slot="content">升级过程中请不要刷新页面或者关闭浏览器。</p>
+    <help-alert :title="$t('systool.local_upgrade')" json-key="localUpdateJson">
+      <p slot="content">{{ $t("systool.upgrade_tip1") }}</p>
       <div slot="collapseFoot">
-        <h3 class="tit">注意</h3>
-        <p class="desc">请确保在设备升级过程中，不要将设备断电，不要对页面进行刷新。升级完毕，设备将自动重启。</p>
+        <h3 class="tit">{{ $t("phrase.notice") }}</h3>
+        <p class="desc">{{ $t("systool.upgrade_tip2") }}</p>
       </div>
     </help-alert>
-    <el-form :model="baseModel" :rules="baseRules" label-width="120px" ref="baseForm" size="small">
-      <el-form-item label="设备型号">
-        <span>{{sysinfo.product_class}}</span>
+    <el-form :model="baseModel" :rules="baseRules" label-width="120px" ref="baseForm" size="medium">
+      <el-form-item :label="$t('sysinfo.dev_type')">
+        <span>{{ sysinfo.product_class }}</span>
       </el-form-item>
-      <el-form-item label="当前版本">
-        <span>{{sysinfo.software_version}}</span>
-        <span class="ml10">{{sysinfo.hardware_version}}</span>
+      <el-form-item :label="$t('systool.cur_version')">
+        <span @click.ctrl="$refs.develop.onShowDevelop()" ref="softVersion">{{ sysinfo.software_version }}</span>
+        <span class="ml10">{{ sysinfo.hardware_version }}</span>
       </el-form-item>
-      <el-form-item label="保留配置">
-        <el-checkbox label="(如果版本差异太大，建议不保留配置升级)" v-model="baseModel.isPersist"></el-checkbox>
+      <develop ref="develop"></develop>
+      <el-form-item :label="$t('systool.keep_cfg')">
+        <el-checkbox :label="$t('systool.bin_diff_large')" v-model="baseModel.isPersist"></el-checkbox>
       </el-form-item>
-      <el-form-item class="vm" label="安装包路径">
+      <el-form-item :label="$t('systool.pack_path')" class="vm">
         <el-upload
           :accept="accept"
           :action="actionUrl"
@@ -43,53 +43,60 @@
           ref="baseUpload"
         >
           <div slot="trigger">
-            <el-input :value="file.name" class="w200" placeholder="请选择安装包" readonly size="small"></el-input>
-            <el-button size="small" type="primary">浏览</el-button>
+            <el-input :placeholder="$t('systool.select_bin')" :value="file.name" class="w200" readonly></el-input>
+            <el-button class="w120" plain type="primary">{{ $t("systool.view") }}</el-button>
           </div>
-          <el-button :disabled="!file.name" @click.native.stop="onSubmit" class="ml5 w100" size="small" type="primary">上传</el-button>
+          <el-button :disabled="!file.name" @click.native.stop="onSubmit" class="ml5 w120" type="primary">{{$t('action.upload')}}</el-button>
         </el-upload>
       </el-form-item>
+      <auto-upgrade v-if="$roles().includes('ehr')"></auto-upgrade>
     </el-form>
     <!-- 文件信息 -->
     <el-dialog
       :close-on-click-modal="false"
+      :title="$t('systool.file_info')"
       :visible.sync="fileModal"
       @close="onModalCancel"
-      size="small"
-      title="文件信息"
       width="490px"
     >
-      <help-alert :closable="false" show-icon title="升级包已上传，点击确认开始升级。升级过程请勿断电！" type="info"></help-alert>
+      <help-alert :closable="false" :title="$t('systool.upload_success')" show-icon type="info"></help-alert>
       <div v-if="fileInfo">
         <div class="mt10" style="display:flex;" v-if="fileInfo.name">
-          <span class="vm tr w100">升级包名称：</span>
+          <span class="vm tr w100">{{ $t("systool.bin_name_f") }}</span>
           <div class="vm" style="flex:1;">
-            <p style="word-break: break-all;">{{fileInfo.name}}</p>
+            <p style="word-break: break-all;">{{ fileInfo.name }}</p>
           </div>
         </div>
         <div class="mt10">
-          <span class="vm tr w100">升级包大小：</span>
-          <span class="vm">{{fileInfo.size|rateTrans}}</span>
-          <span class="vm c-warning" v-if="!fileInfo.valid">(升级包文件太大，无法升级)</span>
+          <span class="vm tr w100">{{ $t("systool.bin_size_f") }}</span>
+          <span class="vm">{{ fileInfo.size | rateTrans }}</span>
+          <span class="vm c-warning" v-if="!fileInfo.valid">{{ $t("systool.file_bin_size_over") }}</span>
         </div>
         <div class="mt10">
-          <span class="vm tr w100">提示：</span>
-          <span class="vm" v-if="baseModel.isPersist">将保留配置升级</span>
-          <span class="vm" v-else>将清空配置升级</span>
+          <span class="vm tr w100">{{ $t("phrase.tip_f") }}</span>
+          <span class="vm" v-if="baseModel.isPersist">{{ $t("systool.keep_cfg_upgrade") }}</span>
+          <span class="vm" v-else>{{ $t("systool.clear_cfg_upgrade") }}</span>
           <!-- <el-checkbox v-model="baseModel.isPersist" label="保留配置"></el-checkbox> -->
         </div>
       </div>
       <span class="dialog-footer" slot="footer">
-        <el-button @click="fileModal = false" size="small">取 消</el-button>
-        <el-button :disabled="fileInfo&&!fileInfo.valid" @click="onModalConfirm" size="small" type="primary">确 定</el-button>
+        <el-button @click="fileModal = false" size="medium">{{ $t("action.cancel") }}</el-button>
+        <el-button
+          :disabled="fileInfo && !fileInfo.valid"
+          @click="onModalConfirm"
+          size="medium"
+          type="primary"
+        >{{ $t("action.confirm") }}</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 <script>
 import { awaitOnLine } from '@/utils'
-import { rateTrans } from '@/utils/utils'
+import { rateTrans, registerNclick } from '@/utils/utils'
 import { Upload } from 'element-ui'
+import Develop from '@/views/common/menuout/Develop'
+import AutoUpgrade from '@/views/common/menuout/AutoUpgrade'
 let message = null
 export default {
   name: 'UpgradeLocal',
@@ -97,7 +104,7 @@ export default {
     return {
       fileModal: false,
       loading: false,
-      loadingText: '上传中...',
+      loadingText: I18N.t('systool.uploading'),
       baseModel: {
         isPersist: true
       },
@@ -110,7 +117,8 @@ export default {
       formName: 'file',
       baseRules: {},
       fileInfo: null,
-      isConfirm: false
+      isConfirm: false,
+      autoUpgrade: '0'
     }
   },
   computed: {
@@ -119,18 +127,35 @@ export default {
     }
   },
   components: {
-    [Upload.name]: Upload
+    [Upload.name]: Upload,
+    Develop,
+    AutoUpgrade
   },
   filters: {
     rateTrans
   },
   beforeDestroy() {
     message && message.close()
+    this.removeNClick()
   },
   activated() {
     message && message.close()
   },
+  mounted() {
+    this.removeNClick = this.addNClick()
+  },
   methods: {
+    addNClick() {
+      return registerNclick(
+        5,
+        this.$refs.softVersion,
+        _ => {
+          this.$refs.develop.onShowDevelop()
+        },
+        'click',
+        false
+      )
+    },
     // 上传文件变更
     onFileChange(file, fileList) {
       this.$refs.baseUpload.uploadFiles = [file]
@@ -148,7 +173,7 @@ export default {
           showClose: true,
           type: 'error',
           duration: 0,
-          message: '请上传正确的安装包'
+          message: I18N.t('systool.upload_valid_pack')
         })
         return
       }
@@ -165,7 +190,7 @@ export default {
         showClose: true,
         type: 'error',
         duration: 0,
-        message: '文件上传失败，请重新上传'
+        message: I18N.t('systool.file_upgrade_fail')
       })
     },
     // 上传文件前
@@ -178,9 +203,11 @@ export default {
       if (e.percent) {
         let _persent = e.percent.toFixed(0)
         if (_persent < 100) {
-          this.loadingText = `上传中（${e.percent.toFixed(0)}%）`
+          this.loadingText = I18N.t('systool.upload_per', {
+            n: e.percent.toFixed(0)
+          })
         } else {
-          this.loadingText = `文件校验中`
+          this.loadingText = I18N.t('systool.pack_validing')
         }
       }
     },
@@ -203,9 +230,11 @@ export default {
         )
         .then(d => {
           this.fileModal = false
-          awaitOnLine(60000, '正在升级设备...', null, 50).then(() => {
-            window.top.location.reload()
-          })
+          awaitOnLine(60000, I18N.t('systool.on_upgradeing'), null, 50).then(
+            () => {
+              window.top.location.reload()
+            }
+          )
         })
     },
     // 取消升级
@@ -218,5 +247,3 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-</style>

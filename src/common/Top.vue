@@ -1,7 +1,7 @@
 <template>
   <div :class="classes" :style="styles" @click="_onBack">
     <slot>
-      <i class="el-icon-upload2 fs20" title="返回顶部"></i>
+      <i class="el-icon-upload2 fs20" :title="$t('comp.goTop')"></i>
     </slot>
   </div>
 </template>
@@ -27,7 +27,7 @@ export default {
       type: Number,
       default: 1000
     },
-    targetString: {
+    container: {
       type: String,
       default: '.app-content'
     }
@@ -39,7 +39,7 @@ export default {
     }
   },
   mounted() {
-    this.target = document.querySelector(this.targetString)
+    this.target = document.querySelector(this.container)
     this.target.addEventListener('scroll', this.handleScroll, false)
   },
   beforeDestroy() {
@@ -78,9 +78,10 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+@import '~@/style/utils/_variable.scss';
 .top {
   position: fixed;
-  // background: $theme;
+  background: $theme;
   color: #fff;
   text-align: center;
   cursor: pointer;
@@ -96,7 +97,7 @@ export default {
   transform: scale(0.9);
   transition: all 0.2s ease-in-out;
   &:hover {
-    // box-shadow: 0 0 4px $theme;
+    box-shadow: 0 0 4px $theme;
     opacity: 1;
     transform: scale(1);
   }

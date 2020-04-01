@@ -6,9 +6,9 @@ export default {
     }
   },
   watch: {
-    tab: {
+    '$route.query.tab': {
       handler() {
-        this.tabValue = this.tab
+        this.tabValue = this.$route.query.tab || this.tab || '0'
       },
       immediate: true
     }

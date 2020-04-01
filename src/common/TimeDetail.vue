@@ -2,11 +2,15 @@
   <div>
     <template v-if="row.tr_group">
       <span>{{row.tr_group}}</span>
-      <i v-if="row.tr_group" class="el-icon-date f-theme pointer" @click="_onOpenTimeSelection(_getTimegroupTime(row.tr_group),false)"></i>
+      <i
+        @click="_onOpenTimeSelection(_getTimegroupTime(row.tr_group),false)"
+        class="el-icon-date f-theme pointer"
+        v-if="row.tr_group"
+      ></i>
     </template>
     <template v-else>
-      <span>自定义</span>
-      <i class="el-icon-date f-theme pointer" @click="_onOpenTimeSelection(row.tr_slots,false)"></i>
+      <span>{{$t('comp.do_self')}}</span>
+      <i @click="_onOpenTimeSelection(row.tr_slots,false)" class="el-icon-date f-theme pointer"></i>
     </template>
   </div>
 </template>

@@ -3,42 +3,30 @@
     <!-- <help-alert title="生成树协议全局设置"></help-alert> -->
     <div class="box dev-info">
       <div class="box-header">
-        <span class="box-header-tit">设备信息</span>
+        <span class="box-header-tit">{{$t('msw.lldp.dev_info')}}</span>
       </div>
-      <el-form label-width="160px" ref="baseForm" size="mini" class="view-form">
+      <el-form class="view-form" label-width="160px" ref="baseForm" size="medium">
         <el-row>
           <el-col :span="12" :xs="24">
-            <el-form-item label="设备类型：" prop="cha_type">
-              <span>{{lldpInfo.cha_type}}</span>
-            </el-form-item>
+            <el-form-item :label="$t('msw.lldp.dev_type_f')" prop="cha_type">{{lldpInfo.cha_type}}</el-form-item>
           </el-col>
           <el-col :span="12" :xs="24">
-            <el-form-item label="设备ID：" prop="cha_id">
-              <span>{{lldpInfo.cha_id}}</span>
-            </el-form-item>
+            <el-form-item :label="$t('msw.lldp.dev_id_f')" prop="cha_id">{{lldpInfo.cha_id}}</el-form-item>
           </el-col>
           <el-col :span="12" :xs="24">
-            <el-form-item label="系统名称：" prop="sys_name">
-              <span>{{lldpInfo.sys_name}}</span>
-            </el-form-item>
+            <el-form-item :label="$t('msw.lldp.dev_name_f')" prop="sys_name">{{lldpInfo.sys_name}}</el-form-item>
           </el-col>
           <el-col :span="12" :xs="24">
-            <el-form-item label="系统描述：" prop="sys_desc">
-              <span>{{lldpInfo.sys_desc}}</span>
-            </el-form-item>
+            <el-form-item :label="$t('msw.lldp.dev_desc_f')" prop="sys_desc">{{lldpInfo.sys_desc}}</el-form-item>
           </el-col>
           <el-col :span="12" :xs="24">
-            <el-form-item label="支持的系统功能：" prop="sys_cap_support">
-              <span>{{lldpInfo.sys_cap_support}}</span>
-            </el-form-item>
+            <el-form-item :label="$t('msw.lldp.supported_function_f')" prop="sys_cap_support">{{lldpInfo.sys_cap_support}}</el-form-item>
           </el-col>
           <el-col :span="12" :xs="24">
-            <el-form-item label="启用系统功能：" prop="sys_cap_enabled">
-              <span>{{lldpInfo.sys_cap_enabled}}</span>
-            </el-form-item>
+            <el-form-item :label="$t('msw.lldp.enabled_function_f')" prop="sys_cap_enabled">{{lldpInfo.sys_cap_enabled}}</el-form-item>
           </el-col>
           <el-col :span="12" :xs="24">
-            <el-form-item label="网络管理地址：" prop="manage_addr">
+            <el-form-item :label="$t('msw.lldp.net_manage_addr_f')" prop="manage_addr">
               <p :key="addr" v-for="addr in lldpInfo.manage_addr">{{addr}}</p>
             </el-form-item>
           </el-col>
@@ -47,37 +35,37 @@
     </div>
     <div class="box dev-neighbor">
       <div class="box-header">
-        <span class="box-header-tit">邻居信息</span>
+        <span class="box-header-tit">{{$t('msw.lldp.nei_info')}}</span>
       </div>
-      <el-table :data="neighbors" :span-method="_spanMethods" border ref="baseTable" size="small">
-        <el-table-column align="center" label="端口名称">
+      <el-table :data="neighbors" :span-method="_spanMethods" border ref="baseTable">
+        <el-table-column :label="$t('msw.port')" align="center">
           <template slot-scope="{row}">
-            <el-tooltip content="点击查看邻居信息" placement="top">
+            <el-tooltip :content="$t('msw.lldp.view_nei_info')" placement="top">
               <el-button @click.native="_onViewDetail(row)" type="text">{{row.local_intf}}</el-button>
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="设备ID类型" prop="cha_type">
+        <el-table-column :label="$t('msw.lldp.dev_id_type')" align="center" prop="cha_type">
           <template slot-scope="{row}">
             <span>{{row.cha_type}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="设备ID" prop="cha_id">
+        <el-table-column :label="$t('msw.lldp.dev_id')" align="center" prop="cha_id">
           <template slot-scope="{row}">
             <span>{{row.cha_id}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="端口ID类型" prop="intf_type">
+        <el-table-column :label="$t('msw.lldp.port_id_type')" align="center" prop="intf_type">
           <template slot-scope="{row}">
             <span>{{row.intf_type}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="端口ID" prop="intf">
+        <el-table-column :label="$t('msw.lldp.port_id')" align="center" prop="intf">
           <template slot-scope="{row}">
             <span>{{row.intf}}</span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="邻居系统" prop="sys_name">
+        <el-table-column :label="$t('msw.lldp.nei_sys')" align="center" prop="sys_name">
           <template slot-scope="{row}">
             <span>{{row.sys_name}}</span>
           </template>
@@ -90,7 +78,7 @@
       </el-table>
     </div>
     <el-drawer
-      :title="`【${viewItem.local_intf}】邻居详情`"
+      :title="`【${viewItem.local_intf}】${$t('msw.lldp.nei_desc')}`"
       :visible.sync="neiModalShow"
       :wrapperClosable="false"
       append-to-body
@@ -102,67 +90,43 @@
           <div class="box-header">
             <span class="box-header-tit">{{info.intf}}</span>
           </div>
-          <el-form class="view-form" label-width="120px">
+          <el-form class="view-form" label-width="160px">
             <el-row>
               <el-col :span="12">
-                <el-form-item label="设备ID类型：">
-                  <label>{{info.cha_type}}</label>
-                </el-form-item>
+                <el-form-item :label="$t('msw.lldp.dev_id_type_f')">{{info.cha_type}}</el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="设备ID：">
-                  <label>{{info.cha_id}}</label>
-                </el-form-item>
+                <el-form-item :label="$t('msw.lldp.dev_id_f')">{{info.cha_id}}</el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="端口ID类型：">
-                  <label>{{info.intf_type}}</label>
-                </el-form-item>
+                <el-form-item :label="$t('msw.lldp.port_id_type_f')">{{info.intf_type}}</el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="端口ID：">
-                  <label>{{info.intf}}</label>
-                </el-form-item>
+                <el-form-item :label="$t('msw.lldp.port_id_f')">{{info.intf}}</el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="系统名称：">
-                  <label>{{info.sys_name||'--'}}</label>
-                </el-form-item>
+                <el-form-item :label="$t('msw.lldp.dev_name_f')">{{info.sys_name||'--'}}</el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="PVID：">
-                  <label>{{info.pvid||'--'}}</label>
-                </el-form-item>
+                <el-form-item label="PVID：">{{info.pvid||'--'}}</el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="VLAN 名称：">
-                  <label>{{info.pvid_name||'--'}}</label>
-                </el-form-item>
+                <el-form-item :label="$t('msw.lldp.vlan_name_f')">{{info.pvid_name||'--'}}</el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="Time To Live：">
-                  <label>{{info.ttl||'--'}}</label>
-                </el-form-item>
+                <el-form-item label="Time To Live：">{{info.ttl||'--'}}</el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="管理地址：">
-                  <label>{{info.manage_addr.join(',')||'--'}}</label>
-                </el-form-item>
+                <el-form-item :label="$t('msw.lldp.manage_addr_f')">{{info.manage_addr.join(',')||'--'}}</el-form-item>
               </el-col>
               <el-col :span="24">
-                <el-form-item label="系统描述：">
-                  <label>{{info.sys_desc||'--'}}</label>
-                </el-form-item>
+                <el-form-item :label="$t('msw.lldp.dev_desc_f')">{{info.sys_desc||'--'}}</el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="支持的功能：">
-                  <label>{{info.sys_cap_support||'--'}}</label>
-                </el-form-item>
+                <el-form-item :label="$t('msw.lldp.supported_function_f')">{{info.sys_cap_support||'--'}}</el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="已启用功能：">
-                  <label>{{info.sys_cap_enabled||'--'}}</label>
-                </el-form-item>
+                <el-form-item :label="$t('msw.lldp.enabled_function_f')">{{info.sys_cap_enabled||'--'}}</el-form-item>
               </el-col>
             </el-row>
           </el-form>

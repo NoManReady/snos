@@ -6,14 +6,7 @@
     <monitor-portflow :show-help="false">
       <template slot-scope="{portinfo,loading}">
         <div class="tc">
-          <port-panel-view
-            :enable="false"
-            :loading="loading"
-            :ports="portinfo"
-            :show-lag="true"
-            :uplink="uplink.lpid"
-            class="home-overview--panel"
-          />
+          <port-panel-view :loading="loading" :ports="portinfo" :uplink="uplink.lpid" class="home-overview--panel" />
         </div>
       </template>
     </monitor-portflow>
@@ -36,13 +29,3 @@ export default {
   }
 }
 </script>
-<style lang="scss">
-.home-overview {
-  &--panel {
-    display: inline-block;
-    width: auto;
-    min-width: 650px;
-    margin: 0 auto;
-  }
-}
-</style>

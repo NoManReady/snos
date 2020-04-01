@@ -1,30 +1,27 @@
 <template>
   <div class="vpn-security-union">
-    <help-alert json-key="vpnUnionJson" title="IPSec连接列表"></help-alert>
+    <help-alert :title="$t('egw.ipsec.ah_esp_no_confuse')" json-key="vpnUnionJson"></help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          IPSec连接列表
+          {{$t('egw.ipsec.ah_esp_no_confuse')}}
           <small></small>
         </span>
         <div class="fr">
-          <el-button @click.native="_onRefresh" size="small" type="primary">
-            <i class="el-icon-refresh"></i>
-            <span>刷新</span>
-          </el-button>
+          <el-button @click.native="_onRefresh" icon="el-icon-refresh" plain size="medium" type="primary">{{$t('action.refresh')}}</el-button>
         </div>
       </div>
-      <el-table :data="list" ref="baseTable" size="mini" stripe>
-        <el-table-column align="center" label="名称" prop="name"></el-table-column>
-        <el-table-column align="center" label="SPI" prop="spi"></el-table-column>
-        <el-table-column align="center" label="方向" prop="direction"></el-table-column>
-        <el-table-column align="center" label="隧道两端" prop="tunnel"></el-table-column>
-        <el-table-column align="center" label="数据流" prop="flows" width="250px"></el-table-column>
-        <el-table-column align="center" label="状态" prop="status">
+      <el-table :data="list" ref="baseTable" size="medium" stripe>
+        <el-table-column :label="$t('egw.ipsec.name')" align="center" prop="name"></el-table-column>
+        <el-table-column label="SPI" align="center" prop="spi"></el-table-column>
+        <el-table-column :label="$t('egw.ipsec.direction')" align="center" prop="direction"></el-table-column>
+        <el-table-column :label="$t('egw.ipsec.tunnel')" align="center" prop="tunnel"></el-table-column>
+        <el-table-column :label="$t('egw.ipsec.flows')" align="center" prop="flows" width="260px"></el-table-column>
+        <el-table-column :label="$t('phrase.status')" align="center" prop="status">
           <template slot-scope="{row}">
-            <span class="c-success" type="text" v-if="!row.reason.trim()">正常</span>
+            <span class="c-success" type="text" v-if="!row.reason.trim()">{{$t('egw.ipsec.normal')}}</span>
             <span class="c-warning" type="text" v-else>
-              异常
+              {{$t('egw.ipsec.abnormal')}}
               <el-tooltip class="item" effect="dark" placement="top-start">
                 <div slot="content">{{row.reason}}</div>
                 <span>
@@ -34,10 +31,10 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="安全协议" prop="encapsule"></el-table-column>
-        <el-table-column align="center" label="AH验证算法" prop="ah_auth_alg"></el-table-column>
-        <el-table-column align="center" label="ESP验证算法" prop="esp_auth_alg"></el-table-column>
-        <el-table-column align="center" label="ESP加密算法" prop="encapsule_alg"></el-table-column>
+        <el-table-column :label="$t('egw.ipsec.safe_agreement')" align="center" prop="encapsule"></el-table-column>
+        <el-table-column :label="$t('egw.ipsec.ah_check_algorithm')" align="center" prop="ah_auth_alg"></el-table-column>
+        <el-table-column :label="$t('egw.ipsec.esp_check_algorithm')" align="center" prop="esp_auth_alg"></el-table-column>
+        <el-table-column :label="$t('egw.ipsec.esp_encryption_algorithm')" align="center" prop="encapsule_alg"></el-table-column>
       </el-table>
     </div>
   </div>

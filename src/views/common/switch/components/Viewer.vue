@@ -4,7 +4,7 @@
       <el-tab-pane name="sys">
         <span slot="label">
           <i class="rjucd-project vm"></i>
-          <span class="vm">系统信息</span>
+          <span class="vm">{{$t('sysinfo.sys_info')}}</span>
         </span>
         <keep-alive>
           <switch-sys v-bind="$attrs" v-if="activeTab==='sys'" />
@@ -13,7 +13,7 @@
       <el-tab-pane name="basic">
         <span slot="label">
           <i class="rjucd-network vm"></i>
-          <span class="vm">基本配置</span>
+          <span class="vm">{{$t('esw.sys.base_cfg')}}</span>
         </span>
         <keep-alive>
           <switch-basic v-bind="$attrs" v-if="activeTab==='basic'" />
@@ -22,7 +22,7 @@
       <el-tab-pane name="upgrade">
         <span slot="label">
           <i class="rjucd-cloud vm"></i>
-          <span class="vm">系统升级</span>
+          <span class="vm">{{$t('sysinfo.sys_upgrade')}}</span>
         </span>
         <switch-upgrade v-bind="$attrs" v-if="activeTab==='upgrade'" />
       </el-tab-pane>
@@ -30,14 +30,14 @@
   </div>
 </template>
 <script>
-import Sys from './Sys'
-import Basic from './Basic'
-import Upgrade from './Upgrade'
-import switchModule from '@/store/modules/switch'
-import store from '@/store'
-import { mapActions } from 'vuex'
+import Sys from "./Sys";
+import Basic from "./Basic";
+import Upgrade from "./Upgrade";
+import switchModule from "@/store/modules/switch";
+import store from "@/store";
+import { mapActions } from "vuex";
 export default {
-  name: 'switch-viewer',
+  name: "switch-viewer",
   components: {
     [Sys.name]: Sys,
     [Basic.name]: Basic,
@@ -50,39 +50,44 @@ export default {
   },
   data() {
     return {
-      activeTab: 'sys'
-    }
+      activeTab: "sys"
+    };
   },
   beforeCreate() {
-    store.registerModule('switch', switchModule())
+    store.registerModule("switch", switchModule());
   },
   async created() {
-    await this.setCurrentItem(this.item)
-    this.fetchUplink()
-    await this.fetchPortInfo()
-    await this.fetchVMode()
+    await this.setCurrentItem(this.item);
+    await this._getEswInfo();
   },
   mounted() {
-    this.$bus.$on('PORT_LIST_UPDATE', this.fetchPortInfo)
+    this.$bus.$on("PORT_LIST_UPDATE", this.fetchPortInfo);
+    this.$bus.$on("ESW_REFRESH", this._getEswInfo);
   },
   beforeDestroy() {
-    store.unregisterModule('switch')
-    this.$bus.$off('PORT_LIST_UPDATE')
+    store.unregisterModule("switch");
+    this.$bus.$off("PORT_LIST_UPDATE");
+    this.$bus.$off("ESW_REFRESH");
   },
   methods: {
-    ...mapActions('switch', [
-      'setCurrentItem',
-      'fetchPortInfo',
-      'fetchVMode',
-      'fetchUplink'
-    ])
+    ...mapActions("switch", [
+      "setCurrentItem",
+      "fetchPortInfo",
+      "fetchVMode",
+      "fetchUplink"
+    ]),
+    async _getEswInfo() {
+      this.fetchUplink();
+      await this.fetchPortInfo();
+      await this.fetchVMode();
+    }
   }
-}
+};
 </script>
 <style lang="scss" scoped>
-@import '~@/style/utils/variable';
+@import "~@/style/utils/variable";
 .switch-viewer {
-  width: 550px;
+  width: 100%;
   // padding: 0 15px;
 
   /deep/ .el-loading-spinner {

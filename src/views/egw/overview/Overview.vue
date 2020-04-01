@@ -2,12 +2,12 @@
   <div class="home-overview">
     <el-row :gutter="10" class="tc">
       <!-- 当前登录设备 -->
-      <el-col :lg="8" :md="10" :span="24">
+      <el-col :lg="9" :md="11" :span="24">
         <cur-dev-info class="auto-height" ref="CurDevInfo" />
       </el-col>
       <!-- 无线信息 -->
-      <el-col :lg="16" :md="14" :span="24">
-        <wifi-info class="auto-height" v-if="showWifiInfo" />
+      <el-col :lg="15" :md="13" :span="24">
+        <wifi-info class="auto-height" />
       </el-col>
     </el-row>
 
@@ -31,7 +31,6 @@ import CurDevInfo from '@/views/common/overview/components/CurDevInfo'
 import NetView from '@/views/common/overview/components/NetView'
 import WifiInfo from '@/views/common/overview/components/WifiInfo'
 import FlowTrend from '@/views/egw/FlowTrend'
-import { Col, Row } from 'element-ui'
 export default {
   name: 'Overview',
   data() {
@@ -47,18 +46,12 @@ export default {
     })
   },
   components: {
-    [Col.name]: Col,
-    [Row.name]: Row,
     CurDevInfo,
     NetView,
     WifiInfo,
     FlowTrend
   },
   computed: {
-    // 显示无线信息
-    showWifiInfo() {
-      return this.$roles().includes('master') || this.$roles().includes('ewr')
-    },
     // 显示流量图表
     showChartFlow() {
       return this.$roles().includes('egw') && this.$roles().includes('ROUTER')
@@ -68,7 +61,7 @@ export default {
 </script>
 <style lang="scss" scope>
 .home-overview {
-  min-width: 380px;
+  // min-width: 380px;
   .auto-height {
     height: auto;
   }

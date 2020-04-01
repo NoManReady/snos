@@ -1,92 +1,94 @@
 <template>
   <div class="behavior-application-control">
-    <help-alert json-key="behaviorAppControlJson" title="应用控制"></help-alert>
+    <help-alert json-key="behaviorAppControlJson" :title="$t('egw.ApplicationControl.app_control')"></help-alert>
     <div class="box">
       <div class="box-header">
         <span class="box-header-tit">
-          应用控制
+          {{$t('egw.ApplicationControl.app_control')}}
           <small></small>
         </span>
         <div class="fr">
           <el-button
             :disabled="visiterList.length>=maxLimit||isLoading"
             icon="el-icon-plus"
-            size="small"
+            plain
+            size="medium"
             type="primary"
             v-auth="onAdd"
-          >新增</el-button>
-          <el-button :disabled="isLoading" icon="el-icon-delete" size="small" type="primary" v-auth="onDel">批量删除</el-button>
+          >{{$t('action.add')}}</el-button>
+          <el-button :disabled="isLoading" icon="el-icon-delete" plain size="medium" type="primary" v-auth="onDel">{{$t('action.patch_delete')}}</el-button>
         </div>
       </div>
       <help-alert :show-icon="false" title>
         <div slot="content">
-          最大支持配置
-          <b class="c-warning mlr5">{{maxLimit}}</b>条。
+          <i18n path="egw.limit_num_tip">
+              <b class="c-warning mlr5">{{maxLimit}}</b>
+          </i18n>
         </div>
       </help-alert>
-      <el-table :data="visiterList" :row-key="row=>row.policy" ref="baseTable" size="mini" stripe>
+      <el-table :data="visiterList" :row-key="row=>row.policy" ref="baseTable" size="medium" stripe>
         <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column align="center" label="受管理IP地址组" prop="ip_group">
+        <el-table-column align="center" :label="$t('egw.ip_group_manager')" prop="ip_group">
           <template slot-scope="{row}">
             <ip-detail :ipGroups="ipGroups" :row="row" v-if="ipGroups.length"></ip-detail>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="受管理时间段" prop="tr_group">
+        <el-table-column align="center" :label="$t('egw.times_manager')" prop="tr_group">
           <template slot-scope="{row}">
             <time-detail :row="row" :timeGroups="timeGroups" v-if="timeGroups.length"></time-detail>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="禁用列表" prop="member">
+        <el-table-column align="center" :label="$t('egw.ApplicationControl.no_allow_tab')" prop="member">
           <template slot-scope="scope">
             <div v-if="scope.row.applist&&scope.row.applist.length">
               <span v-if="scope.row.applist.length===1">{{scope.row.applist[0]||''}}</span>
               <div v-else>
                 <span>{{scope.row.applist[0]}}...</span>
-                <el-popover :title="`禁用列表(${scope.row.applist.length})`" placement="right" trigger="click">
+                <el-popover :title="$t('egw.ApplicationControl.no_allow_tab') + `(${scope.row.applist.length})`" placement="right" trigger="click">
                   <div class="max-w450" style="max-height: 500px;overflow-y: auto;">
                     <el-tag :key="app" class="mr10 mb10" type="success" v-for="app of scope.row.applist">{{app}}</el-tag>
                   </div>
-                  <a class="pointer f-theme" href="javascript:;" slot="reference">更多</a>
+                  <a class="pointer f-theme" href="javascript:;" slot="reference">{{$t('egw.more')}}</a>
                 </el-popover>
               </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="状态" prop="enable">
+        <el-table-column align="center" :label="$t('phrase.status')" prop="enable">
           <template slot-scope="scope">
-            <el-tooltip :content="scope.row.enable==='1'?'点击关闭':'点击开启'" effect="dark" placement="right">
+            <el-tooltip :content="scope.row.enable==='1'? $t('egw.close_by_click'):$t('egw.open_by_click')" effect="dark" placement="right">
               <div @click="_toggleEnable(scope.row.enable,scope.$index)" class="vm">
                 <span class="c-success pointer" v-if="scope.row.enable==='1'">
-                  启用
+                  {{ $t('egw.start_using')}}
                   <i class="el-icon-circle-check"></i>
                 </span>
                 <span class="c-warning pointer" v-else>
-                  未启用
+                  {{ $t('egw.no_start_using')}}
                   <i class="el-icon-circle-close"></i>
                 </span>
               </div>
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="备注" prop="comment"></el-table-column>
-        <el-table-column align="center" label="操作">
+        <el-table-column align="center" :label=" $t('phrase.remark')" prop="comment"></el-table-column>
+        <el-table-column align="center" :label=" $t('action.ope')">
           <template slot-scope="scope">
-            <el-button :disabled="isLoading" type="text" v-auth="{fn:onEdit,params:scope.$index}">修改</el-button>
-            <el-button :disabled="isLoading" type="text" v-auth="{fn:onDel,params:scope.row}">删除</el-button>
+            <el-button :disabled="isLoading" size="medium" type="text" v-auth="{fn:onEdit,params:scope.$index}">{{ $t('action.edit')}}</el-button>
+            <el-button :disabled="isLoading" size="medium" type="text" v-auth="{fn:onDel,params:scope.row}">{{ $t('action.delete')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
       <!-- 编辑modal -->
       <el-dialog :title="modalTitle" :visible.sync="baseModalShow" width="550px">
-        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm">
-          <el-form-item label="受管理IP地址组" prop="ip_group">
-            <el-select class="w260" placeholder="请选择" v-model="baseModel.ip_group">
+        <el-form :model="baseModel" :rules="baseRules" label-width="160px" ref="baseForm" size="medium">
+          <el-form-item :label="$t('egw.ip_group_manager')" prop="ip_group">
+            <el-select class="w260" :placeholder="$t('action.select')" v-model="baseModel.ip_group">
               <el-option :key="item.ip_group" :label="item.name" :value="item.ip_group" v-for="item in ipGroups"></el-option>
-              <el-option label="自定义" value></el-option>
+              <el-option :label="$t('egw.custom')" value></el-option>
             </el-select>
           </el-form-item>
           <template v-if="baseModel.ip_group === ''">
-            <el-form-item class="is-required" label="自定义" prop="ip_slots">
+            <el-form-item class="is-required" :label="$t('egw.custom')" prop="ip_slots">
               <el-form-item
                 :class="{mb20:index!==baseModel.ip_slots.length-1}"
                 :key="index"
@@ -94,13 +96,12 @@
                 :rules="ipValidate(baseModel.ip_slots,index)"
                 v-for="(item,index) in baseModel.ip_slots"
               >
-                <el-input class="w260" placeholder="范围格式：1.1.1.1-1.1.1.100" v-model="baseModel.ip_slots[index]"></el-input>
-                <el-button @click="onDelIpList(index)" size="medium" type="text" v-if="baseModel.ip_slots.length > 1">
+                <el-input class="w260" :placeholder="$t('wan.ip_range_example')" v-model="baseModel.ip_slots[index]"></el-input>
+                <el-button @click="onDelIpList(index)" type="text" v-if="baseModel.ip_slots.length > 1">
                   <i class="el-icon-close"></i>
                 </el-button>
                 <el-button
                   @click="onAddIpList"
-                  size="medium"
                   type="text"
                   v-if="index === baseModel.ip_slots.length - 1 && baseModel.ip_slots.length < 5"
                 >
@@ -109,42 +110,42 @@
               </el-form-item>
             </el-form-item>
           </template>
-          <el-form-item label="受管理时间段" prop="tr_group">
-            <el-select class="w260" placeholder="请选择" v-model="baseModel.tr_group">
-              <el-option :key="item.tmngtName" :label="item.tmngtName" :value="item.tmngtName" v-for="item in timeGroups"></el-option>
-              <el-option label="自定义" value></el-option>
+          <el-form-item :label="$t('egw.times_manager')" prop="tr_group">
+            <el-select class="w260" :placeholder="$t('action.select')" v-model="baseModel.tr_group">
+              <el-option :key="item.tmngtName" :label="item.name" :value="item.tmngtName" v-for="item in timeGroups"></el-option>
+              <el-option :label="$t('egw.custom')" value></el-option>
             </el-select>
           </el-form-item>
           <template v-if="baseModel.tr_group === ''">
-            <el-form-item class="hide" label="时间设置" prop="time_mode">
+            <el-form-item class="hide" :label="$t('egw.SiteManage.set_time')" prop="time_mode">
               <el-radio-group v-model="baseModel.time_mode">
-                <el-radio label="calendar">日历</el-radio>
+                <el-radio label="calendar">{{$t('egw.calendar')}}</el-radio>
                 <!-- <el-radio label="input">手动设置</el-radio> -->
               </el-radio-group>
             </el-form-item>
             <template v-if="baseModel.time_mode==='calendar'">
-              <el-form-item class="is-required" label="日历" prop="tr_slots">
+              <el-form-item class="is-required" :label="$t('egw.calendar')" prop="tr_slots">
                 <span @click="onOpenTimeSelection(baseModel.tr_slots,true)" class="f-theme pointer">
                   <i class="el-icon-date"></i>
-                  选择时间
+                  {{$t('egw.accessCtrl.select_time')}}
                 </span>
               </el-form-item>
             </template>
             <template v-else></template>
           </template>
-          <el-form-item label="禁用列表" prop="applist">
+          <el-form-item :label="$t('egw.ApplicationControl.no_allow_tab')" prop="applist">
             <treeselect :multiple="true" :options="appTree" class="w260" v-model="baseModel.applist" />
           </el-form-item>
-          <el-form-item label="备注" prop="comment">
+          <el-form-item  :label="$t('phrase.remark')" prop="comment">
             <el-input class="w260" v-model="baseModel.comment"></el-input>
           </el-form-item>
-          <el-form-item label="状态" prop="enable">
+          <el-form-item :label="$t('phrase.status')" prop="enable">
             <el-switch active-value="1" inactive-value="0" v-model="baseModel.enable"></el-switch>
           </el-form-item>
         </el-form>
         <span class="dialog-footer" slot="footer">
-          <el-button @click="baseModalShow = false">取 消</el-button>
-          <el-button :disabled="isLoading" @click="onModalConfirm" type="primary">确 定</el-button>
+          <el-button @click="baseModalShow = false" size="medium">{{$t('action.cancel')}}</el-button>
+          <el-button :disabled="isLoading" @click="onModalConfirm" size="medium" type="primary">{{$t('action.confirm')}}</el-button>
         </span>
       </el-dialog>
     </div>
@@ -173,13 +174,13 @@ export default {
     return {
       baseModel: model.behaviorApplicationControlFn(),
       baseRules: {
-        applist: [{ required: true, message: '受管理网站类型至少选择一个' }],
-        tr_slots: [{ validator: timeValidator, message: '请选择时间范围' }],
+        applist: [{ required: true, message: this.$t('egw.ApplicationControl.more_then_one_url_manager') }],
+        tr_slots: [{ validator: timeValidator, message: this.$t('egw.select_time_range') }],
         comment: [
           {
             validator: nameLengthValidator,
             size: 64,
-            message: '组名称不能超过64个字符，中文占3字符'
+            message: this.$t('egw.invalid_group_name')
           }
         ]
       },
@@ -212,7 +213,7 @@ export default {
   mixins: [formMixins],
   computed: {
     modalTitle() {
-      return this.editIndex !== -1 ? '编辑应用' : '添加应用'
+      return this.editIndex !== -1 ? this.$t('egw.ApplicationControl.app_edit') : this.$t('egw.ApplicationControl.app_add')
     }
   },
   methods: {
@@ -318,9 +319,9 @@ export default {
         _items = [item]
       }
       if (!_items.length) {
-        return this.$message.warning('请选择要删除的列表项')
+        return this.$message.warning(this.$t('tip.select_del_item'))
       }
-      this.$confirm('是否确认删除？').then(() => {
+      this.$confirm(this.$t('tip.confirm_delete')).then(() => {
         this.isLoading = true
         this.$api
           .delApplicationList({ names: _items.map(ite => ite.policy) })
@@ -330,7 +331,7 @@ export default {
               this.visiterList.splice(_index, 1)
             })
             this.$message({
-              message: '删除成功',
+              message:this.$t('tip.del_success'),
               type: 'success'
             })
           })
@@ -373,7 +374,7 @@ export default {
             this.visiterList.splice(this.editIndex, 1, { ...this.baseModel })
           }
           this.$message({
-            message: '配置成功',
+            message: this.$t('tip.edit1_success'),
             type: 'success'
           })
         })

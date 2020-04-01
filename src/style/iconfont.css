@@ -1,6 +1,6 @@
 @font-face {font-family: "ucd";
-  src: url('fonts/iconfont.woff?t=1572939339894') format('woff'),
-  url('fonts/iconfont.ttf?t=1572939339894') format('truetype');
+  src: url('fonts/iconfont.woff?t=1585042891001') format('woff'),
+  url('fonts/iconfont.ttf?t=1585042891001') format('truetype');
 }
 
 [class^="rjucd-"],
@@ -10,6 +10,128 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1;
+  display: inline-block;
+}
+
+.ucd {
+  font-family: "ucd" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.rjucd-device:before {
+  content: "\e680";
+}
+
+.rjucd-apac:before {
+  content: "\e655";
+}
+
+.rjucd-user2:before {
+  content: "\e656";
+}
+
+.rjucd-exit:before {
+  content: "\e6c8";
+}
+
+.rjucd-warning:before {
+  content: "\e692";
+}
+
+.rjucd-safe:before {
+  content: "\e67f";
+}
+
+.rjucd-vpn:before {
+  content: "\e694";
+}
+
+.rjucd-customerservice:before {
+  content: "\e695";
+}
+
+.rjucd-disconnect:before {
+  content: "\e69a";
+}
+
+.rjucd-edit:before {
+  content: "\e69f";
+}
+
+.rjucd-help:before {
+  content: "\e6a8";
+}
+
+.rjucd-key:before {
+  content: "\e6a9";
+}
+
+.rjucd-list:before {
+  content: "\e6ac";
+}
+
+.rjucd-menu-left:before {
+  content: "\e6ad";
+}
+
+.rjucd-home:before {
+  content: "\e6b2";
+}
+
+.rjucd-menu-right:before {
+  content: "\e6b3";
+}
+
+.rjucd-monitor1:before {
+  content: "\e6b6";
+}
+
+.rjucd-notcertified:before {
+  content: "\e6bd";
+}
+
+.rjucd-reload:before {
+  content: "\e6bf";
+}
+
+.rjucd-refresh:before {
+  content: "\e6c2";
+}
+
+.rjucd-search:before {
+  content: "\e6c3";
+}
+
+.rjucd-rocket:before {
+  content: "\e6c4";
+}
+
+.rjucd-resetting:before {
+  content: "\e6c7";
+}
+
+.rjucd-sys:before {
+  content: "\e6cc";
+}
+
+.rjucd-upload:before {
+  content: "\e6d0";
+}
+
+.rjucd-unvisible:before {
+  content: "\e6d4";
+}
+
+.rjucd-visible:before {
+  content: "\e6d5";
+}
+
+.rjucd-basicsettings:before {
+  content: "\e6d3";
 }
 
 .rjucd-zusai:before {
@@ -126,101 +248,5 @@
 
 .rjucd-vlan:before {
   content: "\e68e";
-}
-
-.rjucd-warning:before {
-  content: "\e692";
-}
-
-.rjucd-safe:before {
-  content: "\e67f";
-}
-
-.rjucd-vpn:before {
-  content: "\e694";
-}
-
-.rjucd-customerservice:before {
-  content: "\e695";
-}
-
-.rjucd-disconnect:before {
-  content: "\e69a";
-}
-
-.rjucd-edit:before {
-  content: "\e69f";
-}
-
-.rjucd-help:before {
-  content: "\e6a8";
-}
-
-.rjucd-key:before {
-  content: "\e6a9";
-}
-
-.rjucd-list:before {
-  content: "\e6ac";
-}
-
-.rjucd-menu-left:before {
-  content: "\e6ad";
-}
-
-.rjucd-home:before {
-  content: "\e6b2";
-}
-
-.rjucd-menu-right:before {
-  content: "\e6b3";
-}
-
-.rjucd-monitor1:before {
-  content: "\e6b6";
-}
-
-.rjucd-notcertified:before {
-  content: "\e6bd";
-}
-
-.rjucd-reload:before {
-  content: "\e6bf";
-}
-
-.rjucd-refresh:before {
-  content: "\e6c2";
-}
-
-.rjucd-search:before {
-  content: "\e6c3";
-}
-
-.rjucd-rocket:before {
-  content: "\e6c4";
-}
-
-.rjucd-resetting:before {
-  content: "\e6c7";
-}
-
-.rjucd-sys:before {
-  content: "\e6cc";
-}
-
-.rjucd-upload:before {
-  content: "\e6d0";
-}
-
-.rjucd-unvisible:before {
-  content: "\e6d4";
-}
-
-.rjucd-visible:before {
-  content: "\e6d5";
-}
-
-.rjucd-basicsettings:before {
-  content: "\e6d3";
 }
 
